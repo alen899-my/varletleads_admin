@@ -260,14 +260,16 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       
       {/* MODAL WRAPPER */}
-      <div
-        ref={modalRef}
-        className={`
-          w-full max-w-4xl max-h-[90vh] shadow-2xl
-          bg-white dark:bg-gray-900 border border-gray-400 dark:border-gray-600
-          flex flex-col rounded-xl overflow-hidden
-        `}
-      >
+     <div
+  ref={modalRef}
+  className={`
+    w-full max-w-4xl 
+    h-[85vh]         /* 👈 Fixed height */
+    shadow-2xl
+    bg-white dark:bg-gray-900 border border-gray-400 dark:border-gray-600
+    flex flex-col rounded-xl overflow-hidden
+  `}>
+
         
         {/* HEADER */}
         <div className="shrink-0 bg-white dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 px-5 py-4 flex justify-between items-start">
@@ -296,40 +298,52 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
         `}>
 
          
-          {/* Step Navigation Tabs */}
-          <div className="w-full flex items-center justify-center py-2 mb-4">
-            <div className="flex gap-1 overflow-x-auto no-scrollbar scroll-smooth rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 shadow-sm px-2 py-1"
-              style={{ WebkitOverflowScrolling: "touch" }}
-            >
-              {[
-                { label: "Location", icon: <MapPin size={16} /> },
-                { label: "Users", icon: <Users size={16} /> },
-                { label: "Pricing", icon: <Coins size={16} /> },
-                { label: "Drivers", icon: <CarFront size={16} /> },
-                { label: "Admin", icon: <UserCog size={16} /> },
-                { label: "Docs", icon: <FileText size={16} /> },
-              ].map((tab, index) => {
-                const stepNumber = index + 1;
-                const isActive = currentStep === stepNumber;
-                return (
-                  <button
-                    key={tab.label}
-                    onClick={() => validateBeforeJump(stepNumber)}
-                    className={`
-                      flex items-center gap-2 px-3 py-1.5 text-xs sm:text-sm font-medium whitespace-nowrap rounded-md
-                      transition-all duration-300 ease-out select-none
-                      ${isActive
-                        ? "bg-blue-600 text-white shadow-md scale-105"
-                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
-                      }
-                    `}
-                  >
-                    {tab.icon} {tab.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+         {/* Step Navigation Tabs */}
+<div className="w-full flex items-center justify-center py-2 mb-4">
+  <div
+    className="
+      w-full flex overflow-x-auto no-scrollbar scroll-smooth 
+      rounded-lg border border-gray-300 dark:border-gray-700 
+      bg-white dark:bg-gray-800 shadow-sm
+    "
+    style={{ WebkitOverflowScrolling: "touch" }}
+  >
+    {[
+      { label: "Location", icon: <MapPin size={14} /> },
+      { label: "Users", icon: <Users size={14} /> },
+      { label: "Pricing", icon: <Coins size={14} /> },
+      { label: "Drivers", icon: <CarFront size={14} /> },
+      { label: "Admin", icon: <UserCog size={14} /> },
+      { label: "Docs", icon: <FileText size={14} /> },
+    ].map((tab, index) => {
+      const stepNumber = index + 1;
+      const isActive = currentStep === stepNumber;
+      const isCompleted = currentStep > stepNumber;
+
+      return (
+        <button
+          key={tab.label}
+          onClick={() => validateBeforeJump(stepNumber)}
+          className={`
+            flex items-center justify-center gap-1 flex-1
+            px-4 py-2 text-xs sm:text-sm font-medium whitespace-nowrap
+            transition-all duration-200 select-none border-r border-gray-300 dark:border-gray-600
+            ${
+              isActive
+                ? "bg-blue-600 text-white font-semibold shadow-md scale-[1.03]"
+                : isCompleted
+                ? "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                : "text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+            }
+          `}
+        >
+          {tab.icon} {tab.label}
+        </button>
+      );
+    })}
+  </div>
+</div>
+
 
           {wizardError && (
             <div className="text-red-600 dark:text-red-400 text-sm mb-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-800 px-3 py-2 rounded-lg">

@@ -32,46 +32,45 @@ export default function SignInForm() {
   }, []);
 
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
-  e.preventDefault();
-  setBackendError("");
-  setLoading(true);
+    e.preventDefault();
+    setBackendError("");
+    setLoading(true);
 
-  const formData = new FormData(e.currentTarget);
+    const formData = new FormData(e.currentTarget);
 
-  const body = {
-    email: formData.get("email"),
-    password: formData.get("password"),
-  };
+    const body = {
+      email: formData.get("email"),
+      password: formData.get("password"),
+    };
 
-  try {
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok) throw new Error(data.error || "Login failed");
+      if (!res.ok) throw new Error(data.error || "Login failed");
 
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
-    const expires = new Date();
-    expires.setDate(expires.getDate() + 7);
+      const expires = new Date();
+      expires.setDate(expires.getDate() + 7);
 
-    document.cookie = `token=${data.token}; path=/; expires=${expires.toUTCString()}; SameSite=Lax`;
-    document.cookie = `role=${data.user.role}; path=/; expires=${expires.toUTCString()}; SameSite=Lax`;
+      document.cookie = `token=${data.token}; path=/; expires=${expires.toUTCString()}; SameSite=Lax`;
+      document.cookie = `role=${data.user.role}; path=/; expires=${expires.toUTCString()}; SameSite=Lax`;
 
-    if (data.user.role === "admin") router.push("/admin");
-    else router.push("/");
-  } catch (err: any) {
-    setBackendError(err.message);
-  } finally {
-    setLoading(false);
+      if (data.user.role === "admin") router.push("/admin");
+      else router.push("/");
+    } catch (err: any) {
+      setBackendError(err.message);
+    } finally {
+      setLoading(false);
+    }
   }
-}
-
 
   if (!authChecked) {
     return (
@@ -82,11 +81,22 @@ export default function SignInForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 px-4">
-      <div className="w-full max-w-md border border-gray-400 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 sm:p-8">
+    <div className="min-h-screen flex items-center justify-center px-4  dark:bg-gray-900">
 
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-semibold text-gray-800 dark:text-white">
+      {/* CARD */}
+      <div className="w-md  border border-gray-300 bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-4">
+
+        {/* LOGO */}
+        <div className="flex justify-center ">
+          <img
+            src="/logo.png" // change image path if needed
+            alt="Company Logo"
+            className="w-60 h-26 object-contain "
+          />
+        </div>
+
+        <div className="text-center ">
+          <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">
             Welcome Back
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -101,13 +111,11 @@ export default function SignInForm() {
         )}
 
         <form onSubmit={handleLogin} className="space-y-6">
-
           <div>
             <Label>Email *</Label>
             <Input
               name="email"
               type="email"
-           
               placeholder="info@gmail.com"
             />
           </div>
@@ -119,7 +127,6 @@ export default function SignInForm() {
                 name="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
-               
               />
               <span
                 onClick={() => setShowPassword(!showPassword)}
@@ -137,8 +144,6 @@ export default function SignInForm() {
                 Keep me logged in
               </span>
             </div>
-
-           
           </div>
 
           <Button className="w-full" disabled={loading}>
@@ -152,7 +157,6 @@ export default function SignInForm() {
             Sign Up
           </Link>
         </p>
-
       </div>
     </div>
   );

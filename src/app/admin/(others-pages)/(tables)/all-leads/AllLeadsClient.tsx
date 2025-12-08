@@ -14,10 +14,10 @@ export default function AllLeadsClient() {
 
   return (
     <div className="">
-      <PageBreadcrumb pageTitle="All Leads" onLeadAdded={handleLeadAdded} />
+      <PageBreadcrumb pageTitle="Manage All Leads" onLeadAdded={handleLeadAdded} />
 
       <div className="space-y-6">
-        <ComponentCard title="All Leads">
+        <ComponentCard title="Manage All Leads">
           <LeadsTable refreshTrigger={refreshTrigger} />
         </ComponentCard>
       </div>

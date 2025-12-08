@@ -191,7 +191,7 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
         if (onUpdate) onUpdate(); 
         setTimeout(() => {
             setIsSubmitted(false);
-            onClose(); 
+           
         }, 1500);
       } else {
         alert("⚠️ Update failed: " + data.message);
@@ -245,18 +245,17 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center p-4 z-[9999]">
       
       {/* --- MODAL CONTAINER --- */}
-      <div 
-        ref={modalRef} 
-        className={`
-            w-full max-w-5xl max-h-[90vh] shadow-xl relative 
-            bg-white dark:bg-gray-900 border border-gray-400 dark:border-gray-600 
-            
-            /* STRUCTURE FOR CURVED CORNERS */
-            flex flex-col
-            rounded-xl
-            overflow-hidden
-        `}
-      >
+     <div 
+  ref={modalRef} 
+  className="
+    w-full max-w-4xl 
+    h-[85vh]      /* 👈 FIXED HEIGHT */
+    shadow-xl relative 
+    bg-white dark:bg-gray-900 border border-gray-400 dark:border-gray-600 
+    flex flex-col rounded-xl overflow-hidden
+  "
+>
+
         
         {/* --- HEADER (Fixed) --- */}
         <div className="shrink-0 bg-white dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 px-5 py-3 flex justify-between items-center z-20">
@@ -273,51 +272,65 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
         </div>
 
         {/* --- CONTENT BODY (Scrollable) --- */}
-        <div className={`
-            p-4 sm:p-6 space-y-4 flex-1 overflow-y-auto
-            
-            /* CUSTOM DARK SCROLLBAR STYLES */
-            [&::-webkit-scrollbar]:w-2
-            [&::-webkit-scrollbar-track]:bg-gray-100
-            dark:[&::-webkit-scrollbar-track]:bg-gray-950
-            [&::-webkit-scrollbar-thumb]:bg-gray-400
-            dark:[&::-webkit-scrollbar-thumb]:bg-gray-700
-            [&::-webkit-scrollbar-thumb]:rounded-full
-            hover:[&::-webkit-scrollbar-thumb]:bg-gray-500
-            dark:hover:[&::-webkit-scrollbar-thumb]:bg-gray-600
-        `}>
+        <div
+  className={`
+    p-4 sm:p-6 space-y-4 flex-1 overflow-y-auto
+    min-h-[420px]     /* 👈 prevents jumping */
+    max-h-[65vh]      /* 👈 ensures scrolling instead of resize */
+    transition-all duration-300 ease-in-out
+    [&::-webkit-scrollbar]:w-2
+    [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-gray-950
+    [&::-webkit-scrollbar-thumb]:bg-gray-400 dark:[&::-webkit-scrollbar-thumb]:bg-gray-700
+    [&::-webkit-scrollbar-thumb]:rounded-full
+    hover:[&::-webkit-scrollbar-thumb]:bg-gray-500
+    dark:hover:[&::-webkit-scrollbar-thumb]:bg-gray-600
+  `}
+>
           
           {/* 1. TABS NAVIGATION */}
-          <div className="w-full flex items-center justify-center py-2">
-            <div className="flex gap-1 overflow-x-auto no-scrollbar scroll-smooth rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm px-2 py-1"
-                style={{ WebkitOverflowScrolling: "touch" }}>
-                {[
-                { label: "Location", icon: <MapPin size={16} /> },
-                { label: "On-Site Users", icon: <Users size={16} /> },
-                { label: "Pricing", icon: <Coins size={16} /> },
-                { label: "Drivers", icon: <CarFront size={16} /> },
-                { label: "Admin Setup", icon: <UserCog size={16} /> },
-                { label: "Documents", icon: <FileText size={16} /> },
-                ].map((tab, index) => {
+                   {/* Step Navigation Tabs */}
+          <div className="w-full flex items-center justify-center py-2 mb-4">
+            <div
+              className="
+                w-full flex overflow-x-auto no-scrollbar scroll-smooth 
+                rounded-lg border border-gray-300 dark:border-gray-700 
+                bg-white dark:bg-gray-800 shadow-sm
+              "
+              style={{ WebkitOverflowScrolling: "touch" }}
+            >
+              {[
+                { label: "Location", icon: <MapPin size={14} /> },
+                { label: "Users", icon: <Users size={14} /> },
+                { label: "Pricing", icon: <Coins size={14} /> },
+                { label: "Drivers", icon: <CarFront size={14} /> },
+                { label: "Admin", icon: <UserCog size={14} /> },
+                { label: "Docs", icon: <FileText size={14} /> },
+              ].map((tab, index) => {
                 const stepNumber = index + 1;
                 const isActive = currentStep === stepNumber;
+                const isCompleted = currentStep > stepNumber;
+          
                 return (
-                    <button
+                  <button
                     key={tab.label}
                     onClick={() => validateBeforeJump(stepNumber)}
                     className={`
-                        flex items-center gap-2 px-5 py-2 text-sm font-medium whitespace-nowrap rounded-md
-                        transition-all duration-300 ease-out select-none
-                        ${isActive
-                            ? "bg-blue-600 text-white shadow-md scale-[1.05]"
-                            : "text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
-                        }
+                      flex items-center justify-center gap-1 flex-1
+                      px-4 py-2 text-xs sm:text-sm font-medium whitespace-nowrap
+                      transition-all duration-200 select-none border-r border-gray-300 dark:border-gray-600
+                      ${
+                        isActive
+                          ? "bg-blue-600 text-white font-semibold shadow-md scale-[1.03]"
+                          : isCompleted
+                          ? "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                          : "text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                      }
                     `}
-                    >
+                  >
                     {tab.icon} {tab.label}
-                    </button>
+                  </button>
                 );
-                })}
+              })}
             </div>
           </div>
 
@@ -342,15 +355,16 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
           )}
 
           {/* SUCCESS MESSAGE */}
-          {isSubmitted ? (
-            <div className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 p-8 rounded-lg text-center flex flex-col items-center gap-3">
-              <CheckCircle className="w-12 h-12 text-green-600 dark:text-green-400" />
-              <h3 className="text-xl font-bold">Updated Successfully!</h3>
-              
-            </div>
-          ) : (
+         {isSubmitted && (
+  <div className="bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-600 
+      text-green-800 dark:text-green-200 px-4 py-3 rounded-lg text-sm font-medium 
+      flex items-center gap-2 animate-in fade-in slide-in-from-top-2 mb-3">
+    <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+    Changes saved successfully.
+  </div>
+)}
             
-            /* --- FORM FIELDS START --- */
+           
             <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
               
               {/* STEP 1: LOCATION */}
@@ -766,31 +780,77 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
                 </div>
               )}
             </div>
-          )}
+        
         </div>
 
         {/* --- FOOTER ACTIONS (Fixed) --- */}
-        {!isSubmitted && (
-          <div className="shrink-0 bg-white dark:bg-gray-900 border-t border-gray-300 dark:border-gray-700 p-4 flex justify-between">
-            {currentStep > 1 ? (
-              <button onClick={() => setCurrentStep(prev => prev - 1)} className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium">
-                ← Back
-              </button>
-            ) : (
-              <div />
-            )}
+       
+ {/* --- FOOTER ACTIONS (Fixed) --- */}
+<div className="shrink-0 bg-white dark:bg-gray-900 border-t border-gray-300 dark:border-gray-700 p-4 flex justify-between items-center">
 
-            {currentStep < 6 ? (
-              <button onClick={handleNext} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition">
-                Next Step <ArrowRight className="w-4 h-4" />
-              </button>
-            ) : (
-              <button onClick={handleUpdateSubmit} className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition shadow-sm">
-                Update Lead
-              </button>
-            )}
-          </div>
-        )}
+  {/* BACK BUTTON */}
+  {currentStep > 1 ? (
+    <button 
+      onClick={() => setCurrentStep(prev => prev - 1)} 
+      disabled={isSubmitted}
+      className={`px-4 py-2 font-medium transition ${
+        isSubmitted 
+        ? "opacity-50 cursor-not-allowed"
+        : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+      }`}
+    >
+      ← Back
+    </button>
+  ) : (
+    <span />
+  )}
+
+  {/* RIGHT SIDE */}
+  <div className="flex items-center gap-3">
+
+    {/* STEP 1–5: SHOW "Save and Next" BUTTON */}
+    {currentStep < 6 && (
+      <button
+        onClick={handleUpdateSubmit}
+        disabled={isSubmitted}
+        className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium transition 
+          ${isSubmitted ? "opacity-50 cursor-not-allowed bg-green-600 text-white" : "bg-green-600 text-white hover:bg-green-700"}
+        `}
+      >
+        Save
+      </button>
+    )}
+
+    {/* STEP 1–5: Show Next Step */}
+    {currentStep < 6 && (
+      <button 
+        onClick={handleNext} 
+        disabled={isSubmitted}
+        className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium transition 
+          ${isSubmitted ? "opacity-50 cursor-not-allowed bg-blue-600 text-white" : "bg-blue-600 text-white hover:bg-blue-700"}
+        `}
+      >
+        Save & Next <ArrowRight className="w-4 h-4" />
+      </button>
+    )}
+
+    {/* STEP 6 ONLY — Final Save */}
+    {currentStep === 6 && (
+      <button 
+        onClick={handleUpdateSubmit} 
+        disabled={isSubmitted}
+        className={`flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition shadow-sm
+          ${isSubmitted ? "opacity-50 cursor-not-allowed bg-green-600 text-white" : "bg-green-600 text-white hover:bg-green-700"}
+        `}
+      >
+        Save
+      </button>
+    )}
+  </div>
+</div>
+
+
+
       </div>
     </div>
   );
