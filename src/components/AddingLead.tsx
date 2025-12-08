@@ -466,7 +466,7 @@ const capacitySchema = z.number().min(1, { message: "Capacity must be at least 1
 
 
   return (
-    <div className="min-h-fit bg-gray-50 py-10 px-4 sm:px-6 flex justify-center">
+    <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 flex justify-center">
       <div className="w-full max-w-4xl bg-white rounded-2xl border border-slate-400 shadow-lg p-5 sm:p-6 md:p-4">
 
         {/* HEADER */}
@@ -1395,7 +1395,7 @@ const capacitySchema = z.number().min(1, { message: "Capacity must be at least 1
               <button
                 onClick={handleFinalSubmit}
                 disabled={isReadOnly} // Disable submit button
-                className={`px-6 py-2 rounded-lg text-sm shadow-sm transition-all
+                className={`px-6 py-3 rounded-lg text-sm shadow-sm transition-all
                   ${isReadOnly 
                     ? "bg-gray-400 cursor-not-allowed text-gray-100" 
                     : "bg-green-600 hover:bg-green-700 text-white"
