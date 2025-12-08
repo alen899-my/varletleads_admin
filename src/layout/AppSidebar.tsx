@@ -273,15 +273,15 @@ const AppSidebar: React.FC = () => {
           />
         </>
       ) : (
-        <div className="bg-transparent">
+       
           <Image
             src="/icon.png"
             alt="Logo"
-            width={32}
+            width={40}
             height={32}
-            className="select-none bg-transparent"
+          
           />
-        </div>
+
       )}
     </Link>
   </div>

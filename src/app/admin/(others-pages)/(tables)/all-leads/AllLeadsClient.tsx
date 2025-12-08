@@ -17,9 +17,9 @@ export default function AllLeadsClient() {
       <PageBreadcrumb pageTitle="Manage All Leads" onLeadAdded={handleLeadAdded} />
 
       <div className="space-y-6">
-        <ComponentCard title="Manage All Leads">
+        
           <LeadsTable refreshTrigger={refreshTrigger} />
-        </ComponentCard>
+    
       </div>
     </div>
   );
