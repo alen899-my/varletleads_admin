@@ -120,11 +120,11 @@ if (!result.success) {
       {/* CARD */}
       <div className="w-lg border border-gray-300 bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
         {/* LOGO */}
-        <div className="flex justify-center mb-4">
-          <img src="/logo.png" alt="Company Logo" className="w-40 object-contain" />
+        <div className="flex justify-center mb-2">
+          <img src="/logo.png" alt="Company Logo" className="w-60 object-contain" />
         </div>
 
-        <div className="text-center mb-6">
+        <div className="text-center mb-4">
           <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">
             Welcome Back
           </h1>
