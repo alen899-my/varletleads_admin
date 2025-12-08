@@ -485,7 +485,7 @@ const capacitySchema = z.number().min(1, { message: "Capacity must be at least 1
     {/* Eyebrow Label */}
     <div className="flex items-center justify-center flex-col gap-1">
       <p className="uppercase text-sm sm:text-xl tracking-wider font-semibold text-[#ae5c83] bg-[#ae5c83]/10 px-4 py-1 rounded-md shadow-sm border border-[#ae5c83]/20">
-        {isEditMode ? "Edit Valet Parking Lead" : "New Valet Parking Lead – Signup Form"}
+        {isEditMode ? "Edit Valet Parking Lead" : "New Valet Parking Lead – Registration Form"}
       </p>
 
       {/* --- NEW: COMPLETED WARNING BANNER --- */}
