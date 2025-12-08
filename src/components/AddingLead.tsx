@@ -19,6 +19,7 @@ export default function Page() {
   // explicit cast to avoid type errors if params is null
   const leadId = (params as any)?.id; 
   const isEditMode = !!leadId;
+  const [referenceId, setReferenceId] = useState(null);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -246,7 +247,7 @@ const capacitySchema = z.number().min(1, { message: "Capacity must be at least 1
 
     if (formData.tradeLicense)
       formDataToSend.append("tradeLicense", formData.tradeLicense);
-
+    
     // --- MODIFIED SUBMISSION LOGIC ---
     let url = "/api/leads";
     let method = "POST";
@@ -270,65 +271,65 @@ const capacitySchema = z.number().min(1, { message: "Capacity must be at least 1
 
     const data = await res.json();
 
-    if (data.success) {
-      setIsSubmitted(true)
-      // Only clear form if creating new, might want to keep data visible if editing
-      if (!isEditMode) {
-        setFormData({
-          locationName: "",
-          capacity: "",
-          waitTime: "",
-          mapsUrl: "",
-          latitude: "",
-          longitude: "",
-          timing: "",
-          address: "",
+   if (data.success) {
 
-          lobbies: "",
-          keyRooms: "",
-          distance: "",
-            supervisorUser: "yes",
-    validationUser: "no",
-    reportUser: "yes",
+  // Always store reference (POST or PUT)
+  // Backend returns newLead, so fallback safe:
+  const ref = data.referenceId ?? data.lead?.referenceId ?? referenceId;
+  setReferenceId(ref);
 
-           ticketType: "system-generated",
-    feeType: "free",
-    ticketPricing: "",
-    vatType: "inclusive",
+  // Show success UI for both POST and PUT
+  setIsSubmitted(true);
 
-          driverCount: "",
-          driverList: "",
+  // Only clear form if creating new (POST)
+  if (!isEditMode) {
+    setFormData({
+      locationName: "",
+      capacity: "",
+      waitTime: "",
+      mapsUrl: "",
+      latitude: "",
+      longitude: "",
+      timing: "",
+      address: "",
 
-          adminName: "",
-          adminEmail: "",
-          adminPhone: "",
-          trainingRequired: "yes",
+      lobbies: "",
+      keyRooms: "",
+      distance: "",
+      supervisorUser: "yes",
+      validationUser: "no",
+      reportUser: "yes",
 
-          logoCompany: null,
-          logoClient: null,
-          vatCertificate: null,
-          tradeLicense: null,
-          documentSubmitMethod: ""
-        });
-        setCurrentStep(1);
-      }
-      
-      // Optional reset
-      // window.location.reload();
-    } else {
-      alert("⚠️ Submission failed: " + data.message);
-    }
+      ticketType: "system-generated",
+      feeType: "free",
+      ticketPricing: "",
+      vatType: "inclusive",
+
+      driverCount: "",
+      driverList: "",
+
+      adminName: "",
+      adminEmail: "",
+      adminPhone: "",
+      trainingRequired: "yes",
+
+      logoCompany: null,
+      logoClient: null,
+      vatCertificate: null,
+      tradeLicense: null,
+      documentSubmitMethod: ""
+    });
+    setCurrentStep(1);
+  }
+
+} else {
+  alert("⚠️ Submission failed: " + data.message);
+}
+
+
   };
 
-  useEffect(() => {
-    if (isSubmitted) {
-      const timer = setTimeout(() => {
-        setIsSubmitted(false);
-      }, 10000); // 10 seconds
-
-      return () => clearTimeout(timer);
-    }
-  }, [isSubmitted]);
+ 
 
   const validateStep1 = () => {
     let newErrors: any = {};
@@ -484,7 +485,7 @@ const capacitySchema = z.number().min(1, { message: "Capacity must be at least 1
   <div>
     {/* Eyebrow Label */}
     <div className="flex items-center justify-center flex-col gap-1">
-      <p className="uppercase text-sm sm:text-xl tracking-wider font-semibold text-[#ae5c83] bg-[#ae5c83]/10 px-4 py-1 rounded-md shadow-sm border border-[#ae5c83]/20">
+      <p className="uppercase text-sm sm:text-xl tracking-wider font-semibold text-[#ae5c83] bg-[#ae5c83]/10 px-4 py-1 rounded-md shadow-sm border ">
         {isEditMode ? "Edit Valet Parking Lead" : "New Valet Parking Lead – Registration Form"}
       </p>
 
@@ -509,6 +510,10 @@ const capacitySchema = z.number().min(1, { message: "Capacity must be at least 1
 
   </div>
 </div>
+{!isSubmitted && (
+  <>
+    {/* ALL FORM + TABS + PROGRESS */}
+ 
 
         {/* ---- Step Tabs Navigation ---- */}
       <div className="w-full py-2 px-0 mb-3">
@@ -1410,6 +1415,39 @@ const capacitySchema = z.number().min(1, { message: "Capacity must be at least 1
 
 
 
+ </>
+)}
+{isSubmitted && (
+  <div className="flex flex-col items-center justify-center py-16 animate-in fade-in slide-in-from-bottom-4">
+    <div className="w-full max-w-md bg-white shadow-xl border border-gray-300 rounded-xl p-6 text-center">
+
+      <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-3" />
+
+      <h2 className="text-xl font-bold text-gray-900">
+  {isEditMode ? "Successfully Updated 🎉" : "Submitted Successfully 🎉"}
+</h2>
+
+
+      <p className="text-gray-600 text-sm mt-1">
+        Thank you! Your valet onboarding request has been received.
+      </p>
+
+      <div className="mt-6 border border-gray-200 rounded-lg bg-gray-50 p-4">
+        <p className="text-xs text-gray-500">REFERENCE NUMBER</p>
+        <p className="text-2xl font-bold tracking-widest text-[#ae5c83]">
+          {referenceId}
+        </p>
+      </div>
+
+      <button
+        onClick={() => router.push("/")}
+        className="mt-6 bg-[#ae5c83] hover:bg-[#923c63] px-6 py-3 rounded-lg text-white font-medium shadow"
+      >
+        Go to Homepage
+      </button>
+    </div>
+  </div>
+)}
 
       </div>
     </div>

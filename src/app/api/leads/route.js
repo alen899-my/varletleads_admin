@@ -2,7 +2,11 @@ import { connectDB } from "@/lib/mongodb";
 import Lead from "@/models/Lead";
 import { GridFSBucket } from "mongodb";
 import { NextResponse } from "next/server";
-
+// --- Generate Unique Reference ID ---
+function generateReference() {
+  const random = Math.floor(100000 + Math.random() * 900000); // 6-digit
+  return `VAL-${random}`;
+}
 export async function POST(req) {
   try {
     const conn = await connectDB();
@@ -50,14 +54,21 @@ export async function POST(req) {
     formData.forEach((value, key) => {
       if (!fileFields.includes(key)) leadData[key] = value;
     });
+     const referenceId = generateReference();
 
     const newLead = await Lead.create({
       ...leadData,
+      referenceId, 
       attachments,
     });
     const editUrl = `/location-registration/[id]/${newLead._id}`;
 
-    return NextResponse.json({ success: true, lead: newLead ,editUrl}, { status: 201 });
+    return NextResponse.json({
+  success: true,
+  lead: newLead,
+  referenceId,     // <-- return the value
+  editUrl
+}, { status: 201 });
 
   } catch (error) {
     console.error("❌ API ERROR:", error);

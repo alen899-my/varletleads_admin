@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 
 const LeadSchema = new mongoose.Schema(
   {
+    referenceId: {
+  type: String,
+  unique: true,
+  required: true,
+},
     // Step fields remain...
     locationName: String,
     capacity: Number,
