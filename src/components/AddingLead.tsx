@@ -11,7 +11,7 @@ import {
 import { useRef } from "react";
 // Added useParams to get the ID from the URL
 import { useParams, useRouter } from "next/navigation"; 
-
+import {z} from "zod";
 export default function Page() {
   // Get ID from URL parameters
   const router = useRouter();
@@ -62,13 +62,13 @@ export default function Page() {
     lobbies: "",
     keyRooms: "",
     distance: "",
-    supervisorUser: "no",
+    supervisorUser: "yes",
     validationUser: "no",
-    reportUser: "no",
+    reportUser: "yes",
 
     // STEP 3
-    ticketType: "pre-printed",
-    feeType: "fixed",
+    ticketType: "system-generated",
+    feeType: "free",
     ticketPricing: "",
     vatType: "inclusive",
 
@@ -135,11 +135,11 @@ export default function Page() {
               lobbies: l.lobbies || "",
               keyRooms: l.keyRooms || "",
               distance: l.distance || "",
-              supervisorUser: l.supervisorUser || "no",
+              supervisorUser: l.supervisorUser || "yes",
               validationUser: l.validationUser || "no",
-              reportUser: l.reportUser || "no",
-              ticketType: l.ticketType || "pre-printed",
-              feeType: l.feeType || "fixed",
+              reportUser: l.reportUser || "yes",
+              ticketType: l.ticketType || "system-generated",
+              feeType: l.feeType || "free",
               ticketPricing: l.ticketPricing || "",
               vatType: l.vatType || "inclusive",
               driverCount: l.driverCount || "",
@@ -204,7 +204,18 @@ export default function Page() {
       setFormData({ ...formData, [name]: value });
     }
   };
+ const step5Schema = z.object({
+  adminName: z.string().min(1, "Full name is required."),
+  adminEmail: z.string().email("Enter a valid email address."),
+  adminPhone: z
+    .string()
+    .regex(/^[0-9]+$/, "Only numbers allowed.")
+    .min(8, "Phone number must be at least 8 digits.")
+    .max(14, "Phone number cannot exceed 14 digits.")
+});
 
+
+const capacitySchema = z.number().min(1, { message: "Capacity must be at least 1" }).max(1500, { message: "Capacity cannot exceed 1500" });
   const handleFinalSubmit = async () => {
     // --- NEW CHECK: STOP SUBMIT IF READ ONLY ---
     if (isReadOnly) {
@@ -276,14 +287,14 @@ export default function Page() {
           lobbies: "",
           keyRooms: "",
           distance: "",
-          supervisorUser: "",
-          validationUser: "",
-          reportUser: "",
+            supervisorUser: "yes",
+    validationUser: "no",
+    reportUser: "yes",
 
-          ticketType: "",
-          feeType: "",
-          ticketPricing: "",
-          vatType: "",
+           ticketType: "system-generated",
+    feeType: "free",
+    ticketPricing: "",
+    vatType: "inclusive",
 
           driverCount: "",
           driverList: "",
@@ -291,7 +302,7 @@ export default function Page() {
           adminName: "",
           adminEmail: "",
           adminPhone: "",
-          trainingRequired: "",
+          trainingRequired: "yes",
 
           logoCompany: null,
           logoClient: null,
@@ -326,9 +337,11 @@ export default function Page() {
       newErrors.locationName = "Location name is required.";
     }
 
-    if (!String(formData.capacity).trim()) { // Ensure capacity is string for trim check
-      newErrors.capacity = "Parking capacity is required.";
-    }
+    try {
+  capacitySchema.parse(Number(formData.capacity));
+} catch (err: any) {
+  newErrors.capacity = err.errors?.[0]?.message || "Invalid capacity number";
+}
 
     setErrors(newErrors);
 
@@ -345,34 +358,41 @@ export default function Page() {
   const validateStep4 = () => {
     return true;
   };
-  const validateStep5 = () => {
-    let newErrors: any = {};
-
-    // Name Required
-    if (!formData.adminName.trim()) {
-      newErrors.adminName = "Full name is required.";
-    }
-
-    // Email Validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!formData.adminEmail.trim()) {
-      newErrors.adminEmail = "Email is required.";
-    } else if (!emailRegex.test(formData.adminEmail.trim())) {
-      newErrors.adminEmail = "Enter a valid email address.";
-    }
-
-
-    const phoneClean = formData.adminPhone.replace(/\D/g, ""); // remove spaces + symbols
-    if (!formData.adminPhone.trim()) {
-      newErrors.adminPhone = "Phone number is required.";
-    } else if (phoneClean.length < 8 || phoneClean.length > 14) {
-      newErrors.adminPhone = "Phone number must be 8–14 digits.";
-    }
-
-    setErrors(newErrors);
-
-    return Object.keys(newErrors).length === 0;
+ const validateStep5 = () => {
+  // Normalize values before validation
+  const payload = {
+    adminName: formData.adminName?.trim() || "",
+    adminEmail: formData.adminEmail?.trim() || "",
+    adminPhone: formData.adminPhone?.replace(/\D/g, "") || "",
   };
+
+  const result = step5Schema.safeParse(payload);
+
+  if (!result.success) {
+    const formattedErrors: any = {};
+    const zodErrors = result.error?.issues ?? []; // <-- FIX HERE
+
+    zodErrors.forEach((err) => {
+      if (err.path[0]) {
+        formattedErrors[err.path[0]] = err.message;
+      }
+    });
+
+    setErrors((prev: any) => ({ ...prev, ...formattedErrors }));
+    return false;
+  }
+
+  // Clear errors if valid
+  setErrors((prev: any) => ({
+    ...prev,
+    adminName: "",
+    adminEmail: "",
+    adminPhone: "",
+  }));
+
+  return true;
+};
+
   const validateStep6 = () => true;
   const handleNext = () => {
     const validations: Record<number, () => boolean> = {
@@ -447,91 +467,95 @@ export default function Page() {
 
   return (
     <div className="min-h-fit bg-gray-50 py-10 px-4 sm:px-6 flex justify-center">
-      <div className="w-full max-w-4xl bg-white rounded-2xl border border-slate-400 shadow-lg p-5 sm:p-8 md:p-10">
+      <div className="w-full max-w-4xl bg-white rounded-2xl border border-slate-400 shadow-lg p-5 sm:p-6 md:p-4">
 
         {/* HEADER */}
-        <div className="text-center space-y- mb-2">
+ <div className="text-center  py-2">
 
-          {/* Logo */}
-          <div className="flex justify-center">
-            <img
-              src="/logo.png" // <-- change to your logo path
-              alt="Valet Lead Logo"
-              className="w-40 sm:w-34 md:w-58 object-contain drop-shadow-md"
-            />
-          </div>
+  {/* Logo */}
+  <div className="flex justify-center">
+    <img
+      src="/logo.png" // <-- change to your logo path
+      alt="Valet Lead Logo"
+      className="w-40 sm:w-34 md:w-68 object-contain drop-shadow-md mb-3"
+    />
+  </div>
 
-          {/* Eyebrow Label */}
-          <div className="flex items-center justify-center gap-2 flex-col">
-            <p className="uppercase text-xs sm:text-sm tracking-wider font-semibold text-[#ae5c83] bg-[#ae5c83]/10 px-3 py-1 rounded-md">
-              {isEditMode ? "Edit Valet Parking Lead" : "New Valet Parking Lead – Free Signup"}
-            </p>
+  <div>
+    {/* Eyebrow Label */}
+    <div className="flex items-center justify-center flex-col gap-1">
+      <p className="uppercase text-sm sm:text-xl tracking-wider font-semibold text-[#ae5c83] bg-[#ae5c83]/10 px-4 py-1 rounded-md shadow-sm border border-[#ae5c83]/20">
+        {isEditMode ? "Edit Valet Parking Lead" : "New Valet Parking Lead – Signup Form"}
+      </p>
 
-             {/* --- NEW: COMPLETED WARNING BANNER --- */}
-            {isReadOnly && (
-              <div className="mt-2 w-full bg-red-100 border border-red-200 text-red-800 px-4 py-2 rounded-md flex items-center justify-center gap-2 animate-in fade-in">
-                <Lock className="w-4 h-4" />
-                <span className="text-sm font-bold">Process Already Completed </span>
-              </div>
-            )}
-          </div>
-
-          {/* Main Heading */}
-          <h1 className="flex flex-col sm:flex-row items-center justify-center gap-2 text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 leading-tight">
-
-            <span className="text-center">Client Onboarding & Location Setup Form</span>
-          </h1>
-
-          {/* Subtitle */}
-          <p className="text-gray-500 text-xs sm:text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
-            Please share the details below so we can configure your valet parking automation.
-          </p>
+      {/* --- NEW: COMPLETED WARNING BANNER --- */}
+      {isReadOnly && (
+        <div className="mt-2 w-full max-w-sm bg-red-100 border border-red-300 text-red-700 px-4 py-2 rounded-md flex items-center justify-center gap-2 animate-in fade-in shadow-sm">
+          <Lock className="w-4 h-4" />
+          <span className="text-sm font-bold">Process Already Completed</span>
         </div>
+      )}
+    </div>
+
+    {/* Main Heading 
+    <h1 className="flex flex-col sm:flex-row items-center justify-center gap-2 text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 leading-tight">
+      <span className="text-center">Client Onboarding & Location Setup Form</span>
+    </h1>*/}
+
+    {/* Subtitle */}
+    <p className="text-gray-600 text-xs sm:text-sm md:text-base max-w-xl mx-auto  leading-relaxed">
+      Please share the details below so we can configure your valet parking automation.
+    </p>
+
+  </div>
+</div>
 
         {/* ---- Step Tabs Navigation ---- */}
-        <div className="w-full flex items-center justify-center py-2">
-          {/* Scroll wrapper */}
-          <div className="
-    flex gap-1 overflow-x-auto no-scrollbar scroll-smooth 
-    rounded-lg border border-gray-300 bg-white shadow-md px-2 py-1
-  "
-            style={{
-              WebkitOverflowScrolling: "touch",
-            }}
-          >
-            {[
-              { label: "Location", icon: <MapPin size={16} /> },
-              { label: "On-Site Users", icon: <Users size={16} /> },
-              { label: "Pricing", icon: <Coins size={16} /> },
-              { label: "Drivers", icon: <CarFront size={16} /> },
-              { label: "Admin Setup", icon: <UserCog size={16} /> },
-              { label: "Documents", icon: <FileText size={16} /> },
-            ].map((tab, index) => {
-              const stepNumber = index + 1;
-              const isActive = currentStep === stepNumber;
-              const isCompleted = currentStep > stepNumber;
+      <div className="w-full py-2 px-0 mb-3">
+  {/* Scroll wrapper */}
+  <div
+    className="
+      w-full flex overflow-x-auto no-scrollbar scroll-smooth 
+      rounded-lg border border-gray-300 bg-white shadow-md
+    "
+    style={{ WebkitOverflowScrolling: "touch" }}
+  >
+    {[
+      { label: "Location", icon: <MapPin size={14} /> },
+      { label: "On-Site Users", icon: <Users size={14} /> },
+      { label: "Pricing", icon: <Coins size={14} /> },
+      { label: "Drivers", icon: <CarFront size={14} /> },
+      { label: "Admin Setup", icon: <UserCog size={14} /> },
+      { label: "Documents", icon: <FileText size={14} /> },
+    ].map((tab, index) => {
+      const stepNumber = index + 1;
+      const isActive = currentStep === stepNumber;
+      const isCompleted = currentStep > stepNumber;
 
-              return (
-                <button
-                  key={tab.label}
-                  onClick={() => validateBeforeJump(stepNumber)}
-                  className={`
-            flex items-center gap-2 px-5 py-2 text-sm font-medium whitespace-nowrap rounded-md
-            transition-all duration-300 ease-out select-none
+      return (
+        <button
+          key={tab.label}
+          onClick={() => validateBeforeJump(stepNumber)}
+          className={`
+            flex items-center justify-center gap-1 flex-1 
+            px-4 py-3 text-xs font-medium whitespace-nowrap
+            transition-all duration-200 select-none
+            border-r border-gray-300
             ${isActive
-                      ? "bg-[#ae5c83] text-white shadow-md scale-[1.05]"
-                      : isCompleted
-                        ? "text-gray-600 bg-gray-100 hover:bg-gray-200"
-                        : "text-gray-600 bg-gray-100 hover:bg-gray-200"
-                    }
+              ? "text-black bg-[#ae5c83] text-white font-semibold"
+              : isCompleted
+              ? "text-gray-700 hover:bg-gray-200"
+              : "text-gray-500 hover:bg-gray-200"
+            }
           `}
-                >
-                  {tab.icon} {tab.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        >
+          {tab.icon} {tab.label}
+        </button>
+      );
+    })}
+  </div>
+</div>
+
 
 
 
@@ -1117,11 +1141,8 @@ export default function Page() {
 
             {/* Step Action Buttons */}
             <div className="pt-2 flex justify-between">
-              <button
-                onClick={() => setCurrentStep(prev => prev - 1)}
-                className="text-gray-500 hover:text-gray-700 font-medium px-4 py-2 transition-colors pointer-events-auto"
-              >
-                Back
+              <button onClick={() => setCurrentStep(prev => prev - 1)} className="text-gray-500 text-sm pointer-events-auto">
+                ← Back
               </button>
 
               <button
@@ -1139,138 +1160,151 @@ export default function Page() {
 
         {/* STEP 5: SUPER ADMIN CONTACT */}
         {currentStep === 5 && (
-          <div className={`space-y-3 animate-in fade-in slide-in-from-right-8 duration-500 ${isReadOnly ? 'pointer-events-none opacity-80' : ''}`}>
+  <div className={`space-y-3 animate-in fade-in slide-in-from-right-8 duration-500 ${isReadOnly ? 'pointer-events-none opacity-80' : ''}`}>
 
-            {/* Section Heading */}
-            <div className="space-y-1">
-              <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                <ShieldUser className="w-5 h-5 text-[#ae5c83]" />
-                Super Admin Contact
-              </h2>
-              <p className="text-sm text-gray-500">
-                Main person responsible for valet operations & application access.
-              </p>
-            </div>
+    {/* Section Heading */}
+    <div className="space-y-1">
+      <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+        <ShieldUser className="w-5 h-5 text-[#ae5c83]" />
+        Super Admin Contact
+      </h2>
+      <p className="text-sm text-gray-500">
+        Main person responsible for valet operations & application access.
+      </p>
+    </div>
 
-            {/* Full Name */}
-            <div className="col-span-1 md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1 flex gap-1">
-                Full Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="adminName"
-                disabled={isReadOnly}
-                placeholder="e.g., Ayush Aggarwal"
-                value={formData.adminName}
-                onChange={(e: any) => {
-                  setFormData({ ...formData, adminName: e.target.value });
-                  setErrors((prev: any) => ({ ...prev, adminName: "" }));
-                }}
-                className={`input ${errors.adminName ? "border-red-500" : ""}`}
-              />
-              {errors.adminName && <p className="text-xs text-red-500">{errors.adminName}</p>}
-            </div>
+    {/* ---- NEW GRID WRAPPER ---- */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email Address <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                name="adminEmail"
-                disabled={isReadOnly}
-                placeholder="e.g., ayush@example.com"
-                value={formData.adminEmail}
-                onChange={(e: any) => {
-                  setFormData({ ...formData, adminEmail: e.target.value });
-                  setErrors((prev: any) => ({ ...prev, adminEmail: "" }));
-                }}
-                className={`input ${errors.adminEmail ? "border-red-500" : ""}`}
-              />
-              {errors.adminEmail && <p className="text-xs text-red-500">{errors.adminEmail}</p>}
-            </div>
+      {/* Full Name */}
+      <div className="col-span-1">
+        <label className="block text-sm font-medium text-gray-700 mb-1 flex gap-1">
+          Full Name <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          name="adminName"
+          disabled={isReadOnly}
+          placeholder="e.g., Ayush Aggarwal"
+          value={formData.adminName}
+          onChange={(e: any) => {
+            setFormData({ ...formData, adminName: e.target.value });
+            setErrors((prev: any) => ({ ...prev, adminName: "" }));
+          }}
+          className={`input ${errors.adminName ? "border-red-500" : ""}`}
+        />
+        {errors.adminName && <p className="text-xs text-red-500">{errors.adminName}</p>}
+      </div>
 
-            {/* Phone */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Mobile / WhatsApp Number <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="tel"
-                name="adminPhone"
-                disabled={isReadOnly}
-                placeholder="e.g., 971521234567"
-                value={formData.adminPhone}
-                onChange={(e: any) => {
-                  setFormData({ ...formData, adminPhone: e.target.value });
-                  setErrors((prev: any) => ({ ...prev, adminPhone: "" }));
-                }}
-                className={`input ${errors.adminPhone ? "border-red-500" : ""}`}
-              />
-              {errors.adminPhone && <p className="text-xs text-red-500">{errors.adminPhone}</p>}
-            </div>
+      {/* Email */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Email Address <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="email"
+          name="adminEmail"
+          disabled={isReadOnly}
+          placeholder="e.g., ayush@example.com"
+          value={formData.adminEmail}
+          onChange={(e: any) => {
+            setFormData({ ...formData, adminEmail: e.target.value });
+            setErrors((prev: any) => ({ ...prev, adminEmail: "" }));
+          }}
+          className={`input ${errors.adminEmail ? "border-red-500" : ""}`}
+        />
+        {errors.adminEmail && <p className="text-xs text-red-500">{errors.adminEmail}</p>}
+      </div>
 
-            {/* Training Radio */}
-            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <label className="block font-medium text-gray-700 mb-3 flex items-center gap-2">
+      {/* Phone */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Mobile / WhatsApp Number <span className="text-red-500">*</span>
+        </label>
+        <input
+  type="tel"
+  name="adminPhone"
+  disabled={isReadOnly}
+  placeholder="e.g., 971521234567"
+  value={formData.adminPhone}
+  onChange={(e: any) => {
+    // Remove anything that isn't a number
+    const cleaned = e.target.value.replace(/\D/g, "");
+    setFormData({ ...formData, adminPhone: cleaned });
+    setErrors((prev: any) => ({ ...prev, adminPhone: "" }));
+  }}
+  onKeyDown={(e) => {
+    // Allow: digits, Backspace, Delete, Tab, Arrow keys
+    if (
+      !/[0-9]/.test(e.key) &&
+      !["Backspace", "Delete", "Tab", "ArrowLeft", "ArrowRight"].includes(e.key)
+    ) {
+      e.preventDefault();
+    }
+  }}
+  className={`input ${errors.adminPhone ? "border-red-500" : ""}`}
+/>
 
-                Super admin will receive full application training
-              </label>
+        {errors.adminPhone && <p className="text-xs text-red-500">{errors.adminPhone}</p>}
+      </div>
 
-              <div className="flex flex-col sm:flex-row gap-6">
+      {/* Training Radio (full width row) */}
+      <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 md:col-span-1">
+        <label className="block font-medium text-gray-700 mb-3 flex items-center gap-2">
+          Super admin will receive full application training
+        </label>
 
-                {/* Yes Option */}
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="trainingRequired"
-                    value="yes"
-                    disabled={isReadOnly}
-                    checked={formData.trainingRequired === "yes"}
-                    onChange={handleChange}
-                    className="text-[#ae5c83] focus:ring-[#ae5c83]"
-                  />
-                  <span className="text-sm text-black">Yes, they will be trained</span>
-                </label>
+        <div className="flex flex-col sm:flex-row gap-6">
+          {/* Yes Option */}
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="trainingRequired"
+              value="yes"
+              disabled={isReadOnly}
+              checked={formData.trainingRequired === "yes"}
+              onChange={handleChange}
+              className="text-[#ae5c83] focus:ring-[#ae5c83]"
+            />
+            <span className="text-sm text-black">Yes, they will be trained</span>
+          </label>
 
-                {/* No Option */}
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="trainingRequired"
-                    value="no"
-                    disabled={isReadOnly}
-                    checked={formData.trainingRequired === "no"}
-                    onChange={handleChange}
-                    className="text-[#ae5c83] focus:ring-[#ae5c83]"
-                  />
-                  <span className="text-sm text-black">No / different plan</span>
-                </label>
+          {/* No Option */}
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="trainingRequired"
+              value="no"
+              disabled={isReadOnly}
+              checked={formData.trainingRequired === "no"}
+              onChange={handleChange}
+              className="text-[#ae5c83] focus:ring-[#ae5c83]"
+            />
+            <span className="text-sm text-black">No / different plan</span>
+          </label>
+        </div>
+      </div>
+    </div>
 
-              </div>
-            </div>
+    {/* Buttons */}
+    <div className="pt-2 flex justify-between">
+      <button
+        onClick={() => setCurrentStep(prev => prev - 1)}
+        className="text-gray-500 hover:text-gray-700 font-medium px-4 py-2 pointer-events-auto"
+      >
+        ← Back
+      </button>
 
-            {/* Buttons */}
-            <div className="pt-2 flex justify-between">
-              <button
-                onClick={() => setCurrentStep(prev => prev - 1)}
-                className="text-gray-500 hover:text-gray-700 font-medium px-4 py-2 pointer-events-auto"
-              >
-                ← Back
-              </button>
-
-              <button
-                onClick={handleNext}
-                className="flex items-center gap-2 bg-[#ae5c83] hover:bg-[#964a6d] text-white px-6 py-2.5 rounded-lg font-medium transition-colors pointer-events-auto"
-              >
-                Next Step
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
+      <button
+        onClick={handleNext}
+        className="flex items-center gap-2 bg-[#ae5c83] hover:bg-[#964a6d] text-white px-6 py-2.5 rounded-lg font-medium transition-colors pointer-events-auto"
+      >
+        Next Step
+        <ArrowRight className="w-4 h-4" />
+      </button>
+    </div>
+  </div>
+)}
 
 
 
