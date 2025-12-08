@@ -50,9 +50,9 @@ async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center  dark: px-4">
+    <div className="min-h-screen flex items-center justify-center  dark:bg-gray-900 px-4">
       {/* Card */}
-      <div className="w-full max-w-lg bg-white border border-gray-400 dark:bg-gray-800 rounded-xl shadow-lg p-6 sm:p-8">
+      <div className="w-full max-w-md bg-white border border-gray-400 dark:bg-gray-800 rounded-xl shadow-lg p-6 sm:p-8">
         
    
         
