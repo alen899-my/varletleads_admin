@@ -263,7 +263,7 @@ const AppSidebar: React.FC = () => {
             priority
           />
           <Image
-            // ✅ ADDED -mt-2 HERE to pull the dark logo up
+          
             className="hidden dark:block -mt-6"
             src="/logodark.png"
             alt="Logo"
@@ -275,7 +275,7 @@ const AppSidebar: React.FC = () => {
       ) : (
         <div className="bg-transparent">
           <Image
-            src="/logs.png"
+            src="/icon.png"
             alt="Logo"
             width={32}
             height={32}
