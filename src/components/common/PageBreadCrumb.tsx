@@ -1,0 +1,571 @@
+"use client";
+import React, { useState, useEffect, useRef } from "react";
+import { 
+  CarFront, 
+  MapPin, 
+  ArrowRight, 
+  Upload, 
+  Users, 
+  Coins, 
+  Banknote, 
+  UserCog, 
+  FileText, 
+  ShieldUser, 
+  CheckCircle,
+  Plus, 
+  X
+} from "lucide-react";
+import {  useRouter } from "next/navigation";
+// --- FORM COMPONENT (Internal Modal with Dark Mode) ---
+const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAdded: () => void }) => {
+  // ... existing hooks ...
+  const modalRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [wizardError, setWizardError] = useState("");
+  const [errors, setErrors] = useState({
+    locationName: "",
+    capacity: "",
+    adminName: "",
+    adminEmail: "",
+    adminPhone: "",
+  });
+
+  // --- CLICK OUTSIDE & ESCAPE KEY LOGIC ---
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [onClose]);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  // Placeholder for form data state
+  const [formData, setFormData] = useState({
+    // STEP 1
+    locationName: "",
+    capacity: "",
+    waitTime: "",
+    mapsUrl: "",
+    latitude: "",
+    longitude: "",
+    timing: "",
+    address: "",
+
+    // STEP 2
+    lobbies: "",
+    keyRooms: "",
+    distance: "",
+    supervisorUser: "no",
+    validationUser: "no",
+    reportUser: "no",
+
+    // STEP 3
+    ticketType: "pre-printed",
+    feeType: "fixed",
+    ticketPricing: "",
+    vatType: "inclusive",
+
+    // STEP 4
+    driverCount: "",
+    driverList: "",
+
+    // STEP 5
+    adminName: "",
+    adminEmail: "",
+    adminPhone: "",
+    trainingRequired: "yes",
+
+    // STEP 6 (attachments & text)
+    logoCompany: null,
+    logoClient: null,
+    vatCertificate: null,
+    tradeLicense: null,
+    documentSubmitMethod: ""
+  });
+
+  const validateBeforeJump = (targetStep: number) => {
+    if (targetStep < currentStep) {
+      setWizardError("");
+      setCurrentStep(targetStep);
+      return;
+    }
+
+    const validations: Record<number, () => boolean> = {
+      1: validateStep1,
+      2: validateStep2,
+      3: validateStep3,
+      4: validateStep4,
+      5: validateStep5,
+      6: validateStep6,
+    };
+
+    for (let step = currentStep; step < targetStep; step++) {
+      if (!validations[step]()) {
+        setWizardError("Please finish the required fields before moving ahead.");
+        return;
+      }
+    }
+
+    setWizardError("");
+    setCurrentStep(targetStep);
+  };
+
+  // Handle form input changes
+  const handleChange = (e: any) => {
+    const { name, value, type, files } = e.target;
+    if (type === "file") {
+      setFormData({ ...formData, [name]: files[0] });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+  };
+
+  const handleFinalSubmit = async () => {
+    const formDataToSend = new FormData();
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value !== null && typeof value !== "object") {
+        formDataToSend.append(key, value as string);
+      }
+    });
+    if (formData.logoCompany) formDataToSend.append("companyLogo", formData.logoCompany);
+    if (formData.logoClient) formDataToSend.append("clientLogo", formData.logoClient);
+    if (formData.vatCertificate) formDataToSend.append("vatCertificate", formData.vatCertificate);
+    if (formData.tradeLicense) formDataToSend.append("tradeLicense", formData.tradeLicense);
+
+    const res = await fetch("/api/leads", {
+      method: "POST",
+      body: formDataToSend,
+    });
+
+    if (!res.ok) {
+      alert("❌ Error submitting form. Server returned: " + res.status);
+      return;
+    }
+
+    const data = await res.json();
+    if (data.success) {
+      setIsSubmitted(true);
+      setFormData({
+        locationName: "", capacity: "", waitTime: "", mapsUrl: "", latitude: "", longitude: "", timing: "", address: "",
+        lobbies: "", keyRooms: "", distance: "", supervisorUser: "", validationUser: "", reportUser: "",
+        ticketType: "", feeType: "", ticketPricing: "", vatType: "", driverCount: "", driverList: "",
+        adminName: "", adminEmail: "", adminPhone: "", trainingRequired: "",
+        logoCompany: null, logoClient: null, vatCertificate: null, tradeLicense: null, documentSubmitMethod: ""
+      });
+      router.refresh();
+      setCurrentStep(1);
+      onLeadAdded();
+    } else {
+      alert("⚠️ Submission failed: " + data.message);
+    }
+  };
+
+  useEffect(() => {
+    if (isSubmitted) {
+      const timer = setTimeout(() => {
+        setIsSubmitted(false);
+        onClose(); 
+      }, 3000); 
+      return () => clearTimeout(timer);
+    }
+  }, [isSubmitted, onClose]);
+
+  const validateStep1 = () => {
+    let newErrors: any = {};
+    if (!formData.locationName.trim()) newErrors.locationName = "Location name is required.";
+    if (!formData.capacity.trim()) newErrors.capacity = "Parking capacity is required.";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+  const validateStep2 = () => true;
+  const validateStep3 = () => true;
+  const validateStep4 = () => true;
+  const validateStep5 = () => {
+    let newErrors: any = {};
+    if (!formData.adminName.trim()) newErrors.adminName = "Full name is required.";
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.adminEmail.trim()) {
+      newErrors.adminEmail = "Email is required.";
+    } else if (!emailRegex.test(formData.adminEmail.trim())) {
+      newErrors.adminEmail = "Enter a valid email address.";
+    }
+    const phoneClean = formData.adminPhone.replace(/\D/g, "");
+    if (!formData.adminPhone.trim()) {
+      newErrors.adminPhone = "Phone number is required.";
+    } else if (phoneClean.length < 8 || phoneClean.length > 14) {
+      newErrors.adminPhone = "Phone number must be 8–14 digits.";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+  const validateStep6 = () => true;
+
+  const handleNext = () => {
+    const validations: Record<number, () => boolean> = {
+      1: validateStep1, 2: validateStep2, 3: validateStep3, 4: validateStep4, 5: validateStep5, 6: validateStep6,
+    };
+    if (!validations[currentStep]()) {
+      setWizardError("Please complete required fields before continuing.");
+      return;
+    }
+    setWizardError(""); 
+    setCurrentStep(prev => prev + 1);
+  };
+
+  const FileUploadBlock = ({ label, name, accept, file, setFormData }: any) => {
+    const fileRef = useRef<HTMLInputElement>(null);
+    return (
+      <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800 flex flex-col gap-2">
+        <label className="text-sm font-medium text-gray-900 dark:text-gray-100">{label}</label>
+        <input
+          ref={fileRef}
+          type="file"
+          accept={accept}
+          name={name}
+          onChange={(e: any) => setFormData((prev: any) => ({ ...prev, [name]: e.target.files[0] }))}
+          className="hidden"
+        />
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          className="flex items-center justify-between border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-2 text-sm text-gray-700 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-600 transition"
+        >
+          <span className="truncate">
+            {file ? `File selected: ${file.name}` : "No file chosen"}
+          </span>
+          {file ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Upload className="w-4 h-4 text-gray-500 dark:text-gray-400" />}
+        </button>
+      </div>
+    );
+  };
+
+  // Shared Input Styles for Dark Mode
+  const inputClass = "w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all";
+  const labelClass = "text-sm font-medium text-gray-900 dark:text-gray-100";
+
+  return (
+    // BACKDROP
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      
+      {/* MODAL WRAPPER */}
+      <div
+        ref={modalRef}
+        className={`
+          w-full max-w-4xl max-h-[90vh] shadow-2xl
+          bg-white dark:bg-gray-900 border border-gray-400 dark:border-gray-600
+          flex flex-col rounded-xl overflow-hidden
+        `}
+      >
+        
+        {/* HEADER */}
+        <div className="shrink-0 bg-white dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 px-5 py-4 flex justify-between items-start">
+         <div>
+                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                       <UserCog className="w-5 h-5 text-blue-600 dark:text-blue-500" /> 
+                       Add Lead Details
+                     </h2>
+                     <p className="text-xs text-gray-500 dark:text-gray-400">Add client information</p>
+                   </div>
+          <button 
+            onClick={onClose}
+            className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* SCROLLABLE CONTENT */}
+        <div className={`
+          flex-1 overflow-y-auto p-5 sm:p-8
+          [&::-webkit-scrollbar]:w-2
+          [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-gray-950
+          [&::-webkit-scrollbar-thumb]:bg-gray-400 dark:[&::-webkit-scrollbar-thumb]:bg-gray-700
+          [&::-webkit-scrollbar-thumb]:rounded-full
+        `}>
+
+         
+          {/* Step Navigation Tabs */}
+          <div className="w-full flex items-center justify-center py-2 mb-4">
+            <div className="flex gap-1 overflow-x-auto no-scrollbar scroll-smooth rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 shadow-sm px-2 py-1"
+              style={{ WebkitOverflowScrolling: "touch" }}
+            >
+              {[
+                { label: "Location", icon: <MapPin size={16} /> },
+                { label: "Users", icon: <Users size={16} /> },
+                { label: "Pricing", icon: <Coins size={16} /> },
+                { label: "Drivers", icon: <CarFront size={16} /> },
+                { label: "Admin", icon: <UserCog size={16} /> },
+                { label: "Docs", icon: <FileText size={16} /> },
+              ].map((tab, index) => {
+                const stepNumber = index + 1;
+                const isActive = currentStep === stepNumber;
+                return (
+                  <button
+                    key={tab.label}
+                    onClick={() => validateBeforeJump(stepNumber)}
+                    className={`
+                      flex items-center gap-2 px-3 py-1.5 text-xs sm:text-sm font-medium whitespace-nowrap rounded-md
+                      transition-all duration-300 ease-out select-none
+                      ${isActive
+                        ? "bg-blue-600 text-white shadow-md scale-105"
+                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                      }
+                    `}
+                  >
+                    {tab.icon} {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {wizardError && (
+            <div className="text-red-600 dark:text-red-400 text-sm mb-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-800 px-3 py-2 rounded-lg">
+              ⚠️ {wizardError}
+            </div>
+          )}
+
+          {/* Progress Bar */}
+          <div className="mb-6">
+            <div className="flex justify-between text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+               <span>Step {currentStep} of 6</span>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
+              <div 
+                className="bg-blue-600 h-full rounded-full transition-all duration-300"
+                style={{ width: `${(currentStep / 6) * 100}%` }}
+              ></div>
+            </div>
+          </div>
+
+          {isSubmitted ? (
+            <div className="bg-green-100 dark:bg-green-900/30 mb-3 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800 p-4 rounded-lg text-center shadow-md animate-in fade-in duration-500">
+             New Lead Added Successfully
+            </div>
+          ) : null}
+
+          {/* --- STEPS CONTENT --- */}
+
+          {/* STEP 1: LOCATION */}
+          {currentStep === 1 && (
+            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-1">
+                  <label className={labelClass}>Location Name <span className="text-red-500">*</span></label>
+                  <input type="text" name="locationName" placeholder="e.g. Grand Hyatt Dubai" value={formData.locationName} onChange={(e) => { setFormData({ ...formData, locationName: e.target.value }); setErrors({ ...errors, locationName: "" }); }} className={`${inputClass} ${errors.locationName ? "border-red-500" : ""}`} />
+                  {errors.locationName && <small className="text-red-500 text-xs">{errors.locationName}</small>}
+                </div>
+                <div>
+                  <label className={labelClass}>Parking Capacity <span className="text-red-500">*</span></label>
+                  <input type="number" name="capacity" placeholder="Total slots" value={formData.capacity} onChange={(e) => { setFormData({ ...formData, capacity: e.target.value }); setErrors({ ...errors, capacity: "" }); }} className={`${inputClass} ${errors.capacity ? "border-red-500" : ""}`} />
+                  {errors.capacity && <small className="text-red-500 text-xs">{errors.capacity}</small>}
+                </div>
+                <div><label className={labelClass}>Average Waiting Time</label><input type="text" name="waitTime" placeholder="e.g. 15 mins" value={formData.waitTime} onChange={(e) => setFormData({ ...formData, waitTime: e.target.value })} className={inputClass} /></div>
+                <div><label className={labelClass}>Maps URL</label><input type="url" name="mapsUrl" placeholder="Google Maps Link" value={formData.mapsUrl} onChange={(e) => setFormData({ ...formData, mapsUrl: e.target.value })} className={inputClass} /></div>
+                <div><label className={labelClass}>Latitude</label><input type="text" name="latitude" placeholder="25.2852° N" value={formData.latitude} onChange={(e) => setFormData({ ...formData, latitude: e.target.value })} className={inputClass} /></div>
+                <div><label className={labelClass}>Longitude</label><input type="text" name="longitude" placeholder="55.3598° E" value={formData.longitude} onChange={(e) => setFormData({ ...formData, longitude: e.target.value })} className={inputClass} /></div>
+                <div className="md:col-span-2"><label className={labelClass}>Operation Timing</label><input type="text" name="timing" placeholder="e.g. 24 Hours" value={formData.timing} onChange={(e) => setFormData({ ...formData, timing: e.target.value })} className={inputClass} /></div>
+                <div className="md:col-span-2"><label className={labelClass}>Location TRN / Address</label><textarea rows={3} name="address" placeholder="Registered Address" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} className={`${inputClass} resize-none`} /></div>
+              </div>
+              <div className="pt-2 flex justify-end">
+                <button onClick={handleNext} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg flex items-center gap-2 transition shadow-lg shadow-blue-500/30">Next Step <ArrowRight className="w-4 h-4" /></button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2: USERS */}
+          {currentStep === 2 && (
+            <div className="space-y-4 animate-in fade-in slide-in-from-right-8 duration-500">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div><label className={labelClass}>Number of lobbies</label><input type="number" name="lobbies" placeholder="e.g. 2" value={formData.lobbies} onChange={handleChange} className={inputClass} /></div>
+                <div><label className={labelClass}>Key control rooms</label><input type="number" name="keyRooms" placeholder="e.g. 1" value={formData.keyRooms} onChange={handleChange} className={inputClass} /></div>
+                <div className="md:col-span-2"><label className={labelClass}>Distance (Lobby to Key Room)</label><input type="text" name="distance" placeholder="e.g. 50 meters" value={formData.distance} onChange={handleChange} className={inputClass} /></div>
+                
+                {/* Radio Groups */}
+                {[
+                    { label: "Supervisor user required?", name: "supervisorUser" },
+                    { label: "Ticket validation user?", name: "validationUser" },
+                    { label: "Finance report access?", name: "reportUser" }
+                ].map((item) => (
+                    <div key={item.name} className="border border-gray-300 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
+                        <p className={`text-sm font-medium mb-2 text-gray-900 dark:text-gray-100`}>{item.label}</p>
+                        <div className="flex gap-6">
+                            <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300">
+                                <input type="radio" name={item.name} value="yes" checked={(formData as any)[item.name] === "yes"} onChange={handleChange} className="accent-blue-600 w-4 h-4" /> Yes
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300">
+                                <input type="radio" name={item.name} value="no" checked={(formData as any)[item.name] === "no"} onChange={handleChange} className="accent-blue-600 w-4 h-4" /> No
+                            </label>
+                        </div>
+                    </div>
+                ))}
+              </div>
+              <div className="pt-2 flex justify-between">
+                <button onClick={() => setCurrentStep(prev => prev - 1)} className="text-gray-500 dark:text-gray-400 text-sm hover:underline">← Back</button>
+                <button onClick={handleNext} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg flex items-center gap-2 shadow-lg shadow-blue-500/30">Next Step</button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 3: PRICING */}
+          {currentStep === 3 && (
+            <div className="space-y-4 animate-in fade-in slide-in-from-right-8 duration-500">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-1 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700">
+                  <label className={`${labelClass} mb-2 block`}>Ticket Type</label>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300"><input type="radio" name="ticketType" value="pre-printed" checked={formData.ticketType === "pre-printed"} onChange={handleChange} className="accent-blue-600 w-4 h-4" /> Pre-printed</label>
+                    <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300"><input type="radio" name="ticketType" value="system-generated" checked={formData.ticketType === "system-generated"} onChange={handleChange} className="accent-blue-600 w-4 h-4" /> System Generated</label>
+                  </div>
+                </div>
+                <div className="md:col-span-1 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700">
+                  <label className={`${labelClass} mb-2 block`}>Fee Type</label>
+                  <div className="flex flex-wrap gap-4">
+                    {["fixed", "hourly", "free"].map(type => (
+                        <label key={type} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 capitalize">
+                            <input type="radio" name="feeType" value={type} checked={formData.feeType === type} onChange={handleChange} className="accent-blue-600 w-4 h-4" /> {type}
+                        </label>
+                    ))}
+                  </div>
+                </div>
+                <div className="md:col-span-2">
+                  <label className={`${labelClass} flex items-center gap-1`}>Ticket Prices (AED) <Banknote className="w-4 h-4 text-gray-400" /></label>
+                  <textarea rows={2} name="ticketPricing" placeholder="e.g. Standard: 50 AED, VIP: 100 AED" value={formData.ticketPricing} onChange={handleChange} className={inputClass} />
+                </div>
+                <div className="md:col-span-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700">
+                  <label className={`${labelClass} mb-2 block`}>VAT Handling</label>
+                  <div className="flex gap-4">
+                     {["inclusive", "exclusive"].map(type => (
+                        <label key={type} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 capitalize">
+                            <input type="radio" name="vatType" value={type} checked={formData.vatType === type} onChange={handleChange} className="accent-blue-600 w-4 h-4" /> {type}
+                        </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="pt-2 flex justify-between">
+                <button onClick={() => setCurrentStep(prev => prev - 1)} className="text-gray-500 dark:text-gray-400 text-sm hover:underline">← Back</button>
+                <button onClick={handleNext} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow-lg shadow-blue-500/30">Next Step</button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 4: DRIVERS */}
+          {currentStep === 4 && (
+            <div className="space-y-4 animate-in fade-in slide-in-from-right-8 duration-500">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="col-span-2">
+                  <label className={`${labelClass} flex items-center gap-1 mb-1`}>Number of drivers <Users className="w-4 h-4 text-gray-400" /></label>
+                  <input type="number" name="driverCount" placeholder="e.g. 15" value={formData.driverCount} onChange={handleChange} className={inputClass} />
+                </div>
+                <div className="col-span-2">
+                  <label className={`${labelClass} flex items-center gap-1 mb-1`}>Drivers list <FileText className="w-4 h-4 text-gray-400" /></label>
+                  <textarea rows={6} name="driverList" placeholder={`e.g.\n1001 - John Doe\n1002 - Jane Smith`} value={formData.driverList} onChange={handleChange} className={`${inputClass} font-mono text-sm resize-none`} />
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-2 bg-blue-50 dark:bg-blue-900/20 p-2 rounded">ℹ️ Large lists can be emailed separately.</p>
+                </div>
+              </div>
+              <div className="pt-2 flex justify-between">
+                <button onClick={() => setCurrentStep(prev => prev - 1)} className="text-gray-500 dark:text-gray-400 text-sm hover:underline">Back</button>
+                <button onClick={handleNext} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg flex items-center gap-2 shadow-lg shadow-blue-500/30">Next Step <ArrowRight className="w-4 h-4" /></button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 5: ADMIN */}
+          {currentStep === 5 && (
+            <div className="space-y-4 animate-in fade-in slide-in-from-right-8 duration-500">
+              <div className="space-y-4">
+                <div><label className={labelClass}>Full Name <span className="text-red-500">*</span></label><input type="text" name="adminName" placeholder="e.g. Ayush Aggarwal" value={formData.adminName} onChange={(e) => { setFormData({ ...formData, adminName: e.target.value }); setErrors(prev => ({ ...prev, adminName: "" })); }} className={`${inputClass} ${errors.adminName ? "border-red-500" : ""}`} />{errors.adminName && <p className="text-xs text-red-500">{errors.adminName}</p>}</div>
+                <div><label className={labelClass}>Email Address <span className="text-red-500">*</span></label><input type="email" name="adminEmail" placeholder="e.g. admin@example.com" value={formData.adminEmail} onChange={(e) => { setFormData({ ...formData, adminEmail: e.target.value }); setErrors(prev => ({ ...prev, adminEmail: "" })); }} className={`${inputClass} ${errors.adminEmail ? "border-red-500" : ""}`} />{errors.adminEmail && <p className="text-xs text-red-500">{errors.adminEmail}</p>}</div>
+                <div><label className={labelClass}>Mobile Number <span className="text-red-500">*</span></label><input type="tel" name="adminPhone" placeholder="e.g. 971521234567" value={formData.adminPhone} onChange={(e) => { setFormData({ ...formData, adminPhone: e.target.value }); setErrors(prev => ({ ...prev, adminPhone: "" })); }} className={`${inputClass} ${errors.adminPhone ? "border-red-500" : ""}`} />{errors.adminPhone && <p className="text-xs text-red-500">{errors.adminPhone}</p>}</div>
+                
+                <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700">
+                  <label className={`${labelClass} mb-3 block`}>Training Required</label>
+                  <div className="flex gap-6">
+                    <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300"><input type="radio" name="trainingRequired" value="yes" checked={formData.trainingRequired === "yes"} onChange={handleChange} className="accent-blue-600 w-4 h-4" /> Yes</label>
+                    <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300"><input type="radio" name="trainingRequired" value="no" checked={formData.trainingRequired === "no"} onChange={handleChange} className="accent-blue-600 w-4 h-4" /> No</label>
+                  </div>
+                </div>
+              </div>
+              <div className="pt-2 flex justify-between">
+                <button onClick={() => setCurrentStep(prev => prev - 1)} className="text-gray-500 dark:text-gray-400 text-sm hover:underline">← Back</button>
+                <button onClick={handleNext} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg flex items-center gap-2 shadow-lg shadow-blue-500/30">Next Step <ArrowRight className="w-4 h-4" /></button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 6: DOCS */}
+          {currentStep === 6 && (
+            <div className="space-y-4 animate-in fade-in slide-in-from-right-8 duration-500">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <FileUploadBlock label="Company Logo" name="logoCompany" accept="image/*" file={formData.logoCompany} setFormData={setFormData} />
+                <FileUploadBlock label="Client Logo" name="logoClient" accept="image/*" file={formData.logoClient} setFormData={setFormData} />
+                <FileUploadBlock label="VAT Certificate" name="vatCertificate" accept="application/pdf" file={formData.vatCertificate} setFormData={setFormData} />
+                <FileUploadBlock label="Trade License" name="tradeLicense" accept="application/pdf" file={formData.tradeLicense} setFormData={setFormData} />
+              </div>
+              <div>
+                <label className={labelClass}>Submission Method</label>
+                <textarea rows={3} name="documentSubmitMethod" placeholder="e.g. Emailing later" value={formData.documentSubmitMethod} onChange={handleChange} className={inputClass} />
+              </div>
+              <div className="flex justify-between pt-4">
+                <button onClick={() => setCurrentStep(prev => prev - 1)} className="text-gray-500 dark:text-gray-400 text-sm hover:underline">← Back</button>
+                <button onClick={handleFinalSubmit} className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg text-sm shadow-lg shadow-green-500/30 font-medium">Finish & Submit</button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+// --- BREADCRUMB COMPONENT ---
+interface BreadcrumbProps {
+  pageTitle: string;
+  onLeadAdded?: () => void;
+}
+
+const PageBreadcrumb: React.FC<BreadcrumbProps> = ({ pageTitle, onLeadAdded }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  return (
+    <>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 sm:mb-6">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-white">
+          {pageTitle}
+        </h2>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="
+            inline-flex items-center justify-center gap-2 
+             sm:w-auto px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors
+            bg-blue-600 hover:bg-blue-700 text-white
+            dark:bg-blue-600 dark:hover:bg-blue-500
+          "
+        >
+          <Plus className="w-4 h-4" />
+          Add New Lead
+        </button>
+      </div>
+
+      {isModalOpen && <LeadFormModal onClose={() => setIsModalOpen(false)} onLeadAdded={() => {
+             if(onLeadAdded) onLeadAdded();
+          }}/>}
+    </>
+  );
+};
+
+export default PageBreadcrumb;
