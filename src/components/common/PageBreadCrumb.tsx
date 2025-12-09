@@ -491,7 +491,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                 </div>
               </div>
               <div className="pt-2 flex justify-between">
-                <button onClick={() => setCurrentStep(prev => prev - 1)} className="text-gray-500 dark:text-gray-400 text-sm hover:underline">Back</button>
+                <button onClick={() => setCurrentStep(prev => prev - 1)} className="text-gray-500 dark:text-gray-400 text-sm hover:underline">← Back</button>
                 <button onClick={handleNext} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg flex items-center gap-2 shadow-lg shadow-blue-500/30">Next Step <ArrowRight className="w-4 h-4" /></button>
               </div>
             </div>
