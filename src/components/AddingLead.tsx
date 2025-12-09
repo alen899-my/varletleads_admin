@@ -1438,7 +1438,7 @@ setIsSubmitting(false);
 )}
 {isSubmitted && (
   <div className="flex flex-col items-center justify-centeranimate-in fade-in slide-in-from-bottom-4">
-    <div className="w-full max-w-md bg-white rounded-xl p-6 text-center">
+    <div className="w-full max-w-md  rounded-xl p-6 text-center">
 
       <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-3" />
 
