@@ -200,7 +200,7 @@ useEffect(() => {
       </div>
 
       {/* ---------- SCROLLABLE TABLE CONTAINER ---------- */}
-      <div className="rounded-xl border bg-white shadow-xl dark:bg-gray-900 dark:border-gray-700 overflow-hidden">
+      <div className="rounded-xl border bg-white  dark:bg-gray-900 dark:border-gray-700 overflow-hidden">
         <div
           className="
             max-h-[600px] 
