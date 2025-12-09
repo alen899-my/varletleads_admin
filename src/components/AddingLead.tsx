@@ -20,6 +20,8 @@ export default function Page() {
   const leadId = (params as any)?.id; 
   const isEditMode = !!leadId;
   const [referenceId, setReferenceId] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -218,12 +220,13 @@ export default function Page() {
 
 const capacitySchema = z.number().min(1, { message: "Capacity must be at least 1" }).max(1500, { message: "Capacity cannot exceed 1500" });
   const handleFinalSubmit = async () => {
+    
     // --- NEW CHECK: STOP SUBMIT IF READ ONLY ---
     if (isReadOnly) {
         alert("This lead is marked as COMPLETED and cannot be edited.");
         return;
     }
-
+setIsSubmitting(true); 
     const formDataToSend = new FormData();
 
     // Append all text fields
@@ -325,7 +328,7 @@ const capacitySchema = z.number().min(1, { message: "Capacity must be at least 1
 } else {
   alert("⚠️ Submission failed: " + data.message);
 }
-
+setIsSubmitting(false);
 
   };
 
@@ -1406,7 +1409,21 @@ const capacitySchema = z.number().min(1, { message: "Capacity must be at least 1
                     : "bg-green-600 hover:bg-green-700 text-white"
                   }`}
               >
-                {isReadOnly ? "Locked (Completed)" : (isEditMode ? "Update Lead" : "Finish & Submit")}
+               {isReadOnly 
+  ? "Locked (Completed)" 
+  : isSubmitting 
+    ? (
+        <span className="flex items-center gap-2">
+          <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4A8 8 0 104 12z"></path>
+          </svg>
+          Processing
+        </span>
+      )
+    : (isEditMode ? "Update Lead" : "Finish & Submit")
+}
+
               </button>
             </div>
           </div>
@@ -1424,20 +1441,36 @@ const capacitySchema = z.number().min(1, { message: "Capacity must be at least 1
       <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-3" />
 
       <h2 className="text-xl font-bold text-gray-900">
-  {isEditMode ? "Successfully Updated 🎉" : "Submitted Successfully 🎉"}
-</h2>
-
+        {isEditMode ? "Successfully Updated 🎉" : "Submitted Successfully 🎉"}
+      </h2>
 
       <p className="text-gray-600 text-sm mt-1">
         Thank you! Your valet onboarding request has been received.
       </p>
 
-      <div className="mt-6 border border-gray-200 rounded-lg bg-gray-50 p-4">
+      <div className="mt-6 border border-gray-200 rounded-lg bg-gray-50 p-4 relative">
         <p className="text-xs text-gray-500">REFERENCE NUMBER</p>
         <p className="text-2xl font-bold tracking-widest text-[#ae5c83]">
           {referenceId}
         </p>
+
+        {/* 📌 Copy Button */}
+        <button
+          onClick={() => {
+            navigator.clipboard.writeText(referenceId || "");
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+          }}
+          className="absolute top-3 right-3 text-xs bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded transition flex items-center gap-1"
+        >
+          {copied ? "✔ Copied!" : <span className="flex items-center gap-1">📋 Copy</span>}
+        </button>
       </div>
+
+      {/* 🔔 Reminder Text */}
+      <p className="text-xs text-gray-500 mt-2">
+        Please save this reference number for future communication.
+      </p>
 
       <button
         onClick={() => router.push("/")}
@@ -1448,6 +1481,8 @@ const capacitySchema = z.number().min(1, { message: "Capacity must be at least 1
     </div>
   </div>
 )}
+
+
 
       </div>
     </div>
