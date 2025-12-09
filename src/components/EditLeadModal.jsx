@@ -249,7 +249,7 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
   ref={modalRef} 
   className="
     w-full max-w-4xl 
-    h-[85vh]      /* 👈 FIXED HEIGHT */
+    h-[90vh]      /* 👈 FIXED HEIGHT */
     shadow-xl relative 
     bg-white dark:bg-gray-900 border border-gray-400 dark:border-gray-600 
     flex flex-col rounded-xl overflow-hidden
@@ -785,18 +785,19 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
 
         {/* --- FOOTER ACTIONS (Fixed) --- */}
        
- {/* --- FOOTER ACTIONS (Fixed) --- */}
-<div className="shrink-0 bg-white dark:bg-gray-900 border-t border-gray-300 dark:border-gray-700 p-4 flex justify-between items-center">
+{/* --- FOOTER ACTIONS (Fixed) --- */}
+<div className="shrink-0 bg-white dark:bg-gray-900 border-t border-gray-300 dark:border-gray-700 
+    px-4 py-4 flex flex-col sm:flex-row items-center justify-center gap-4 sm:justify-between">
 
   {/* BACK BUTTON */}
   {currentStep > 1 ? (
     <button 
       onClick={() => setCurrentStep(prev => prev - 1)} 
       disabled={isSubmitted}
-      className={`px-4 py-2 font-medium transition ${
-        isSubmitted 
-        ? "opacity-50 cursor-not-allowed"
-        : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+      className={`px-4 py-2 font-medium transition 
+        ${isSubmitted ? 
+        "opacity-50 cursor-not-allowed" : 
+        "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
       }`}
     >
       ← Back
@@ -805,49 +806,56 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
     <span />
   )}
 
-  {/* RIGHT SIDE */}
-  <div className="flex items-center gap-3">
+  {/* RIGHT SIDE BUTTONS */}
+  <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
 
-    {/* STEP 1–5: SHOW "Save and Next" BUTTON */}
+    {/* SAVE BUTTON */}
     {currentStep < 6 && (
       <button
         onClick={handleUpdateSubmit}
         disabled={isSubmitted}
-        className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium transition 
-          ${isSubmitted ? "opacity-50 cursor-not-allowed bg-green-600 text-white" : "bg-green-600 text-white hover:bg-green-700"}
-        `}
+        className={`flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-2 rounded-lg font-medium transition 
+          ${isSubmitted ? 
+            "opacity-50 cursor-not-allowed bg-green-600 text-white" : 
+            "bg-green-600 text-white hover:bg-green-700"
+        }`}
       >
         Save
       </button>
     )}
 
-    {/* STEP 1–5: Show Next Step */}
+    {/* SAVE & NEXT BUTTON */}
     {currentStep < 6 && (
       <button 
         onClick={handleNext} 
         disabled={isSubmitted}
-        className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium transition 
-          ${isSubmitted ? "opacity-50 cursor-not-allowed bg-blue-600 text-white" : "bg-blue-600 text-white hover:bg-blue-700"}
-        `}
+        className={`flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-2 rounded-lg font-medium transition 
+          ${isSubmitted ? 
+            "opacity-50 cursor-not-allowed bg-blue-600 text-white" : 
+            "bg-blue-600 text-white hover:bg-blue-700"
+        }`}
       >
         Save & Next <ArrowRight className="w-4 h-4" />
       </button>
     )}
 
-    {/* STEP 6 ONLY — Final Save */}
+    {/* FINAL SAVE */}
     {currentStep === 6 && (
       <button 
         onClick={handleUpdateSubmit} 
         disabled={isSubmitted}
-        className={`flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition shadow-sm
-          ${isSubmitted ? "opacity-50 cursor-not-allowed bg-green-600 text-white" : "bg-green-600 text-white hover:bg-green-700"}
-        `}
+        className={`flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-2 rounded-lg font-medium transition 
+          ${isSubmitted ? 
+            "opacity-50 cursor-not-allowed bg-green-600 text-white" : 
+            "bg-green-600 text-white hover:bg-green-700"
+        }`}
       >
         Save
       </button>
     )}
   </div>
 </div>
+
 
 
 
