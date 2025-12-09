@@ -156,21 +156,23 @@ export default function LeadDetailsModal({ open, onClose, data }) {
                   <div key={field} className="p-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
                     <label className="text-xs text-gray-500 dark:text-gray-400 uppercase font-medium">{field.replace(/([A-Z])/g, " $1")}</label>
                     
-                    <div className="mt-2 flex items-center justify-center h-[120px] bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg">
-                      {preview ? (
-                        <Image
-                          unoptimized
-                          src={preview}
-                          width={100}
-                          height={100}
-                          onClick={() => setPreviewSrc(preview)}
-                          className="cursor-pointer object-contain"
-                          alt="Preview"
-                        />
-                      ) : (
-                        <span className="text-gray-400 text-sm">No Image</span>
-                      )}
-                    </div>
+                  <div className="mt-2 relative h-[120px] bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
+  {preview ? (
+    <Image
+      unoptimized
+      src={preview}
+      fill
+      onClick={() => setPreviewSrc(preview)}
+      className="cursor-pointer object-cover"
+      alt="Preview"
+    />
+  ) : (
+    <span className="text-gray-400 text-sm flex justify-center items-center h-full">
+      No Image
+    </span>
+  )}
+</div>
+
 
                     {id && (
                       <a
@@ -254,21 +256,9 @@ export default function LeadDetailsModal({ open, onClose, data }) {
       </div>
 
       {/* --- IMAGE PREVIEW OVERLAY --- */}
-      {previewSrc && (
-        <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-[10000]"
-          onClick={() => setPreviewSrc(null)}
-        >
-          <Image
-            unoptimized
-            src={previewSrc}
-            width={700}
-            height={700}
-            className="object-contain max-h-[90vh] rounded-lg shadow-xl"
-            alt="Expanded Preview"
-          />
-        </div>
-      )}
+{previewSrc && ( 
+  <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-[10000]" onClick={() => setPreviewSrc(null)} > <Image unoptimized src={previewSrc} width={700} height={700} className="object-contain max-h-[90vh] rounded-lg shadow-xl" alt="Expanded Preview" /> </div> )}
+
       
     </>
   );
