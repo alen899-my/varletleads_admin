@@ -525,21 +525,28 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
         </div>
         {/* FOOTER — same style as edit modal */}
 <div
-  className="shrink-0 bg-white dark:bg-gray-900 border-t border-gray-300 dark:border-gray-700 
-             px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-  
+  className="
+    shrink-0 bg-white dark:bg-gray-900 
+    border-t border-gray-300 dark:border-gray-700 
+    px-4 py-4 
+    flex flex-row items-center justify-between gap-4 flex-wrap
+  "
+>
   {/* Back Button */}
   {currentStep > 1 ? (
     <button 
       onClick={() => setCurrentStep(prev => prev - 1)} 
-      className="px-4 py-2 rounded-lg text-sm font-medium
-      border border-gray-400 dark:border-gray-700
-      text-gray-700 dark:text-gray-200
-      bg-white dark:bg-gray-900
-      hover:bg-gray-100 dark:hover:bg-gray-800
-      active:scale-[0.98]
-      transition-all duration-200
-      shadow-sm"
+      className="
+        flex items-center gap-2 
+        px-4 py-2 rounded-lg text-sm font-medium
+        border border-gray-400 dark:border-gray-700
+        text-gray-700 dark:text-gray-200
+        bg-white dark:bg-gray-900
+        hover:bg-gray-100 dark:hover:bg-gray-800
+        active:scale-[0.98]
+        transition-all duration-200
+        shadow-sm
+      "
     >
       ← Back
     </button>
@@ -548,26 +555,35 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
   )}
 
   {/* Right Buttons */}
-  <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+  <div className="flex flex-row items-center gap-3 flex-wrap">
 
     {/* Next or Submit */}
     {currentStep < 6 ? (
       <button
         onClick={handleNext}
-        className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow-md"
+        className="
+          bg-blue-600 hover:bg-blue-700 
+          text-white px-5 py-2 rounded-lg 
+          shadow-md transition-all
+        "
       >
         Next Step
       </button>
     ) : (
       <button
         onClick={handleFinalSubmit}
-        className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow-md"
+        className="
+          bg-green-600 hover:bg-green-700 
+          text-white px-6 py-2 rounded-lg 
+          shadow-md transition-all
+        "
       >
         Finish & Submit
       </button>
     )}
   </div>
 </div>
+
 
       </div>
       

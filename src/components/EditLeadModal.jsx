@@ -830,7 +830,7 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
           : "bg-blue-600 text-white hover:bg-blue-700"
         }`}
       >
-        Save & Next <ArrowRight size={16} />
+       Next <ArrowRight size={16} />
       </button>
     )}
 
