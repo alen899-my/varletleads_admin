@@ -26,6 +26,7 @@ export async function GET(req) {
         { adminEmail: { $regex: search, $options: "i" } },
         { adminPhone: { $regex: search, $options: "i" } },
         { locationName: { $regex: search, $options: "i" } },
+        {referenceId: { $regex: search, $options: "i" }},
       ];
     }
 
