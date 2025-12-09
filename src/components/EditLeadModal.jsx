@@ -13,6 +13,8 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [wizardError, setWizardError] = useState("");
   const [errors, setErrors] = useState({});
+  const [previewSrc, setPreviewSrc] = useState(null);
+
 
   // Initial State
   const [formData, setFormData] = useState({
@@ -54,6 +56,8 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
       window.removeEventListener("keydown", handleEscKey);
     };
   }, [isOpen, onClose]);
+const filePreview = (fileObj) => fileObj?.id ? `/api/all-leads/files/${fileObj.id}` : null;
+
 
   // POPULATE DATA
   useEffect(() => {
@@ -96,8 +100,12 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
       if (leadData.attachments && Array.isArray(leadData.attachments)) {
         const fileMap = {};
         leadData.attachments.forEach(file => {
-            fileMap[file.fieldname] = file.filename;
-        });
+    fileMap[file.fieldname] = {
+        filename: file.filename,
+        id: file.fileId || file._id // whichever exists
+    };
+});
+
         setExistingFiles(fileMap);
       }
     }
@@ -206,34 +214,66 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
   const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
     const fileRef = useRef(null);
     return (
-      <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-2 bg-gray-50 dark:bg-gray-800 flex flex-col gap-2">
-        <label className="text-sm font-medium text-gray-900 dark:text-gray-200">{label}</label>
-        <input
-          ref={fileRef}
-          type="file"
-          accept={accept}
-          name={name}
-          onChange={(e) => setFormData((prev) => ({ ...prev, [name]: e.target.files?.[0] }))}
-          className="hidden"
-        />
-        <div className="flex flex-col gap-1">
-            {!file && currentFileName && (
-                <div className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded mb-1 flex items-center gap-1">
-                    <CheckCircle className="w-3 h-3" /> Current: {currentFileName}
-                </div>
-            )}
-            <button
-            type="button"
-            onClick={() => fileRef.current?.click()}
-            className="flex items-center justify-between border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 transition"
-            >
-            <span className="truncate">
-                {file ? `New: ${file.name}` : "Change File"}
-            </span>
-            {file ? <Upload className="w-4 h-4 text-blue-600 dark:text-blue-400" /> : <Upload className="w-4 h-4 text-gray-400" />}
-            </button>
-        </div>
-      </div>
+     <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-2 bg-gray-50 dark:bg-gray-800 flex flex-col gap-2">
+
+  <label className="text-sm font-medium text-gray-900 dark:text-gray-200">{label}</label>
+
+  {/* 📌 Preview */}
+  {currentFileName && !file && (
+    <div
+      className="mt-2 relative w-full h-[150px] bg-gray-100 dark:bg-gray-900 border border-gray-300 
+      dark:border-gray-700 rounded-lg overflow-hidden cursor-pointer"
+      onClick={() => setPreviewSrc(filePreview(currentFileName))}
+    >
+      <img
+        src={filePreview(currentFileName)}
+        className="object-cover w-full h-full"
+      />
+    </div>
+  )}
+
+  {/* Preview for newly selected file */}
+  {file && (
+    <div
+      className="mt-2 relative w-full h-[150px] bg-gray-100 dark:bg-gray-900 border border-gray-300 
+      dark:border-gray-700 rounded-lg overflow-hidden cursor-pointer"
+      onClick={() => setPreviewSrc(URL.createObjectURL(file))}
+    >
+      <img
+        src={URL.createObjectURL(file)}
+        className="object-cover w-full h-full"
+      />
+    </div>
+  )}
+
+  {/* File control below preview */}
+  <input ref={fileRef} type="file" accept={accept} name={name}
+    onChange={(e) => setFormData((prev) => ({ ...prev, [name]: e.target.files?.[0] }))} className="hidden" />
+
+  <button type="button"
+    onClick={() => fileRef.current?.click()}
+    className="flex items-center justify-between border border-gray-300 dark:border-gray-600 bg-white 
+    dark:bg-gray-700 rounded-lg px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 
+    dark:hover:bg-gray-600 transition"
+  >
+    <span className="truncate">{file ? `New: ${file.name}` : "Change File"}</span>
+    {file 
+      ? <Upload className="w-4 h-4 text-blue-600 dark:text-blue-400" /> 
+      : <Upload className="w-4 h-4 text-gray-400" />
+    }
+  </button>
+  {existingFiles[name] && !file && (
+  <div
+    className="mt-2 relative w-full h-[150px] bg-gray-100 dark:bg-gray-900 rounded-lg cursor-pointer"
+    onClick={() => setPreviewSrc(filePreview(existingFiles[name]))}
+  >
+    <img src={filePreview(existingFiles[name])} className="object-cover w-full h-full" />
+  </div>
+)}
+
+
+</div>
+
     );
   };
 
