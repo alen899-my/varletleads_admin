@@ -1129,7 +1129,7 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
         ${
                 isSubmitted || isSaving
                   ? "opacity-50 cursor-not-allowed border-gray-400 text-gray-400"
-                  : "border border-gray-400 dark:border-gray-700	text-gray-700 dark:text-gray-200	bg-white dark:bg-gray-900	hover:bg-gray-100 dark:hover:bg-gray-800active:scale-[0.98]	transition-all duration-20	shadow-sm"
+                  : "border border-gray-400 dark:border-gray-700	text-gray-700 dark:text-gray-200	bg-white dark:bg-gray-900	hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-[0.98]	transition-all duration-20	shadow-sm"
               }`}
             >
               ← Back
