@@ -532,7 +532,14 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
   {currentStep > 1 ? (
     <button 
       onClick={() => setCurrentStep(prev => prev - 1)} 
-      className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition"
+      className="px-4 py-2 rounded-lg text-sm font-medium
+      border border-gray-400 dark:border-gray-700
+      text-gray-700 dark:text-gray-200
+      bg-white dark:bg-gray-900
+      hover:bg-gray-100 dark:hover:bg-gray-800
+      active:scale-[0.98]
+      transition-all duration-200
+      shadow-sm"
     >
       ← Back
     </button>
