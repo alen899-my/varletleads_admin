@@ -200,7 +200,7 @@ useEffect(() => {
       </div>
 
       {/* ---------- SCROLLABLE TABLE CONTAINER ---------- */}
-      <div className="rounded-xl border bg-white  dark:bg-gray-900 dark:border-gray-700 overflow-hidden">
+      <div className="rounded-xl  bg-white  dark:bg-gray-900 dark:border-gray-700 overflow-hidden">
         <div
           className="
             max-h-[600px] 
@@ -227,7 +227,7 @@ useEffect(() => {
             <TableHeader>
               <TableRow
                 className="
-      sticky top-0 z-20
+      sticky top-0 z-1
       bg-[#465fff] 
       text-white
 
