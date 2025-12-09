@@ -113,40 +113,7 @@ export default function LeadDetailsModal({ open, onClose, data }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
               {/* ✅ NEW: REGISTRATION / EDIT LINK CARD - Only show if NOT completed */}
-              {data.status !== "completed" && (
-                <div className="col-span-1 sm:col-span-2 lg:col-span-3 p-3 border border-blue-200 dark:border-blue-800 rounded-lg bg-blue-50 dark:bg-blue-900/10">
-                  <label className="text-xs text-blue-600 dark:text-blue-400 uppercase font-bold mb-2 flex items-center gap-2">
-                    Registration / Edit Link
-                  </label>
-                  
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    {/* URL Display */}
-                    <div className="flex-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm text-gray-600 dark:text-gray-300 font-mono truncate select-all">
-                      {editLink}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex gap-2 shrink-0">
-                      <button
-                        onClick={handleCopy}
-                        className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition text-sm font-medium text-gray-700 dark:text-gray-200"
-                      >
-                        {copied ? <Check size={16} className="text-green-600" /> : <Copy size={16} />}
-                        {copied ? "Copied" : "Copy"}
-                      </button>
-
-                      <Link
-                        href={`/location-registration/${data._id}`}
-                        target="_blank"
-                        className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition text-sm font-medium"
-                      >
-                        <ExternalLink size={16} />
-                        Open
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              )}
+           
 
 
               {/* STATUS BADGE */}
@@ -246,6 +213,40 @@ export default function LeadDetailsModal({ open, onClose, data }) {
                   </div>
                 );
               })}
+                 {data.status !== "completed" && (
+                <div className="col-span-1 sm:col-span-2 lg:col-span-3 p-3 border border-blue-200 dark:border-blue-800 rounded-lg bg-blue-50 dark:bg-blue-900/10">
+                  <label className="text-xs text-blue-600 dark:text-blue-400 uppercase font-bold mb-2 flex items-center gap-2">
+                    Registration / Edit Link
+                  </label>
+                  
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    {/* URL Display */}
+                    <div className="flex-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm text-gray-600 dark:text-gray-300 font-mono truncate select-all">
+                      {editLink}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-2 shrink-0">
+                      <button
+                        onClick={handleCopy}
+                        className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition text-sm font-medium text-gray-700 dark:text-gray-200"
+                      >
+                        {copied ? <Check size={16} className="text-green-600" /> : <Copy size={16} />}
+                        {copied ? "Copied" : "Copy"}
+                      </button>
+
+                      <Link
+                        href={`/location-registration/${data._id}`}
+                        target="_blank"
+                        className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition text-sm font-medium"
+                      >
+                        <ExternalLink size={16} />
+                        Open
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              )}
 
             </div>
           </div>
@@ -268,6 +269,7 @@ export default function LeadDetailsModal({ open, onClose, data }) {
           />
         </div>
       )}
+      
     </>
   );
 }
