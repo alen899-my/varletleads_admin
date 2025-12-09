@@ -793,10 +793,10 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
     <button 
       onClick={() => setCurrentStep(prev => prev - 1)} 
       disabled={isSubmitted}
-      className={`px-4 py-2 font-medium transition 
+      className={`gap-2 px-4 py-2 rounded-lg text-sm font-medium  border transition-all duration-200
         ${isSubmitted 
-        ? "opacity-50 cursor-not-allowed" 
-        : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+        ? "opacity-50 cursor-not-allowed border-gray-400 text-gray-400"
+        : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
       }`}
     >
       ← Back
