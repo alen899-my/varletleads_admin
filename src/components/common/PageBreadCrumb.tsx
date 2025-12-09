@@ -25,6 +25,8 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
 	const [currentStep, setCurrentStep] = useState(1);
 	const [isSubmitted, setIsSubmitted] = useState(false);
 	const [wizardError, setWizardError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
 	const [errors, setErrors] = useState({
 		locationName: "",
 		capacity: "",
@@ -134,6 +136,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
 	};
 
 	const handleFinalSubmit = async () => {
+    setIsSaving(true); // <-- ADD THIS
 		const formDataToSend = new FormData();
 		Object.entries(formData).forEach(([key, value]) => {
 			if (value !== null && typeof value !== "object") {
@@ -152,6 +155,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
 
 		if (!res.ok) {
 			alert("❌ Error submitting form. Server returned: " + res.status);
+      setIsSaving(false); // <-- ADD THIS
 			return;
 		}
 
@@ -171,6 +175,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
 		} else {
 			alert("⚠️ Submission failed: " + data.message);
 		}
+      setIsSaving(false); // <-- ADD THIS
 	};
 
 	useEffect(() => {
@@ -604,16 +609,26 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
 								Next Step
 							</button>
 						) : (
-							<button
-								onClick={handleFinalSubmit}
-								className="
-									bg-green-600 hover:bg-green-700 
-									text-white px-6 py-2 rounded-lg 
-									shadow-md transition-all
-								"
-							>
-								Finish & Submit
-							</button>
+						<button
+	onClick={handleFinalSubmit}
+	disabled={isSaving}
+	className={`px-6 py-2 rounded-lg shadow-md transition-all text-white 
+		${isSaving ? "bg-gray-500 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"}
+	`}
+>
+	{isSaving ? (
+		<span className="flex items-center gap-2">
+			<svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+				<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+				<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4A8 8 0 104 12z"></path>
+			</svg>
+			Saving...
+		</span>
+	) : (
+		"Finish & Submit"
+	)}
+</button>
+
 						)}
 					</div>
 				</div>
