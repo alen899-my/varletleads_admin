@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import AllLeadsClient from "./AllLeadsClient";
+import AllLeadsClient from "@/components/AllLeadsClient";
 
 export const metadata: Metadata = {
   title: "Next.js Basic Table | TailAdmin - Next.js Dashboard Template",

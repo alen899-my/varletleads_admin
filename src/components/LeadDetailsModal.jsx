@@ -54,7 +54,8 @@ export default function LeadDetailsModal({ open, onClose, data }) {
     if (!files[file.fieldname]) files[file.fieldname] = file;
   });
 
-  const extractId = (id) => String(id).replace(/ObjectId\("(.+)"\)/, "$1");
+  const extractId = (id) => id?.toString().replace(/ObjectId\("|"|\)/g, "") ?? null;
+
 
   // ✅ Construct the Edit/Registration URL
   const editLink = `${origin}/location-registration/${data._id}`;
@@ -156,7 +157,16 @@ export default function LeadDetailsModal({ open, onClose, data }) {
                   <div key={field} className="p-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
                     <label className="text-xs text-gray-500 dark:text-gray-400 uppercase font-medium">{field.replace(/([A-Z])/g, " $1")}</label>
                     
-                  <div className="mt-2 relative h-[120px] bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
+<div
+  className="
+    mt-2 relative 
+    w-full 
+    h-[200px] sm:h-[150px] md:h-[180px] lg:h-[220px] 
+    bg-gray-100 dark:bg-gray-900 
+    border border-gray-300 dark:border-gray-700 
+    rounded-lg overflow-hidden
+  "
+>
   {preview ? (
     <Image
       unoptimized

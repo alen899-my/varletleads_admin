@@ -1447,7 +1447,7 @@ setIsSubmitting(false);
       </h2>
 
       <p className="text-gray-600 text-sm mt-1">
-        Thank you! Your valet onboarding request has been received.
+        Thank you! Your valet  {isEditMode ? " update" : " onboarding"} request has been received.
       </p>
 
       <div className="mt-6 border border-gray-200 rounded-lg bg-gray-50 p-4 relative">

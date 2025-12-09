@@ -1,47 +1,35 @@
 import { connectDB } from "@/lib/mongodb";
 import { GridFSBucket, ObjectId } from "mongodb";
-import { NextResponse } from "next/server";
 
-export async function GET(req, { params }) {
+export async function GET(req, context) {
   try {
-    // 1. Await the params object
-    const { id } = await params;
+    // 🆕 Must await params
+    const { id } = await context.params;
+
+    if (!ObjectId.isValid(id)) {
+      return new Response(JSON.stringify({ message: "Invalid file ID" }), { status: 400 });
+    }
 
     const conn = await connectDB();
-    const bucket = new GridFSBucket(conn.connection.db, {
-      bucketName: "uploads",
-    });
+    const bucket = new GridFSBucket(conn.connection.db, { bucketName: "uploads" });
 
-    // 2. Validate the ID format before creating ObjectId
-    if (!ObjectId.isValid(id)) {
-      return NextResponse.json({ success: false, message: "Invalid file ID format" }, { status: 400 });
+    const file = await bucket.find({ _id: new ObjectId(id) }).toArray();
+
+    if (!file.length) {
+      return new Response(JSON.stringify({ message: "File not found" }), { status: 404 });
     }
 
-    const fileId = new ObjectId(id);
-    const files = await bucket.find({ _id: fileId }).toArray();
+    const stream = bucket.openDownloadStream(new ObjectId(id));
 
-    if (files.length === 0) {
-      return NextResponse.json({ success: false, message: "File not found" }, { status: 404 });
-    }
-
-    const file = files[0];
-    const stream = bucket.openDownloadStream(fileId);
-
-    // Determine the correct Content-Disposition based on file type
-    let contentDisposition = "inline"; // Default to inline for images and other types
-    if (file.contentType === "application/pdf") {
-      contentDisposition = `inline; filename="${file.filename}"`;
-// Trigger download for PDFs
-    }
-
-    return new NextResponse(stream, {
+    return new Response(stream, {
       headers: {
-        "Content-Type": file.contentType,
-        "Content-Disposition": contentDisposition,
+        "Content-Type": file[0].contentType,
+        "Content-Disposition": `inline; filename="${file[0].filename}"`,
       },
     });
+
   } catch (error) {
     console.error("❌ API ERROR:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 }

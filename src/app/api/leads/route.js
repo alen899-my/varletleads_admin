@@ -38,14 +38,20 @@ export async function POST(req) {
         }
 
         const buffer = Buffer.from(await file.arrayBuffer());
-        const uploadStream = bucket.openUploadStream(file.name);
-        uploadStream.end(buffer);
+      const uploadStream = bucket.openUploadStream(file.name);
 
-        attachments.push({
-          fieldname: field,
-          filename: file.name,
-          fileId: uploadStream.id,
-        });
+await new Promise((resolve, reject) => {
+  uploadStream.on("finish", resolve);
+  uploadStream.on("error", reject);
+  uploadStream.end(buffer);
+});
+
+attachments.push({
+  fieldname: field,
+  filename: file.name,
+  fileId: uploadStream.id.toString(),
+});
+
       }
     }
 
