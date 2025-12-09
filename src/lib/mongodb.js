@@ -24,7 +24,7 @@ export async function connectDB() {
 
   try {
     cached.conn = await cached.promise;
-    console.log("✔ MongoDB connected");
+   
   } catch (err) {
     console.error("❌ MongoDB connection error:", err);
     throw err;

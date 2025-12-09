@@ -71,12 +71,13 @@ export default function Page() {
 
   // State to hold filenames of existing attachments (for display purposes in Edit Mode)
   // Typed as any to allow mixed null/string types easily
-  const [existingFiles, setExistingFiles] = useState<any>({
-    logoCompany: null,
-    logoClient: null,
-    vatCertificate: null,
-    tradeLicense: null,
-  });
+// Page.js: State to hold details of existing attachments (around line 60)
+const [existingFiles, setExistingFiles] = useState<any>({
+  logoCompany: null, // Will hold {id: string, filename: string}
+  logoClient: null,
+  vatCertificate: null,
+  tradeLicense: null,
+});
 
   // Placeholder for form data state
   // Typed as any to prevent "Type 'File' is not assignable to type 'null'" errors
@@ -124,46 +125,46 @@ export default function Page() {
   });
 
   // --- LOGO PREVIEW LOGIC (COMPANY) ---
-  useEffect(() => {
-    const file = formData.logoCompany;
-    if (file && file instanceof File) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setCompanyLogoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+// Page.js: LOGO PREVIEW LOGIC (COMPANY - around line 72)
+useEffect(() => {
+  if (formData.logoCompany instanceof File) {
+    const reader = new FileReader();
+    reader.onloadend = () => setCompanyLogoPreview(reader.result as string);
+    reader.readAsDataURL(formData.logoCompany);
+    return;
+  }
 
-      return () => {
-        setCompanyLogoPreview(null);
-      };
-    } else if (existingFiles.logoCompany) {
-      const existingUrl = `/uploads/${existingFiles.logoCompany}`;
-      setCompanyLogoPreview(existingUrl);
-    } else {
-      setCompanyLogoPreview(null);
-    }
-  }, [formData.logoCompany, existingFiles.logoCompany]);
-  
-  // --- LOGO PREVIEW LOGIC (CLIENT) ---
-  useEffect(() => {
-    const file = formData.logoClient;
-    if (file && file instanceof File) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setClientLogoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  // FIX: Check if the object exists and has an ID
+  if (existingFiles.logoCompany?.id) {
+    // Use the ID to construct the API URL
+    setCompanyLogoPreview(`/api/all-leads/files/${existingFiles.logoCompany.id}`);
+    return;
+  }
 
-      return () => {
-        setClientLogoPreview(null);
-      };
-    } else if (existingFiles.logoClient) {
-      const existingUrl = `/uploads/${existingFiles.logoClient}`;
-      setClientLogoPreview(existingUrl);
-    } else {
-      setClientLogoPreview(null);
-    }
-  }, [formData.logoClient, existingFiles.logoClient]);
+  setCompanyLogoPreview(null);
+}, [formData.logoCompany, existingFiles.logoCompany]);
+
+
+// Page.js: LOGO PREVIEW LOGIC (CLIENT - around line 88)
+useEffect(() => {
+  if (formData.logoClient instanceof File) {
+    const reader = new FileReader();
+    reader.onloadend = () => setClientLogoPreview(reader.result as string);
+    reader.readAsDataURL(formData.logoClient);
+    return;
+  }
+
+  // FIX: Check if the object exists and has an ID
+  if (existingFiles.logoClient?.id) {
+    // Use the ID to construct the API URL
+    setClientLogoPreview(`/api/all-leads/files/${existingFiles.logoClient.id}`);
+    return;
+  }
+
+  setClientLogoPreview(null);
+}, [formData.logoClient, existingFiles.logoClient]);
+
+
   
 
   // --- NEW: FETCH DATA IF EDIT MODE ---
@@ -187,16 +188,24 @@ export default function Page() {
             // Map DB attachments to UI state keys
             const fileMap: any = {};
             if (l.attachments) {
-              // Typed att as any
               l.attachments.forEach((att: any) => {
-                if (att.fieldname === "companyLogo")
-                  fileMap.logoCompany = att.filename;
-                if (att.fieldname === "clientLogo")
-                  fileMap.logoClient = att.filename;
-                if (att.fieldname === "vatCertificate")
-                  fileMap.vatCertificate = att.filename;
-                if (att.fieldname === "tradeLicense")
-                  fileMap.tradeLicense = att.filename;
+                const fileId = att.fileId || att._id; 
+                
+                if (fileId) {
+                    const fileObject = {
+                        id: fileId,
+                        filename: att.filename
+                    };
+                    
+                    if (att.fieldname === "companyLogo")
+                        fileMap.logoCompany = fileObject;
+                    if (att.fieldname === "clientLogo")
+                        fileMap.logoClient = fileObject;
+                    if (att.fieldname === "vatCertificate")
+                        fileMap.vatCertificate = fileObject;
+                    if (att.fieldname === "tradeLicense")
+                        fileMap.tradeLicense = fileObject;
+                }
               });
               setExistingFiles((prev: any) => ({ ...prev, ...fileMap }));
             }
@@ -1555,7 +1564,7 @@ export default function Page() {
                     file={formData.logoCompany}
                     accept="image/png, image/jpeg"
                     setFormData={setFormData}
-                    existingFileName={existingFiles.logoCompany}
+                    existingFileName={existingFiles.logoCompany?.filename}
                     showPreview={true}
                     previewUrl={companyLogoPreview} // Pass the state for company preview
                   />
@@ -1567,7 +1576,7 @@ export default function Page() {
                     file={formData.logoClient}
                     accept="image/png, image/jpeg"
                     setFormData={setFormData}
-                    existingFileName={existingFiles.logoClient}
+                   existingFileName={existingFiles.logoClient?.filename}
                     showPreview={true}
                     previewUrl={clientLogoPreview} // Pass the state for client preview
                   />
@@ -1579,7 +1588,7 @@ export default function Page() {
                     file={formData.vatCertificate}
                     accept="application/pdf"
                     setFormData={setFormData}
-                    existingFileName={existingFiles.vatCertificate}
+                    existingFileName={existingFiles.vatCertificate?.filename}
                   />
 
                   {/* TRADE LICENSE */}
@@ -1589,7 +1598,7 @@ export default function Page() {
                     file={formData.tradeLicense}
                     accept="application/pdf"
                     setFormData={setFormData}
-                    existingFileName={existingFiles.tradeLicense}
+                   existingFileName={existingFiles.tradeLicense?.filename}
                   />
                 </div>
 

@@ -36,7 +36,7 @@ export const EcommerceMetrics = () => {
           setPendingCount(pending);
         }
       } catch (err) {
-        console.log("Error fetching metrics", err);
+        
       }
     }
 
