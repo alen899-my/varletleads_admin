@@ -393,9 +393,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                 <div className="md:col-span-2"><label className={labelClass}>Operation Timing</label><input type="text" name="timing" placeholder="e.g. 24 Hours" value={formData.timing} onChange={(e) => setFormData({ ...formData, timing: e.target.value })} className={inputClass} /></div>
                 <div className="md:col-span-2"><label className={labelClass}>Location TRN / Address</label><textarea rows={3} name="address" placeholder="Registered Address" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} className={`${inputClass} resize-none`} /></div>
               </div>
-              <div className="pt-2 flex justify-end">
-                <button onClick={handleNext} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg flex items-center gap-2 transition shadow-lg shadow-blue-500/30">Next Step <ArrowRight className="w-4 h-4" /></button>
-              </div>
+            
             </div>
           )}
 
@@ -426,10 +424,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                     </div>
                 ))}
               </div>
-              <div className="pt-2 flex justify-between">
-                <button onClick={() => setCurrentStep(prev => prev - 1)} className="text-gray-500 dark:text-gray-400 text-sm hover:underline">← Back</button>
-                <button onClick={handleNext} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg flex items-center gap-2 shadow-lg shadow-blue-500/30">Next Step</button>
-              </div>
+            
             </div>
           )}
 
@@ -469,10 +464,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                   </div>
                 </div>
               </div>
-              <div className="pt-2 flex justify-between">
-                <button onClick={() => setCurrentStep(prev => prev - 1)} className="text-gray-500 dark:text-gray-400 text-sm hover:underline">← Back</button>
-                <button onClick={handleNext} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow-lg shadow-blue-500/30">Next Step</button>
-              </div>
+             
             </div>
           )}
 
@@ -490,10 +482,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                   <p className="text-xs text-blue-600 dark:text-blue-400 mt-2 bg-blue-50 dark:bg-blue-900/20 p-2 rounded">ℹ️ Large lists can be emailed separately.</p>
                 </div>
               </div>
-              <div className="pt-2 flex justify-between">
-                <button onClick={() => setCurrentStep(prev => prev - 1)} className="text-gray-500 dark:text-gray-400 text-sm hover:underline">← Back</button>
-                <button onClick={handleNext} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg flex items-center gap-2 shadow-lg shadow-blue-500/30">Next Step <ArrowRight className="w-4 h-4" /></button>
-              </div>
+           
             </div>
           )}
 
@@ -513,10 +502,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                   </div>
                 </div>
               </div>
-              <div className="pt-2 flex justify-between">
-                <button onClick={() => setCurrentStep(prev => prev - 1)} className="text-gray-500 dark:text-gray-400 text-sm hover:underline">← Back</button>
-                <button onClick={handleNext} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg flex items-center gap-2 shadow-lg shadow-blue-500/30">Next Step <ArrowRight className="w-4 h-4" /></button>
-              </div>
+             
             </div>
           )}
 
@@ -533,14 +519,51 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                 <label className={labelClass}>Submission Method</label>
                 <textarea rows={3} name="documentSubmitMethod" placeholder="e.g. Emailing later" value={formData.documentSubmitMethod} onChange={handleChange} className={inputClass} />
               </div>
-              <div className="flex justify-between pt-4">
-                <button onClick={() => setCurrentStep(prev => prev - 1)} className="text-gray-500 dark:text-gray-400 text-sm hover:underline">← Back</button>
-                <button onClick={handleFinalSubmit} className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg text-sm shadow-lg shadow-green-500/30 font-medium">Finish & Submit</button>
-              </div>
+             
             </div>
           )}
         </div>
+        {/* FOOTER — same style as edit modal */}
+<div
+  className="shrink-0 bg-white dark:bg-gray-900 border-t border-gray-300 dark:border-gray-700 
+             px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+  
+  {/* Back Button */}
+  {currentStep > 1 ? (
+    <button 
+      onClick={() => setCurrentStep(prev => prev - 1)} 
+      className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition"
+    >
+      ← Back
+    </button>
+  ) : (
+    <span />
+  )}
+
+  {/* Right Buttons */}
+  <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+
+    {/* Next or Submit */}
+    {currentStep < 6 ? (
+      <button
+        onClick={handleNext}
+        className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow-md"
+      >
+        Next Step
+      </button>
+    ) : (
+      <button
+        onClick={handleFinalSubmit}
+        className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow-md"
+      >
+        Finish & Submit
+      </button>
+    )}
+  </div>
+</div>
+
       </div>
+      
     </div>
   );
 };
