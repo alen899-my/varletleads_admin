@@ -3,7 +3,7 @@ import AddingLead from "@/components/AddingLead"
 const page = () => {
   return (
     <div>
-<AddingLead/>
+    <AddingLead/>
 
     </div>
   )
