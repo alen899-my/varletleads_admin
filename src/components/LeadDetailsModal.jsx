@@ -65,6 +65,27 @@ export default function LeadDetailsModal({ open, onClose, data }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // --- NEW: Helper function to force download ---
+  const handleDownload = async (url, filename) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename || 'download';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error("Download failed:", error);
+      // Fallback to opening in new tab if fetch fails
+      window.open(url, '_blank');
+    }
+  };
+
   return (
     <>
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center p-4 z-[9999]">
@@ -175,15 +196,12 @@ export default function LeadDetailsModal({ open, onClose, data }) {
                         </div>
 
                         {preview && (
-                          <a
-                            href={preview}
-                            download={stored?.filename || "download.png"}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mt-2 w-full flex items-center justify-center gap-2 text-xs p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-100"
+                          <button
+                            onClick={() => handleDownload(preview, stored?.filename || "download.png")}
+                            className="mt-2 w-full flex items-center justify-center gap-2 text-xs p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
                           >
-                            <Download size={14} /> Open / Download
-                          </a>
+                            <Download size={14} /> Download
+                          </button>
                         )}
                       </div>
                     );
@@ -206,15 +224,12 @@ export default function LeadDetailsModal({ open, onClose, data }) {
                         </div>
 
                         {downloadUrl && (
-                          <a
-                            href={downloadUrl}
-                            download={stored?.filename || "document.pdf"}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mt-2 flex items-center justify-center gap-2 text-xs border border-gray-300 dark:border-gray-600 p-2 rounded bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100"
+                          <button
+                            onClick={() => handleDownload(downloadUrl, stored?.filename || "document.pdf")}
+                            className="mt-2 w-full flex items-center justify-center gap-2 text-xs border border-gray-300 dark:border-gray-600 p-2 rounded bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
                           >
-                            <Download size={14} /> Open / Download
-                          </a>
+                            <Download size={14} /> Download
+                          </button>
                         )}
                       </div>
                     );
