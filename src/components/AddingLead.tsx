@@ -55,7 +55,7 @@ export default function Page() {
 
   // --- NEW STATE FOR READ-ONLY MODE ---
   const [isReadOnly, setIsReadOnly] = useState(false);
-   
+  
   // --- MODIFIED: State for both logo previews ---
   const [companyLogoPreview, setCompanyLogoPreview] = useState<string | null>(null);
   const [clientLogoPreview, setClientLogoPreview] = useState<string | null>(null);
@@ -165,7 +165,7 @@ useEffect(() => {
 }, [formData.logoClient, existingFiles.logoClient]);
 
 
-   
+  
 
   // --- NEW: FETCH DATA IF EDIT MODE ---
   useEffect(() => {
@@ -196,7 +196,7 @@ useEffect(() => {
                         filename: att.filename,
                         path: att.path // <--- THIS IS KEY FOR PUBLIC FOLDER IMAGES
                     };
-                     
+                    
                     if (att.fieldname === "companyLogo")
                         fileMap.logoCompany = fileObject;
                     if (att.fieldname === "clientLogo")
@@ -528,8 +528,6 @@ useEffect(() => {
   }) => {
     // Typed useRef
     const fileRef = useRef<HTMLInputElement>(null);
-    // State for local error message
-    const [fileError, setFileError] = useState("");
 
     return (
       <div
@@ -557,21 +555,12 @@ useEffect(() => {
           accept={accept}
           name={name}
           disabled={isReadOnly} // Disable input
-          onChange={(e: any) => {
-            const selectedFile = e.target.files[0];
-            // Check file size (500KB = 500 * 1024 bytes)
-            if (selectedFile && selectedFile.size > 500 * 1024) {
-              setFileError("File size must be less than 500KB");
-              e.target.value = ""; // Reset input
-              return;
-            }
-            // Clear error if validation passes
-            setFileError("");
+          onChange={(e: any) =>
             setFormData((prev: any) => ({
               ...prev,
-              [name]: selectedFile,
-            }));
-          }}
+              [name]: e.target.files[0],
+            }))
+          }
           className="hidden"
         />
 
@@ -597,8 +586,6 @@ useEffect(() => {
             <Upload className="w-4 h-4 text-gray-500 flex-shrink-0 ml-2" />
           )}
         </button>
-        {/* Error Message displayed at the bottom of the input */}
-        {fileError && <p className="text-red-500 text-xs mt-1">{fileError}</p>}
       </div>
     );
   };
@@ -623,10 +610,10 @@ useEffect(() => {
     shadow-lg
 
  
-    px-4            
-    sm:px-6         
-    md:px-10     
-    lg:px-16      
+    px-4         
+    sm:px-6       
+    md:px-10  
+    lg:px-16       
     xl:px-24      
 
     py-6
@@ -1648,7 +1635,7 @@ useEffect(() => {
                     file={formData.logoClient}
                     accept="image/png, image/jpeg"
                     setFormData={setFormData}
-                    existingFileName={existingFiles.logoClient?.filename}
+                   existingFileName={existingFiles.logoClient?.filename}
                     showPreview={true}
                     previewUrl={clientLogoPreview} // Pass the state for client preview
                   />
@@ -1670,7 +1657,7 @@ useEffect(() => {
                     file={formData.tradeLicense}
                     accept="application/pdf"
                     setFormData={setFormData}
-                    existingFileName={existingFiles.tradeLicense?.filename}
+                   existingFileName={existingFiles.tradeLicense?.filename}
                   />
                 </div>
 
