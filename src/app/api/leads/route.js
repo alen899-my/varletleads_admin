@@ -2,80 +2,88 @@ import { connectDB } from "@/lib/mongodb";
 import Lead from "@/models/Lead";
 import { GridFSBucket } from "mongodb";
 import { NextResponse } from "next/server";
-// --- Generate Unique Reference ID ---
+
 function generateReference() {
-  const random = Math.floor(100000 + Math.random() * 900000); // 6-digit
+  const random = Math.floor(100000 + Math.random() * 900000);
   return `VAL-${random}`;
 }
+
 export async function POST(req) {
   try {
     const conn = await connectDB();
+    const db = conn.connection.getClient().db();
+
     const formData = await req.formData();
 
-    const bucket = new GridFSBucket(conn.connection.db, {
-      bucketName: "uploads",
-    });
+    const bucket = new GridFSBucket(db, { bucketName: "uploads" });
 
     const attachments = [];
 
-    const allowedImageTypes = ["image/png", "image/jpeg"];
-    const allowedPdfTypes = ["application/pdf"];
+    const allowedImages = ["image/png", "image/jpeg"];
+    const allowedPdfs = ["application/pdf"];
 
     const fileFields = ["companyLogo", "clientLogo", "vatCertificate", "tradeLicense"];
 
-    for (const field of fileFields) {
-      const file = formData.get(field);
+    // Upload all files concurrently → much faster
+    await Promise.all(
+      fileFields.map(async (field) => {
+        const file = formData.get(field);
 
-      if (file && typeof file !== "string") {
-        if (
-          (field.includes("Logo") && !allowedImageTypes.includes(file.type)) ||
-          (["vatCertificate", "tradeLicense"].includes(field) && !allowedPdfTypes.includes(file.type))
-        ) {
-          return NextResponse.json(
-            { success: false, message: `${field} format not allowed.` },
-            { status: 400 }
-          );
+        if (!file || typeof file === "string") return;
+
+        // Validate file type
+        if (field.includes("Logo") && !allowedImages.includes(file.type)) {
+          throw new Error(`${field} must be PNG/JPEG`);
         }
 
+        if (["vatCertificate", "tradeLicense"].includes(field) && !allowedPdfs.includes(file.type)) {
+          throw new Error(`${field} must be PDF`);
+        }
+
+        // Convert file to buffer
         const buffer = Buffer.from(await file.arrayBuffer());
-      const uploadStream = bucket.openUploadStream(file.name);
 
-await new Promise((resolve, reject) => {
-  uploadStream.on("finish", resolve);
-  uploadStream.on("error", reject);
-  uploadStream.end(buffer);
-});
+        // Upload to GridFS
+        const uploadStream = bucket.openUploadStream(file.name);
 
-attachments.push({
-  fieldname: field,
-  filename: file.name,
-  fileId: uploadStream.id.toString(),
-});
+        await new Promise((resolve, reject) => {
+          uploadStream.on("finish", resolve);
+          uploadStream.on("error", reject);
+          uploadStream.end(buffer);
+        });
 
-      }
-    }
+        attachments.push({
+          fieldname: field,
+          filename: file.name,
+          fileId: uploadStream.id.toString(),
+        });
+      })
+    );
 
+    // Prepare other form fields
     const leadData = {};
 
     formData.forEach((value, key) => {
       if (!fileFields.includes(key)) leadData[key] = value;
     });
-     const referenceId = generateReference();
+
+    const referenceId = generateReference();
 
     const newLead = await Lead.create({
       ...leadData,
-      referenceId, 
+      referenceId,
       attachments,
     });
-    const editUrl = `/location-registration/[id]/${newLead._id}`;
 
-    return NextResponse.json({
-  success: true,
-  lead: newLead,
-  referenceId,     // <-- return the value
-  editUrl
-}, { status: 201 });
-
+    return NextResponse.json(
+      {
+        success: true,
+        lead: newLead,
+        referenceId,
+        editUrl: `/location-registration/[id]/${newLead._id}`,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("❌ API ERROR:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
