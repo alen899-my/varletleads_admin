@@ -15,7 +15,7 @@ import {
     Plus, 
     X
 } from "lucide-react";
-import { useRouter } from "next/navigation"; // Fixed typo in import
+import { useRouter } from "next/navigation"; 
 
 // --- FORM COMPONENT (Internal Modal with Dark Mode) ---
 const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAdded: () => void }) => {
@@ -26,7 +26,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
     const [wizardError, setWizardError] = useState("");
     const [isSaving, setIsSaving] = useState(false);
 
-    const [errors, setErrors] = useState({
+    const [errors, setErrors] = useState<any>({
         locationName: "",
         capacity: "",
         adminName: "",
@@ -127,6 +127,16 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
     // Handle form input changes
     const handleChange = (e: any) => {
         const { name, value, type, files } = e.target;
+        
+        // Clear errors on change
+        if (errors[name]) {
+            setErrors((prev: any) => {
+                const newErrs = { ...prev };
+                delete newErrs[name];
+                return newErrs;
+            });
+        }
+
         if (type === "file") {
             setFormData({ ...formData, [name]: files[0] });
         } else {
@@ -135,46 +145,62 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
     };
 
     const handleFinalSubmit = async () => {
+        if (!validateStep1() || !validateStep5()) {
+            setWizardError("Please check required fields.");
+            return;
+        }
+
         setIsSaving(true);
         const formDataToSend = new FormData();
+        
+        // Append text fields
         Object.entries(formData).forEach(([key, value]) => {
             if (value !== null && typeof value !== "object") {
                 formDataToSend.append(key, value as string);
             }
         });
+
+        // Append files
         if (formData.logoCompany) formDataToSend.append("companyLogo", formData.logoCompany);
         if (formData.logoClient) formDataToSend.append("clientLogo", formData.logoClient);
         if (formData.vatCertificate) formDataToSend.append("vatCertificate", formData.vatCertificate);
         if (formData.tradeLicense) formDataToSend.append("tradeLicense", formData.tradeLicense);
 
-        const res = await fetch("/api/leads", {
-            method: "POST",
-            body: formDataToSend,
-        });
-
-        if (!res.ok) {
-            alert("❌ Error submitting form. Server returned: " + res.status);
-            setIsSaving(false);
-            return;
-        }
-
-        const data = await res.json();
-        if (data.success) {
-            setIsSubmitted(true);
-            setFormData({
-                locationName: "", capacity: "", waitTime: "", mapsUrl: "", latitude: "", longitude: "", timing: "", address: "",
-                lobbies: "", keyRooms: "", distance: "", supervisorUser: "", validationUser: "", reportUser: "",
-                ticketType: "", feeType: "", ticketPricing: "", vatType: "", driverCount: "", driverList: "",
-                adminName: "", adminEmail: "", adminPhone: "", trainingRequired: "",
-                logoCompany: null, logoClient: null, vatCertificate: null, tradeLicense: null, documentSubmitMethod: ""
+        try {
+            const res = await fetch("/api/leads", {
+                method: "POST",
+                body: formDataToSend,
             });
-            router.refresh();
-            setCurrentStep(1);
-            onLeadAdded();
-        } else {
-            alert("⚠️ Submission failed: " + data.message);
+
+            if (!res.ok) {
+                const errData = await res.json();
+                alert("❌ Error submitting form: " + (errData.error || res.statusText));
+                setIsSaving(false);
+                return;
+            }
+
+            const data = await res.json();
+            if (data.success) {
+                setIsSubmitted(true);
+                // Reset form
+                setFormData({
+                    locationName: "", capacity: "", waitTime: "", mapsUrl: "", latitude: "", longitude: "", timing: "", address: "",
+                    lobbies: "", keyRooms: "", distance: "", supervisorUser: "no", validationUser: "no", reportUser: "no",
+                    ticketType: "pre-printed", feeType: "fixed", ticketPricing: "", vatType: "inclusive", driverCount: "", driverList: "",
+                    adminName: "", adminEmail: "", adminPhone: "", trainingRequired: "yes",
+                    logoCompany: null, logoClient: null, vatCertificate: null, tradeLicense: null, documentSubmitMethod: ""
+                });
+                router.refresh();
+                if (onLeadAdded) onLeadAdded();
+            } else {
+                alert("⚠️ Submission failed: " + data.message);
+            }
+        } catch (error) {
+            console.error(error);
+            alert("❌ Network error occurred.");
+        } finally {
+            setIsSaving(false);
         }
-        setIsSaving(false);
     };
 
     useEffect(() => {
@@ -182,7 +208,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
             const timer = setTimeout(() => {
                 setIsSubmitted(false);
                 onClose(); 
-            }, 3000); 
+            }, 2000); 
             return () => clearTimeout(timer);
         }
     }, [isSubmitted, onClose]);
@@ -190,7 +216,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
     const validateStep1 = () => {
         let newErrors: any = {};
         if (!formData.locationName.trim()) newErrors.locationName = "Location name is required.";
-        if (!formData.capacity.trim()) newErrors.capacity = "Parking capacity is required.";
+        if (!String(formData.capacity).trim()) newErrors.capacity = "Parking capacity is required.";
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -200,12 +226,14 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
     const validateStep5 = () => {
         let newErrors: any = {};
         if (!formData.adminName.trim()) newErrors.adminName = "Full name is required.";
+        
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!formData.adminEmail.trim()) {
             newErrors.adminEmail = "Email is required.";
         } else if (!emailRegex.test(formData.adminEmail.trim())) {
             newErrors.adminEmail = "Enter a valid email address.";
         }
+        
         const phoneClean = formData.adminPhone.replace(/\D/g, "");
         if (!formData.adminPhone.trim()) {
             newErrors.adminPhone = "Phone number is required.";
@@ -229,29 +257,27 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
         setCurrentStep(prev => prev + 1);
     };
 
-    // --- UPDATED FILE UPLOAD BLOCK (Fixed Memory Leak) ---
+    // --- REFINED FILE UPLOAD BLOCK ---
     const FileUploadBlock = ({ label, name, accept, file, setFormData }: any) => {
         const fileRef = useRef<HTMLInputElement>(null);
         const [previewUrl, setPreviewUrl] = useState<string | null>(null);
         
+        const isImage = accept.includes("image");
+        const isPdf = accept.includes("pdf");
+
         // Handle Preview Generation
         useEffect(() => {
-            if (!file) {
+            if (!file || !isImage) {
                 setPreviewUrl(null);
                 return;
             }
+            
+            const url = URL.createObjectURL(file);
+            setPreviewUrl(url);
 
-            const isImage = file.type?.startsWith("image/");
-            if (isImage) {
-                const url = URL.createObjectURL(file);
-                setPreviewUrl(url);
-
-                // Cleanup function to revoke URL and prevent memory leaks
-                return () => URL.revokeObjectURL(url);
-            } else {
-                setPreviewUrl(null);
-            }
-        }, [file]);
+            // Cleanup to prevent memory leaks
+            return () => URL.revokeObjectURL(url);
+        }, [file, isImage]);
         
         return (
             <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800 flex flex-col gap-2">
@@ -259,18 +285,19 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                 
                 {/* Image Preview Area */}
                 {previewUrl && (
-                    <div className="flex justify-center items-center p-2 border border-gray-400 dark:border-gray-600 bg-white dark:bg-gray-900 rounded-md">
+                    <div className="relative w-full h-[100px] bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden p-2 flex justify-center items-center">
                         <img 
                             src={previewUrl} 
-                            alt={`${label} preview`} 
-                            className="max-h-20 max-w-full object-contain"
+                            alt="preview" 
+                            className="object-contain w-full h-full"
                         />
                     </div>
                 )}
-                {/* File name display for PDFs or when no image is uploaded */}
-                {!previewUrl && file && (
+
+                {/* File Info Area (for PDF or when no preview) */}
+                {(!previewUrl && file) && (
                      <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 p-2 border border-dashed border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-700/50">
-                        <FileText className="w-4 h-4 text-blue-500" />
+                        {isPdf ? <FileText className="w-4 h-4 text-red-500" /> : <FileText className="w-4 h-4 text-blue-500" />}
                         <span className="truncate">{file.name}</span>
                     </div>
                 )}
@@ -283,22 +310,22 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                     onChange={(e: any) => setFormData((prev: any) => ({ ...prev, [name]: e.target.files[0] }))}
                     className="hidden"
                 />
+                
                 <button
                     type="button"
                     onClick={() => fileRef.current?.click()}
-                    className="flex items-center justify-between border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-2 text-sm text-gray-700 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-600 transition"
+                    className="flex items-center justify-between border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-2 text-sm text-gray-700 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-600 transition mt-1"
                 >
                     <span className="truncate">
-                        {file ? `Change File: ${file.name}` : "No file chosen"}
+                        {file ? `Change: ${file.name}` : "Upload File"}
                     </span>
                     {file ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Upload className="w-4 h-4 text-gray-500 dark:text-gray-400" />}
                 </button>
             </div>
         );
     };
-    // --- END UPDATED FILE UPLOAD BLOCK ---
 
-    // Shared Input Styles for Dark Mode
+    // Shared Input Styles
     const inputClass = "w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all";
     const labelClass = "text-sm font-medium text-gray-900 dark:text-gray-100";
 
@@ -425,12 +452,12 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="md:col-span-1">
                                     <label className={labelClass}>Location Name <span className="text-red-500">*</span></label>
-                                    <input type="text" name="locationName" placeholder="e.g. Grand Hyatt Dubai" value={formData.locationName} onChange={(e) => { setFormData({ ...formData, locationName: e.target.value }); setErrors({ ...errors, locationName: "" }); }} className={`${inputClass} ${errors.locationName ? "border-red-500" : ""}`} />
+                                    <input type="text" name="locationName" placeholder="e.g. Grand Hyatt Dubai" value={formData.locationName} onChange={handleChange} className={`${inputClass} ${errors.locationName ? "border-red-500" : ""}`} />
                                     {errors.locationName && <small className="text-red-500 text-xs">{errors.locationName}</small>}
                                 </div>
                                 <div>
                                     <label className={labelClass}>Parking Capacity <span className="text-red-500">*</span></label>
-                                    <input type="number" name="capacity" placeholder="Total slots" value={formData.capacity} onChange={(e) => { setFormData({ ...formData, capacity: e.target.value }); setErrors({ ...errors, capacity: "" }); }} className={`${inputClass} ${errors.capacity ? "border-red-500" : ""}`} />
+                                    <input type="number" name="capacity" placeholder="Total slots" value={formData.capacity} onChange={handleChange} className={`${inputClass} ${errors.capacity ? "border-red-500" : ""}`} />
                                     {errors.capacity && <small className="text-red-500 text-xs">{errors.capacity}</small>}
                                 </div>
                                 <div><label className={labelClass}>Average Waiting Time</label><input type="text" name="waitTime" placeholder="e.g. 15 mins" value={formData.waitTime} onChange={(e) => setFormData({ ...formData, waitTime: e.target.value })} className={inputClass} /></div>
@@ -490,9 +517,9 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                                     <label className={`${labelClass} mb-2 block`}>Fee Type</label>
                                     <div className="flex flex-wrap gap-4">
                                         {["fixed", "hourly", "free"].map(type => (
-                                                <label key={type} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 capitalize">
-                                                    <input type="radio" name="feeType" value={type} checked={formData.feeType === type} onChange={handleChange} className="accent-blue-600 w-4 h-4" /> {type}
-                                                </label>
+                                            <label key={type} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 capitalize">
+                                                <input type="radio" name="feeType" value={type} checked={formData.feeType === type} onChange={handleChange} className="accent-blue-600 w-4 h-4" /> {type}
+                                            </label>
                                         ))}
                                     </div>
                                 </div>
@@ -504,9 +531,9 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                                     <label className={`${labelClass} mb-2 block`}>VAT Handling</label>
                                     <div className="flex gap-4">
                                         {["inclusive", "exclusive"].map(type => (
-                                                <label key={type} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 capitalize">
-                                                    <input type="radio" name="vatType" value={type} checked={formData.vatType === type} onChange={handleChange} className="accent-blue-600 w-4 h-4" /> {type}
-                                                </label>
+                                            <label key={type} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 capitalize">
+                                                <input type="radio" name="vatType" value={type} checked={formData.vatType === type} onChange={handleChange} className="accent-blue-600 w-4 h-4" /> {type}
+                                            </label>
                                         ))}
                                     </div>
                                 </div>
@@ -537,9 +564,9 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                     {currentStep === 5 && (
                         <div className="space-y-4 animate-in fade-in slide-in-from-right-8 duration-500">
                             <div className="space-y-4">
-                                <div><label className={labelClass}>Full Name <span className="text-red-500">*</span></label><input type="text" name="adminName" placeholder="e.g. Ayush Aggarwal" value={formData.adminName} onChange={(e) => { setFormData({ ...formData, adminName: e.target.value }); setErrors(prev => ({ ...prev, adminName: "" })); }} className={`${inputClass} ${errors.adminName ? "border-red-500" : ""}`} />{errors.adminName && <p className="text-xs text-red-500">{errors.adminName}</p>}</div>
-                                <div><label className={labelClass}>Email Address <span className="text-red-500">*</span></label><input type="email" name="adminEmail" placeholder="e.g. admin@example.com" value={formData.adminEmail} onChange={(e) => { setFormData({ ...formData, adminEmail: e.target.value }); setErrors(prev => ({ ...prev, adminEmail: "" })); }} className={`${inputClass} ${errors.adminEmail ? "border-red-500" : ""}`} />{errors.adminEmail && <p className="text-xs text-red-500">{errors.adminEmail}</p>}</div>
-                                <div><label className={labelClass}>Mobile Number <span className="text-red-500">*</span></label><input type="tel" name="adminPhone" placeholder="e.g. 971521234567" value={formData.adminPhone} onChange={(e) => { setFormData({ ...formData, adminPhone: e.target.value }); setErrors(prev => ({ ...prev, adminPhone: "" })); }} className={`${inputClass} ${errors.adminPhone ? "border-red-500" : ""}`} />{errors.adminPhone && <p className="text-xs text-red-500">{errors.adminPhone}</p>}</div>
+                                <div><label className={labelClass}>Full Name <span className="text-red-500">*</span></label><input type="text" name="adminName" placeholder="e.g. Ayush Aggarwal" value={formData.adminName} onChange={handleChange} className={`${inputClass} ${errors.adminName ? "border-red-500" : ""}`} />{errors.adminName && <p className="text-xs text-red-500">{errors.adminName}</p>}</div>
+                                <div><label className={labelClass}>Email Address <span className="text-red-500">*</span></label><input type="email" name="adminEmail" placeholder="e.g. admin@example.com" value={formData.adminEmail} onChange={handleChange} className={`${inputClass} ${errors.adminEmail ? "border-red-500" : ""}`} />{errors.adminEmail && <p className="text-xs text-red-500">{errors.adminEmail}</p>}</div>
+                                <div><label className={labelClass}>Mobile Number <span className="text-red-500">*</span></label><input type="tel" name="adminPhone" placeholder="e.g. 971521234567" value={formData.adminPhone} onChange={handleChange} className={`${inputClass} ${errors.adminPhone ? "border-red-500" : ""}`} />{errors.adminPhone && <p className="text-xs text-red-500">{errors.adminPhone}</p>}</div>
                                 
                                 <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700">
                                     <label className={`${labelClass} mb-3 block`}>Training Required</label>
@@ -570,7 +597,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                         </div>
                     )}
                 </div>
-                {/* FOOTER — same style as edit modal */}
+                {/* FOOTER */}
                 <div
                     className="
                         shrink-0 bg-white dark:bg-gray-900 
@@ -583,7 +610,8 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                     {currentStep > 1 ? (
                         <button 
                             onClick={() => setCurrentStep(prev => prev - 1)} 
-                            className="
+                            disabled={isSaving}
+                            className={`
                                 flex items-center gap-2 
                                 px-4 py-2 rounded-lg text-sm font-medium
                                 border border-gray-400 dark:border-gray-700
@@ -593,7 +621,8 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                                 active:scale-[0.98]
                                 transition-all duration-200
                                 shadow-sm
-                            "
+                                ${isSaving ? "opacity-50 cursor-not-allowed" : ""}
+                            `}
                         >
                             ← Back
                         </button>
@@ -608,6 +637,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                         {currentStep < 6 ? (
                             <button
                                 onClick={handleNext}
+                                disabled={isSaving}
                                 className="
                                     bg-blue-600 hover:bg-blue-700 
                                     text-white px-5 py-2 rounded-lg 
@@ -617,25 +647,25 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                                 Next Step
                             </button>
                         ) : (
-                        <button
-    onClick={handleFinalSubmit}
-    disabled={isSaving}
-    className={`px-6 py-2 rounded-lg shadow-md transition-all text-white 
-        ${isSaving ? "bg-gray-500 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"}
-    `}
->
-    {isSaving ? (
-        <span className="flex items-center gap-2">
-            <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4A8 8 0 104 12z"></path>
-            </svg>
-            Saving...
-        </span>
-    ) : (
-        "Finish & Submit"
-    )}
-</button>
+                            <button
+                                onClick={handleFinalSubmit}
+                                disabled={isSaving}
+                                className={`px-6 py-2 rounded-lg shadow-md transition-all text-white 
+                                    ${isSaving ? "bg-gray-500 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"}
+                                `}
+                            >
+                                {isSaving ? (
+                                    <span className="flex items-center gap-2">
+                                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4A8 8 0 104 12z"></path>
+                                        </svg>
+                                        Saving...
+                                    </span>
+                                ) : (
+                                    "Finish & Submit"
+                                )}
+                            </button>
 
                         )}
                     </div>

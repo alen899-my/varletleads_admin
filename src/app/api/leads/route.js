@@ -48,7 +48,8 @@ export async function POST(req) {
 
         // 2. Upload to Vercel Blob
         const blob = await put(filename, file, {
-          access: 'public', // Files are publicly accessible via URL
+          access: 'public',
+          addRandomSuffix: true,
         });
 
         // 3. Push metadata (saving the Blob URL)
