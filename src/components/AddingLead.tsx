@@ -55,7 +55,7 @@ export default function Page() {
 
   // --- NEW STATE FOR READ-ONLY MODE ---
   const [isReadOnly, setIsReadOnly] = useState(false);
-  
+   
   // --- MODIFIED: State for both logo previews ---
   const [companyLogoPreview, setCompanyLogoPreview] = useState<string | null>(null);
   const [clientLogoPreview, setClientLogoPreview] = useState<string | null>(null);
@@ -165,7 +165,7 @@ useEffect(() => {
 }, [formData.logoClient, existingFiles.logoClient]);
 
 
-  
+   
 
   // --- NEW: FETCH DATA IF EDIT MODE ---
   useEffect(() => {
@@ -196,7 +196,7 @@ useEffect(() => {
                         filename: att.filename,
                         path: att.path // <--- THIS IS KEY FOR PUBLIC FOLDER IMAGES
                     };
-                    
+                     
                     if (att.fieldname === "companyLogo")
                         fileMap.logoCompany = fileObject;
                     if (att.fieldname === "clientLogo")
@@ -528,6 +528,8 @@ useEffect(() => {
   }) => {
     // Typed useRef
     const fileRef = useRef<HTMLInputElement>(null);
+    // State for local error message
+    const [fileError, setFileError] = useState("");
 
     return (
       <div
@@ -555,12 +557,21 @@ useEffect(() => {
           accept={accept}
           name={name}
           disabled={isReadOnly} // Disable input
-          onChange={(e: any) =>
+          onChange={(e: any) => {
+            const selectedFile = e.target.files[0];
+            // Check file size (500KB = 500 * 1024 bytes)
+            if (selectedFile && selectedFile.size > 500 * 1024) {
+              setFileError("File size must be less than 500KB");
+              e.target.value = ""; // Reset input
+              return;
+            }
+            // Clear error if validation passes
+            setFileError("");
             setFormData((prev: any) => ({
               ...prev,
-              [name]: e.target.files[0],
-            }))
-          }
+              [name]: selectedFile,
+            }));
+          }}
           className="hidden"
         />
 
@@ -586,13 +597,41 @@ useEffect(() => {
             <Upload className="w-4 h-4 text-gray-500 flex-shrink-0 ml-2" />
           )}
         </button>
+        {/* Error Message displayed at the bottom of the input */}
+        {fileError && <p className="text-red-500 text-xs mt-1">{fileError}</p>}
       </div>
     );
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 flex justify-center">
-      <div className="w-full max-w-4xl bg-white rounded-2xl border border-slate-400 shadow-lg p-5 sm:p-6 md:p-4">
+   <div className="
+  min-h-screen 
+  bg-white 
+  flex 
+  justify-center 
+  items-start 
+  md:items-center    /* Center form vertically on desktop */
+  px-0 
+">
+
+  <div className="
+    w-full 
+    max-w-4xl 
+    bg-white 
+ 
+    border border-slate-300 
+    shadow-lg
+
+ 
+    px-2            
+    sm:px-4         
+    md:px-10 py-2      
+    lg:px-16  py-4      
+    xl:px-24  py-6      
+
+    py-6
+  ">
+
         {/* HEADER */}
         <div className="text-center  py-2">
           {/* Logo */}
@@ -610,7 +649,7 @@ useEffect(() => {
               <div>
                 {/* Eyebrow Label */}
                 <div className="flex items-center justify-center flex-col gap-1">
-                  <p className="uppercase text-sm sm:text-xl tracking-wider font-semibold text-[#ae5c83] bg-[#ae5c83]/10 px-4 py-1 rounded-md shadow-sm border ">
+                  <p className="uppercase text-sm sm:text-xl tracking-wider font-semibold text-[#ae5c83] px-4 py-1  ">
                     {isEditMode
                       ? "Edit Valet Parking Lead"
                       : "New Valet Parking Lead – Registration Form"}
@@ -1077,13 +1116,10 @@ useEffect(() => {
                   <button
   onClick={() => setCurrentStep((prev) => prev - 1)}
   className="
-    flex items-center gap-2 
+   flex items-center gap-2 
     px-4 py-2 rounded-lg 
     text-sm font-medium
-    border border-gray-400 dark:border-gray-700 
-    text-gray-800 dark:text-gray-200
-    bg-white dark:bg-gray-900 
-    hover:bg-gray-100 dark:hover:bg-gray-700
+    border border-gray-400 
     active:scale-[0.97]
     transition-all duration-200
     shadow-sm
@@ -1612,7 +1648,7 @@ useEffect(() => {
                     file={formData.logoClient}
                     accept="image/png, image/jpeg"
                     setFormData={setFormData}
-                   existingFileName={existingFiles.logoClient?.filename}
+                    existingFileName={existingFiles.logoClient?.filename}
                     showPreview={true}
                     previewUrl={clientLogoPreview} // Pass the state for client preview
                   />
@@ -1634,7 +1670,7 @@ useEffect(() => {
                     file={formData.tradeLicense}
                     accept="application/pdf"
                     setFormData={setFormData}
-                   existingFileName={existingFiles.tradeLicense?.filename}
+                    existingFileName={existingFiles.tradeLicense?.filename}
                   />
                 </div>
 
@@ -1719,57 +1755,71 @@ useEffect(() => {
             )}
           </>
         )}
-      {isSubmitted && (
+ {isSubmitted && (
   <div className="flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-4">
-    <div className="w-full max-w-md rounded-xl p-6 text-center">
-      <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-3" />
+    <div className="w-full max-w-md rounded-2xl p-8 text-center bg-white shadow-xl border border-gray-200">
+      
+      {/* Success Icon */}
+      <div className="w-20 h-20 flex items-center justify-center rounded-full bg-green-100 mx-auto mb-4 shadow-sm">
+        <CheckCircle className="w-12 h-12 text-green-600" />
+      </div>
 
-      <h2 className="text-xl font-bold text-gray-900">
-        {isEditMode ? "Successfully Updated 🎉" : "You're All Set! 🚗"}
+      {/* Title */}
+      <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">
+        {isEditMode ? "Update Successful 🎉" : "You're All Set! 🚗"}
       </h2>
 
-      <p className="text-gray-600 text-sm mt-1">
+      {/* Subtitle */}
+      <p className="text-gray-600 text-sm mt-2 leading-relaxed">
         {isEditMode ? (
           "Your valet update has been successfully saved."
         ) : (
           <>
             Thanks for applying to join the team! <br />
-            We’ve received your valet onboarding request. Our team will review your profile and contact you shortly with the next steps.
+            Your onboarding request has been received. Our team will review it and contact you shortly.
           </>
         )}
       </p>
 
-      <div className="mt-6 border border-gray-200 rounded-lg bg-gray-50 p-4 relative">
-        <p className="text-xs text-gray-500">REFERENCE NUMBER</p>
-        <p className="text-2xl font-bold tracking-widest text-[#ae5c83]">
+      {/* Reference Box */}
+      <div className="mt-6 rounded-xl bg-gray-50 p-5 border border-gray-300 shadow-inner relative">
+        <p className="text-xs font-semibold text-gray-500 tracking-wide">
+          REFERENCE NUMBER
+        </p>
+
+        <p className="text-3xl font-extrabold text-[#ae5c83] tracking-widest mt-1">
           {referenceId}
         </p>
 
-        {/* 📌 Copy Button */}
         <button
           onClick={() => {
             navigator.clipboard.writeText(referenceId || "");
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
           }}
-          className="absolute top-3 right-3 text-xs bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded transition flex items-center gap-1"
+          className="absolute top-3 right-3 text-xs bg-white border border-gray-300 hover:bg-gray-100 px-2 py-1 rounded-lg transition shadow-sm flex items-center gap-1"
         >
-          {copied ? (
-            "✔ Copied!"
-          ) : (
-            <span className="flex items-center gap-1">📋 Copy</span>
-          )}
+          {copied ? "✔ Copied!" : <span className="flex items-center gap-1">📋 Copy</span>}
         </button>
       </div>
 
-      {/* 🔔 Reminder Text */}
+      {/* Reminder */}
       <p className="text-xs text-gray-500 mt-2">
         Please save this reference number for future communication.
       </p>
 
+      {/* CTA Button */}
       <button
         onClick={() => router.push("/")}
-        className="mt-6 bg-[#ae5c83] hover:bg-[#923c63] px-6 py-3 rounded-lg text-white font-medium shadow"
+        className="
+          mt-6 
+          bg-[#ae5c83] hover:bg-[#923c63] 
+          px-8 py-3 
+          rounded-xl 
+          text-white font-semibold 
+          shadow-md hover:shadow-lg 
+          transition-all duration-200
+        "
       >
         Go to Homepage
       </button>
