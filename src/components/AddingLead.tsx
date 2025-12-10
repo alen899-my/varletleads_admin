@@ -27,16 +27,11 @@ import {
   Phone,
   GraduationCap,
   CheckCircle,
-  Lock, // Added Lock icon
+  Lock, 
 } from "lucide-react";
 import { useRef } from "react";
-// Added useParams to get the ID from the URL
 import { useParams, useRouter } from "next/navigation";
 import { z } from "zod";
-
-// --- Custom CSS Styles for neatness and responsiveness ---
-// Note: These styles must be defined outside the component or be part of a global CSS file,
-// but for a single file solution, they are defined as Tailwind/inline classes within the JSX.
 
 export default function Page() {
   // Get ID from URL parameters
@@ -55,7 +50,7 @@ export default function Page() {
 
   // --- NEW STATE FOR READ-ONLY MODE ---
   const [isReadOnly, setIsReadOnly] = useState(false);
-  
+   
   // --- MODIFIED: State for both logo previews ---
   const [companyLogoPreview, setCompanyLogoPreview] = useState<string | null>(null);
   const [clientLogoPreview, setClientLogoPreview] = useState<string | null>(null);
@@ -69,18 +64,15 @@ export default function Page() {
     adminPhone: "",
   });
 
-  // State to hold filenames of existing attachments (for display purposes in Edit Mode)
-  // Typed as any to allow mixed null/string types easily
-// Page.js: State to hold details of existing attachments (around line 60)
-const [existingFiles, setExistingFiles] = useState<any>({
-  logoCompany: null, // Will hold {id: string, filename: string, path: string}
-  logoClient: null,
-  vatCertificate: null,
-  tradeLicense: null,
-});
+  // State to hold details of existing attachments
+  const [existingFiles, setExistingFiles] = useState<any>({
+    logoCompany: null, // Will hold {id: string, filename: string, path: string}
+    logoClient: null,
+    vatCertificate: null,
+    tradeLicense: null,
+  });
 
   // Placeholder for form data state
-  // Typed as any to prevent "Type 'File' is not assignable to type 'null'" errors
   const [formData, setFormData] = useState<any>({
     // STEP 1
     locationName: "",
@@ -125,47 +117,44 @@ const [existingFiles, setExistingFiles] = useState<any>({
   });
 
   // --- LOGO PREVIEW LOGIC (COMPANY) ---
-// Page.js: LOGO PREVIEW LOGIC (COMPANY - around line 72)
-useEffect(() => {
-  if (formData.logoCompany instanceof File) {
-    const reader = new FileReader();
-    reader.onloadend = () => setCompanyLogoPreview(reader.result as string);
-    reader.readAsDataURL(formData.logoCompany);
-    return;
-  }
+  useEffect(() => {
+    if (formData.logoCompany instanceof File) {
+      const reader = new FileReader();
+      reader.onloadend = () => setCompanyLogoPreview(reader.result as string);
+      reader.readAsDataURL(formData.logoCompany);
+      return;
+    }
 
-  // FIX: Check if the object exists and has a PATH (Local File)
-  if (existingFiles.logoCompany?.path) {
-    // Use the path directly as the src
-    setCompanyLogoPreview(existingFiles.logoCompany.path);
-    return;
-  }
+    // FIX: Check if the object exists and has a PATH (Vercel Blob URL)
+    if (existingFiles.logoCompany?.path) {
+      // Use the path (Blob URL) directly as the src
+      setCompanyLogoPreview(existingFiles.logoCompany.path);
+      return;
+    }
 
-  setCompanyLogoPreview(null);
-}, [formData.logoCompany, existingFiles.logoCompany]);
-
-
-// Page.js: LOGO PREVIEW LOGIC (CLIENT - around line 88)
-useEffect(() => {
-  if (formData.logoClient instanceof File) {
-    const reader = new FileReader();
-    reader.onloadend = () => setClientLogoPreview(reader.result as string);
-    reader.readAsDataURL(formData.logoClient);
-    return;
-  }
-
-  // FIX: Check if the object exists and has a PATH (Local File)
-  if (existingFiles.logoClient?.path) {
-    // Use the path directly as the src
-    setClientLogoPreview(existingFiles.logoClient.path);
-    return;
-  }
-
-  setClientLogoPreview(null);
-}, [formData.logoClient, existingFiles.logoClient]);
+    setCompanyLogoPreview(null);
+  }, [formData.logoCompany, existingFiles.logoCompany]);
 
 
-  
+  // --- LOGO PREVIEW LOGIC (CLIENT) ---
+  useEffect(() => {
+    if (formData.logoClient instanceof File) {
+      const reader = new FileReader();
+      reader.onloadend = () => setClientLogoPreview(reader.result as string);
+      reader.readAsDataURL(formData.logoClient);
+      return;
+    }
+
+    // FIX: Check if the object exists and has a PATH (Vercel Blob URL)
+    if (existingFiles.logoClient?.path) {
+      // Use the path (Blob URL) directly as the src
+      setClientLogoPreview(existingFiles.logoClient.path);
+      return;
+    }
+
+    setClientLogoPreview(null);
+  }, [formData.logoClient, existingFiles.logoClient]);
+
 
   // --- NEW: FETCH DATA IF EDIT MODE ---
   useEffect(() => {
@@ -173,7 +162,6 @@ useEffect(() => {
       const fetchLeadData = async () => {
         try {
           // Assuming you have a GET route that matches the PUT route path structure
-          // If your GET route is different, adjust this URL.
           const res = await fetch(`/api/all-leads/${leadId}`);
           const data = await res.json();
 
@@ -189,14 +177,14 @@ useEffect(() => {
             const fileMap: any = {};
             if (l.attachments) {
               l.attachments.forEach((att: any) => {
-                // Modified: We now look for 'path' or '_id'
+                // Modified: We now look for 'path'
                 if (att.filename) {
                     const fileObject = {
-                        id: att._id || att.fileId, // Keep for safety
+                        id: att._id || att.fileId,
                         filename: att.filename,
-                        path: att.path // <--- THIS IS KEY FOR PUBLIC FOLDER IMAGES
+                        path: att.path // <--- THIS WILL NOW BE A VERCEL BLOB URL
                     };
-                    
+                     
                     if (att.fieldname === "companyLogo")
                         fileMap.logoCompany = fileObject;
                     if (att.fieldname === "clientLogo")
@@ -276,7 +264,6 @@ useEffect(() => {
   };
 
   // Handle form input changes
-  // Typed event as ChangeEvent to fix implicit any error
   const handleChange = (
     e:
       | React.ChangeEvent<
@@ -343,7 +330,7 @@ useEffect(() => {
     if (formData.tradeLicense)
       formDataToSend.append("tradeLicense", formData.tradeLicense);
 
-    // --- MODIFIED SUBMISSION LOGIC ---
+    // --- SUBMISSION LOGIC ---
     let url = "/api/leads";
     let method = "POST";
 
@@ -361,6 +348,7 @@ useEffect(() => {
     // Fix: Prevent JSON parse error if server crashed
     if (!res.ok) {
       alert("❌ Error submitting form. Server returned: " + res.status);
+      setIsSubmitting(false); // Stop loader
       return;
     }
 
@@ -440,11 +428,11 @@ useEffect(() => {
     return Object.keys(newErrors).length === 0;
   };
   const validateStep2 = () => {
-    return true; // No required fields yet, placeholder for future
+    return true; 
   };
 
   const validateStep3 = () => {
-    return true; // No required fields yet
+    return true; 
   };
 
   const validateStep4 = () => {
@@ -462,7 +450,7 @@ useEffect(() => {
 
     if (!result.success) {
       const formattedErrors: any = {};
-      const zodErrors = result.error?.issues ?? []; // <-- FIX HERE
+      const zodErrors = result.error?.issues ?? []; 
 
       zodErrors.forEach((err) => {
         if (err.path[0]) {
@@ -505,8 +493,7 @@ useEffect(() => {
     setCurrentStep((prev) => prev + 1);
   };
 
-  // --- MODIFIED FILE UPLOAD COMPONENT TO SHOW EXISTING FILES AND PREVIEW ---
-  // Added inline type definition for props
+  // --- MODIFIED FILE UPLOAD COMPONENT ---
   const FileUploadBlock = ({
     label,
     name,
@@ -537,7 +524,7 @@ useEffect(() => {
       >
         <label className="text-sm font-medium text-gray-900">{label}</label>
 
-        {/* Preview Container (only for logoCompany/logoClient if needed) */}
+        {/* Preview Container */}
         {showPreview && previewUrl && (
           <div className="flex justify-center items-center p-2 border border-gray-300 bg-white rounded-md">
             <img
@@ -554,7 +541,7 @@ useEffect(() => {
           type="file"
           accept={accept}
           name={name}
-          disabled={isReadOnly} // Disable input
+          disabled={isReadOnly} 
           onChange={(e: any) =>
             setFormData((prev: any) => ({
               ...prev,
@@ -567,9 +554,8 @@ useEffect(() => {
         {/* Custom UI Button */}
         <button
           type="button"
-          // Safe optional chaining for current
           onClick={() => fileRef.current?.click()}
-          disabled={isReadOnly} // Disable button
+          disabled={isReadOnly} 
           className="flex items-center justify-between border border-gray-300 bg-white rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition"
         >
           <span className="truncate text-left">
@@ -597,7 +583,7 @@ useEffect(() => {
   flex 
   justify-center 
   items-start 
-  md:items-center    /* Center form vertically on desktop */
+  md:items-center    
   px-0 
 ">
 
@@ -610,11 +596,11 @@ useEffect(() => {
     shadow-lg
 
  
-    px-4         
-    sm:px-6       
+    px-4          
+    sm:px-6        
     md:px-10  
-    lg:px-16       
-    xl:px-24      
+    lg:px-16        
+    xl:px-24       
 
     py-6
   ">
@@ -623,12 +609,11 @@ useEffect(() => {
         <div className="text-center  py-2">
           {/* Logo */}
           <div className="flex justify-center">
-            {/* Using Next.js Image component is better for optimization but using a standard img tag here since this is a pure React file */}
             <img
-              src="/logo.png" // <-- change to your logo path
+              src="/logo.png" 
               alt="Valet Lead Logo"
               className="w-40 sm:w-34 md:w-68 object-contain drop-shadow-md mb-3"
-              style={{ maxWidth: "270px", height: "auto" }} // Responsive styling
+              style={{ maxWidth: "270px", height: "auto" }} 
             />
           </div>
           {!isSubmitted && (
@@ -1570,7 +1555,7 @@ useEffect(() => {
 
                 {/* Buttons */}
                 <div className="pt-2 flex justify-between">
-                 <button
+                   <button
   onClick={() => setCurrentStep((prev) => prev - 1)}
   className="
     flex items-center gap-2 
@@ -1635,7 +1620,7 @@ useEffect(() => {
                     file={formData.logoClient}
                     accept="image/png, image/jpeg"
                     setFormData={setFormData}
-                   existingFileName={existingFiles.logoClient?.filename}
+                    existingFileName={existingFiles.logoClient?.filename}
                     showPreview={true}
                     previewUrl={clientLogoPreview} // Pass the state for client preview
                   />
@@ -1657,7 +1642,7 @@ useEffect(() => {
                     file={formData.tradeLicense}
                     accept="application/pdf"
                     setFormData={setFormData}
-                   existingFileName={existingFiles.tradeLicense?.filename}
+                    existingFileName={existingFiles.tradeLicense?.filename}
                   />
                 </div>
 
@@ -1745,7 +1730,7 @@ useEffect(() => {
  {isSubmitted && (
   <div className="flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-4">
     <div className="w-full max-w-md rounded-2xl p-8 text-center bg-white shadow-xl border border-gray-200">
-      
+       
       {/* Success Icon */}
       <div className="w-20 h-20 flex items-center justify-center rounded-full bg-green-100 mx-auto mb-4 shadow-sm">
         <CheckCircle className="w-12 h-12 text-green-600" />

@@ -42,11 +42,11 @@ const LeadSchema = new mongoose.Schema(
       default: "pending",
     },
 
-    attachments: [
+   attachments: [
       {
         fieldname: String,
         filename: String,
-        // Changed from fileId (ObjectId) to path (String) for local storage
+        // Stores the Vercel Blob URL (e.g., https://xyz.public.blob.vercel-storage.com/file.png)
         path: String, 
       },
     ],

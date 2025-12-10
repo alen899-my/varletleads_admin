@@ -1,8 +1,7 @@
 import { connectDB } from "@/lib/mongodb";
 import Lead from "@/models/Lead";
 import { NextResponse } from "next/server";
-import path from "path";
-import { writeFile, mkdir } from "fs/promises";
+import { put } from "@vercel/blob"; // Import Vercel Blob
 
 function generateReference() {
   const random = Math.floor(100000 + Math.random() * 900000);
@@ -11,8 +10,7 @@ function generateReference() {
 
 export async function POST(req) {
   try {
-    const conn = await connectDB();
-    // GridFS/DB Client logic removed as we are saving to disk
+    await connectDB();
     
     const formData = await req.formData();
     
@@ -24,12 +22,13 @@ export async function POST(req) {
 
     const fileFields = ["companyLogo", "clientLogo", "vatCertificate", "tradeLicense"];
 
-    // Process files concurrently
+    // Process files concurrently and upload to Vercel Blob
     await Promise.all(
       fileFields.map(async (field) => {
         const file = formData.get(field);
 
-        if (!file || typeof file === "string") return;
+        // Check if file exists and is actually a File object (not a string)
+        if (!file || typeof file === "string" || file.size === 0) return;
 
         // Validate file type
         if (field.includes("Logo") && !allowedImages.includes(file.type)) {
@@ -40,32 +39,23 @@ export async function POST(req) {
           throw new Error(`${field} must be PDF`);
         }
 
-        // Convert file to buffer
-        const buffer = Buffer.from(await file.arrayBuffer());
-
-        // --- NEW LOCAL SAVE LOGIC ---
+        // --- VERCEL BLOB UPLOAD LOGIC ---
         
-        // 1. Define safe filename (timestamp + sanitized original name)
-        const timestamp = Date.now();
+        // 1. Define filename (Vercel Blob handles uniqueness automatically, but adding prefix helps organization)
+        // We do not need a timestamp here necessarily as Vercel adds a hash, but it keeps names clean.
         const safeName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
-        const filename = `${timestamp}-${safeName}`;
+        const filename = `leads/${safeName}`; // Puts it in a 'leads' folder in your blob store
 
-        // 2. Define path (public/uploads)
-        // ensure you create a folder named 'uploads' inside your 'public' folder
-        const uploadDir = path.join(process.cwd(), "public", "uploads");
-        
-        // 3. Ensure directory exists
-        await mkdir(uploadDir, { recursive: true });
+        // 2. Upload to Vercel Blob
+        const blob = await put(filename, file, {
+          access: 'public', // Files are publicly accessible via URL
+        });
 
-        // 4. Write file to disk
-        const filePath = path.join(uploadDir, filename);
-        await writeFile(filePath, buffer);
-
-        // 5. Push metadata (saving the public URL path)
+        // 3. Push metadata (saving the Blob URL)
         attachments.push({
           fieldname: field,
           filename: file.name,
-          path: `/uploads/${filename}`, // This acts as the ID/URL
+          path: blob.url, // This is the public URL (e.g. https://store.vercel.../file.png)
         });
       })
     );
