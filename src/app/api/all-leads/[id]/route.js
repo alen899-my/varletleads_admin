@@ -1,7 +1,7 @@
 import { connectDB } from "@/lib/mongodb";
 import Lead from "@/models/Lead";
 import { NextResponse } from "next/server";
-import { GridFSBucket } from "mongodb";
+import { put } from "@vercel/blob"; // Import Vercel Blob
 
 // ---------------------------------------------------------
 // 1. GET Method - This POPULATES the form fields
@@ -44,9 +44,8 @@ export async function PUT(req, { params }) {
   try {
     const { id } = await params;
     
-    // Connect to DB and GridFS
-    const { connection } = await connectDB();
-    const bucket = new GridFSBucket(connection.db, { bucketName: "uploads" });
+    // Connect to DB (No need for GridFS connection anymore)
+    await connectDB();
 
     const formData = await req.formData();
     
@@ -55,31 +54,41 @@ export async function PUT(req, { params }) {
     const attachments = []; // To store new file metadata
 
     // 1. Process Fields & Files
+    // We use Promise.all to handle multiple async blob uploads if necessary
+    const fileProcessingPromises = [];
+
     for (const [key, value] of formData.entries()) {
       // If it's a File (and not empty)
       if (value instanceof File && value.size > 0) {
-        const buffer = Buffer.from(await value.arrayBuffer());
         
-        // Upload new file to GridFS
-        const uploadStream = bucket.openUploadStream(value.name, {
-          contentType: value.type,
-        });
-        uploadStream.end(buffer);
+        // --- VERCEL BLOB UPLOAD LOGIC ---
+        const processFile = async () => {
+            const safeName = value.name.replace(/[^a-zA-Z0-9.]/g, "_");
+            const filename = `leads/${Date.now()}-${safeName}`; // Unique path
 
-        // Add to attachments array for the DB
-        attachments.push({
-          filename: value.name,
-          fileId: uploadStream.id, // GridFS Object ID
-          fieldname: key,          // e.g., "companyLogo"
-          contentType: value.type,
-          uploadDate: new Date(),
-        });
+            // Upload to Vercel Blob
+            const blob = await put(filename, value, {
+                access: 'public',
+            });
+
+            // Add to attachments array for the DB
+            attachments.push({
+                fieldname: key,          // e.g., "companyLogo"
+                filename: value.name,
+                path: blob.url,          // Vercel Blob URL acts as the reference
+                // contentType and uploadDate are handled by Blob or DB defaults
+            });
+        };
+        fileProcessingPromises.push(processFile());
 
       } else if (typeof value === 'string') {
         // It's a normal text field
         updateData[key] = value;
       }
     }
+
+    // Wait for all uploads to finish
+    await Promise.all(fileProcessingPromises);
 
     // 2. Find the existing lead to merge attachments
     const existingLead = await Lead.findById(id);

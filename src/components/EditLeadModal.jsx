@@ -96,7 +96,7 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
   const filePreview = (fileObj) => {
     if (!fileObj) return null;
 
-    // 1. If we have a direct path (New Method), return it
+    // 1. If we have a direct path (New Method - Blob URL), return it
     if (fileObj.path) {
       return fileObj.path;
     }
@@ -150,7 +150,7 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
           fileMap[file.fieldname] = {
             filename: file.filename,
             id: file.fileId || file._id, // whichever exists
-            path: file.path, // <--- IMPORTANT: Capture the path
+            path: file.path, // <--- IMPORTANT: Capture the Blob URL path
           };
         });
 
@@ -1164,47 +1164,6 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
 
           {/* BUTTONS ALWAYS HORIZONTAL */}
           <div className="flex flex-row items-center gap-3 flex-wrap">
-            {currentStep < 6 && (
-              <button
-                onClick={handleUpdateSubmit}
-                disabled={isSubmitted || isSaving}
-                className={`px-5 py-2 rounded-lg font-medium transition flex items-center gap-2 
-          ${
-            isSubmitted || isSaving
-              ? "opacity-50 cursor-not-allowed bg-green-600 text-white"
-              : "bg-green-600 text-white hover:bg-green-700"
-          }`}
-              >
-                {isSaving ? (
-                  <>
-                    <svg
-                      className="animate-spin h-4 w-4 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8v4l3-3-3-3v4A8 8 0 104 12z"
-                      ></path>
-                    </svg>
-                    Saving...
-                  </>
-                ) : (
-                  "Save"
-                )}
-              </button>
-            )}
-
             {currentStep < 6 && (
               <button
                 onClick={handleNext}
