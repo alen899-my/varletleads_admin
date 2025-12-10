@@ -623,11 +623,11 @@ useEffect(() => {
     shadow-lg
 
  
-    px-2            
-    sm:px-4         
-    md:px-10 py-2      
-    lg:px-16  py-4      
-    xl:px-24  py-6      
+    px-4            
+    sm:px-6         
+    md:px-10     
+    lg:px-16      
+    xl:px-24      
 
     py-6
   ">
