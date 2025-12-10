@@ -43,12 +43,19 @@ export default function LeadDetailsModal({ open, onClose, data }) {
 
   if (!open || !data) return null;
 
+  // Organize attachments by field name
   const files = { companyLogo: null, clientLogo: null, vatCertificate: null, tradeLicense: null };
   data.attachments?.forEach((file) => {
     if (!files[file.fieldname]) files[file.fieldname] = file;
   });
 
-  const extractId = (id) => id?.toString().replace(/ObjectId\("|"|\)/g, "") ?? null;
+  // Helper to get URL: Priority is 'path' (Public folder), fallback to API if only ID exists (Old data)
+  const getFileUrl = (file) => {
+    if (!file) return null;
+    if (file.path) return file.path; // ✅ NEW WAY: Direct path
+    if (file.fileId || file._id) return `/api/all-leads/files/${file.fileId || file._id}`; // Legacy fallback
+    return null;
+  };
 
   const editLink = `${origin}/location-registration/${data._id}`;
 
@@ -143,11 +150,10 @@ export default function LeadDetailsModal({ open, onClose, data }) {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
-                  {/* IMAGE BLOCKS (UNCHANGED) */}
+                  {/* IMAGE BLOCKS */}
                   {["companyLogo", "clientLogo"].map((field) => {
                     const stored = files[field];
-                    const id = stored ? extractId(stored.fileId) : null;
-                    const preview = id ? `/api/all-leads/files/${id}` : null;
+                    const preview = getFileUrl(stored);
 
                     return (
                       <div key={field} className="p-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
@@ -168,10 +174,12 @@ export default function LeadDetailsModal({ open, onClose, data }) {
                           )}
                         </div>
 
-                        {id && (
+                        {preview && (
                           <a
-                            href={`/api/all-leads/files/${id}`}
-                            download
+                            href={preview}
+                            download={stored?.filename || "download.png"}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="mt-2 w-full flex items-center justify-center gap-2 text-xs p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-100"
                           >
                             <Download size={14} /> Download
@@ -181,10 +189,10 @@ export default function LeadDetailsModal({ open, onClose, data }) {
                     );
                   })}
 
-                  {/* PDF BLOCKS (UNCHANGED) */}
+                  {/* PDF BLOCKS */}
                   {["vatCertificate", "tradeLicense"].map((field) => {
                     const stored = files[field];
-                    const id = stored ? extractId(stored.fileId) : null;
+                    const downloadUrl = getFileUrl(stored);
 
                     return (
                       <div key={field} className="p-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
@@ -197,10 +205,12 @@ export default function LeadDetailsModal({ open, onClose, data }) {
                           </span>
                         </div>
 
-                        {id && (
+                        {downloadUrl && (
                           <a
-                            href={`/api/all-leads/files/${id}`}
-                            download
+                            href={downloadUrl}
+                            download={stored?.filename || "document.pdf"}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="mt-2 flex items-center justify-center gap-2 text-xs border border-gray-300 dark:border-gray-600 p-2 rounded bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100"
                           >
                             <Download size={14} /> Download

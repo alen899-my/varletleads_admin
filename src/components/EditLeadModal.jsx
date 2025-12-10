@@ -26,7 +26,7 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
   const [wizardError, setWizardError] = useState("");
   const [errors, setErrors] = useState({});
   const [previewSrc, setPreviewSrc] = useState(null); // Used for the modal preview
-  
+
   // --- NEW STATE: Loading state for buttons ---
   const [isSaving, setIsSaving] = useState(false);
 
@@ -91,18 +91,20 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
     };
   }, [isOpen, onClose]);
 
-  // Helper function to get preview URL based on file type
-  // Only provide a direct URL for images. PDFs will be displayed as an icon/name.
+  // --- UPDATED HELPER: PREVIEW LOGIC ---
+  // Now uses the direct 'path' from the database instead of an API call
   const filePreview = (fileObj) => {
-    if (!fileObj || !fileObj.id) return null;
-    // Simple check to determine if it's likely an image for direct preview
-    const filename = fileObj.filename?.toLowerCase();
-    if (filename.endsWith(".jpg") || filename.endsWith(".jpeg") || filename.endsWith(".png") || filename.endsWith(".gif")) {
-      return `/api/all-leads/files/${fileObj.id}`;
+    if (!fileObj) return null;
+
+    // 1. If we have a direct path (New Method), return it
+    if (fileObj.path) {
+      return fileObj.path;
     }
-    return null; // Return null for non-image files
+
+    // 2. Fallback: If no path but likely an image, return null (or handle legacy if needed)
+    return null;
   };
-  
+
   // POPULATE DATA
   useEffect(() => {
     // Only populate if open and data exists
@@ -141,12 +143,14 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
         tradeLicense: null,
       }));
 
+      // --- UPDATED ATTACHMENT MAPPING ---
       if (leadData.attachments && Array.isArray(leadData.attachments)) {
         const fileMap = {};
         leadData.attachments.forEach((file) => {
           fileMap[file.fieldname] = {
             filename: file.filename,
             id: file.fileId || file._id, // whichever exists
+            path: file.path, // <--- IMPORTANT: Capture the path
           };
         });
 
@@ -224,7 +228,7 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
       setWizardError("Please fill in all required fields.");
       return;
     }
-    
+
     setIsSaving(true); // Start saving/loading process
 
     const formDataToSend = new FormData();
@@ -274,23 +278,28 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
     // Determine if it should show an image preview
     const isImageFile = accept.includes("image");
     const isPdfFile = accept.includes("pdf");
-    
+
     // Get preview source for existing files (only if it's an image)
-    const existingPreviewUrl = isImageFile ? filePreview(currentFileName) : null;
-    
+    const existingPreviewUrl = isImageFile
+      ? filePreview(currentFileName)
+      : null;
+
     // Get preview source for newly selected file
-    const newPreviewUrl = (file && isImageFile) ? URL.createObjectURL(file) : null;
-    
+    const newPreviewUrl =
+      file && isImageFile ? URL.createObjectURL(file) : null;
+
     // Determine file status text
     const statusText = file
-        ? `New: ${file.name}`
-        : currentFileName?.filename
-        ? `Current: ${currentFileName.filename}`
-        : "No file chosen";
+      ? `New: ${file.name}`
+      : currentFileName?.filename
+      ? `Current: ${currentFileName.filename}`
+      : "No file chosen";
 
     return (
       <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800 flex flex-col gap-2">
-        <label className="text-sm font-medium text-gray-900 dark:text-gray-200">{label}</label>
+        <label className="text-sm font-medium text-gray-900 dark:text-gray-200">
+          {label}
+        </label>
 
         {/* 📌 Conditional Preview for Images */}
         {/* Existing Image Preview */}
@@ -308,10 +317,10 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
             />
           </div>
         )}
-        
+
         {/* New Image Preview */}
         {newPreviewUrl && (
-            <div
+          <div
             className="relative w-full h-[100px] bg-gray-100 dark:bg-gray-900 border border-gray-300 
             dark:border-gray-700 rounded-lg overflow-hidden cursor-pointer p-2"
             // Set for modal preview
@@ -326,13 +335,17 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
         )}
 
         {/* 📄 Display file name/icon for non-image files or if no preview is available */}
-        {(!isImageFile || (isImageFile && !existingPreviewUrl && !newPreviewUrl)) && (
+        {(!isImageFile ||
+          (isImageFile && !existingPreviewUrl && !newPreviewUrl)) && (
           <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 p-2 border border-dashed border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-700/50">
-             {isPdfFile ? <FileIcon className="w-4 h-4 text-red-500" /> : <FileIcon className="w-4 h-4 text-gray-500" />}
-             <span className="truncate">{statusText}</span>
+            {isPdfFile ? (
+              <FileIcon className="w-4 h-4 text-red-500" />
+            ) : (
+              <FileIcon className="w-4 h-4 text-gray-500" />
+            )}
+            <span className="truncate">{statusText}</span>
           </div>
         )}
-
 
         {/* File input (Hidden) */}
         <input
@@ -355,7 +368,11 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
             dark:hover:bg-gray-600 transition mt-1"
         >
           <span className="truncate">
-            {file ? `New File Selected: ${file.name}` : currentFileName?.filename ? "Click to Replace File" : "Upload File"}
+            {file
+              ? `New File Selected: ${file.name}`
+              : currentFileName?.filename
+              ? "Click to Replace File"
+              : "Upload File"}
           </span>
           {file ? (
             <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
@@ -377,12 +394,12 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
       <div
         ref={modalRef}
         className="
-    w-full max-w-4xl 
-    h-[90vh]      /* 👈 FIXED HEIGHT */
-    shadow-xl relative 
-    bg-white dark:bg-gray-900 border border-gray-400 dark:border-gray-600 
-    flex flex-col rounded-xl overflow-hidden
-  "
+    w-full max-w-4xl 
+    h-[90vh]      /* 👈 FIXED HEIGHT */
+    shadow-xl relative 
+    bg-white dark:bg-gray-900 border border-gray-400 dark:border-gray-600 
+    flex flex-col rounded-xl overflow-hidden
+  "
       >
         {/* --- HEADER (Fixed) --- */}
         <div className="shrink-0 bg-white dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 px-5 py-3 flex justify-between items-center z-20">
@@ -406,27 +423,27 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
         {/* --- CONTENT BODY (Scrollable) --- */}
         <div
           className={`
-    p-4 sm:p-6 space-y-4 flex-1 overflow-y-auto
-    min-h-[420px]     /* 👈 prevents jumping */
-    max-h-[65vh]      /* 👈 ensures scrolling instead of resize */
-    transition-all duration-300 ease-in-out
-    [&::-webkit-scrollbar]:w-2
-    [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-gray-950
-    [&::-webkit-scrollbar-thumb]:bg-gray-400 dark:[&::-webkit-scrollbar-thumb]:bg-gray-700
-    [&::-webkit-scrollbar-thumb]:rounded-full
-    hover:[&::-webkit-scrollbar-thumb]:bg-gray-500
-    dark:hover:[&::-webkit-scrollbar-thumb]:bg-gray-600
-  `}
+    p-4 sm:p-6 space-y-4 flex-1 overflow-y-auto
+    min-h-[420px]     /* 👈 prevents jumping */
+    max-h-[65vh]      /* 👈 ensures scrolling instead of resize */
+    transition-all duration-300 ease-in-out
+    [&::-webkit-scrollbar]:w-2
+    [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-gray-950
+    [&::-webkit-scrollbar-thumb]:bg-gray-400 dark:[&::-webkit-scrollbar-thumb]:bg-gray-700
+    [&::-webkit-scrollbar-thumb]:rounded-full
+    hover:[&::-webkit-scrollbar-thumb]:bg-gray-500
+    dark:hover:[&::-webkit-scrollbar-thumb]:bg-gray-600
+  `}
         >
           {/* 1. TABS NAVIGATION */}
           {/* Step Navigation Tabs */}
           <div className="w-full flex items-center justify-center py-2 mb-4">
             <div
               className="
-                w-full flex overflow-x-auto no-scrollbar scroll-smooth 
-                rounded-lg border border-gray-300 dark:border-gray-700 
-                bg-white dark:bg-gray-800 shadow-sm
-              "
+                w-full flex overflow-x-auto no-scrollbar scroll-smooth 
+                rounded-lg border border-gray-300 dark:border-gray-700 
+                bg-white dark:bg-gray-800 shadow-sm
+              "
               style={{ WebkitOverflowScrolling: "touch" }}
             >
               {[
@@ -446,17 +463,17 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
                     key={tab.label}
                     onClick={() => validateBeforeJump(stepNumber)}
                     className={`
-                      flex items-center justify-center gap-1 flex-1
-                      px-4 py-2 text-xs sm:text-sm font-medium whitespace-nowrap
-                      transition-all duration-200 select-none border-r border-gray-300 dark:border-gray-600
-                      ${
-                      isActive
-                        ? "bg-blue-600 text-white font-semibold shadow-md scale-[1.03]"
-                        : isCompleted
-                        ? "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-                        : "text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
-                    }
-                    `}
+                      flex items-center justify-center gap-1 flex-1
+                      px-4 py-2 text-xs sm:text-sm font-medium whitespace-nowrap
+                      transition-all duration-200 select-none border-r border-gray-300 dark:border-gray-600
+                      ${
+                        isActive
+                          ? "bg-blue-600 text-white font-semibold shadow-md scale-[1.03]"
+                          : isCompleted
+                          ? "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                          : "text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                      }
+                    `}
                   >
                     {tab.icon} {tab.label}
                   </button>
@@ -489,8 +506,8 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
           {isSubmitted && (
             <div
               className="bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-600 
-      text-green-800 dark:text-green-200 px-4 py-3 rounded-lg text-sm font-medium 
-      flex items-center gap-2 animate-in fade-in slide-in-from-top-2 mb-3"
+      text-green-800 dark:text-green-200 px-4 py-3 rounded-lg text-sm font-medium 
+      flex items-center gap-2 animate-in fade-in slide-in-from-top-2 mb-3"
             >
               <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
               Changes saved successfully.
@@ -540,7 +557,8 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-1">
                     <label className="text-sm font-medium text-gray-900 dark:text-gray-200">
-                      Location Name <span className="text-red-600 font-bold">*</span>
+                      Location Name{" "}
+                      <span className="text-red-600 font-bold">*</span>
                     </label>
                     <input
                       type="text"
@@ -561,7 +579,8 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-900 dark:text-gray-200">
-                      Parking Capacity <span className="text-red-600 font-bold">*</span>
+                      Parking Capacity{" "}
+                      <span className="text-red-600 font-bold">*</span>
                     </label>
                     <input
                       type="number"
@@ -706,7 +725,10 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
                   </div>
                   {/* FIXED: Mapped correctly to state keys */}
                   {[
-                    { label: "Supervisor user required?", key: "supervisorUser" },
+                    {
+                      label: "Supervisor user required?",
+                      key: "supervisorUser",
+                    },
                     { label: "Ticket validation user?", key: "validationUser" },
                     { label: "Finance report access?", key: "reportUser" },
                   ].map((item) => (
@@ -841,7 +863,8 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
                   {/* Ticket Pricing */}
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1">
-                      Ticket Prices (AED) <Banknote className="w-4 h-4 text-gray-400" />
+                      Ticket Prices (AED){" "}
+                      <Banknote className="w-4 h-4 text-gray-400" />
                     </label>
                     <textarea
                       rows={2}
@@ -952,7 +975,8 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
                   {/* Name */}
                   <div className="md:col-span-2">
                     <label className="text-sm font-medium text-gray-900 dark:text-gray-200">
-                      Admin Name <span className="text-red-600 font-bold">*</span>
+                      Admin Name{" "}
+                      <span className="text-red-600 font-bold">*</span>
                     </label>
                     <input
                       type="text"
@@ -1118,19 +1142,19 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
 
         <div
           className="shrink-0 bg-white dark:bg-gray-900 border-t border-gray-300 dark:border-gray-700 
-    px-4 py-4 flex items-center justify-between gap-4"
+    px-4 py-4 flex items-center justify-between gap-4"
         >
           {/* BACK BUTTON */}
           {currentStep > 1 ? (
             <button
               onClick={() => setCurrentStep((prev) => prev - 1)}
               disabled={isSubmitted || isSaving}
-              className={`gap-2 px-4 py-2 rounded-lg text-sm font-medium  border transition-all duration-200
-        ${
-                isSubmitted || isSaving
-                  ? "opacity-50 cursor-not-allowed border-gray-400 text-gray-400"
-                  : "border border-gray-400 dark:border-gray-700	text-gray-700 dark:text-gray-200	bg-white dark:bg-gray-900	hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-[0.98]	transition-all duration-20	shadow-sm"
-              }`}
+              className={`gap-2 px-4 py-2 rounded-lg text-sm font-medium  border transition-all duration-200
+        ${
+          isSubmitted || isSaving
+            ? "opacity-50 cursor-not-allowed border-gray-400 text-gray-400"
+            : "border border-gray-400 dark:border-gray-700  text-gray-700 dark:text-gray-200  bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-[0.98]  transition-all duration-20  shadow-sm"
+        }`}
             >
               ← Back
             </button>
@@ -1145,17 +1169,33 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
                 onClick={handleUpdateSubmit}
                 disabled={isSubmitted || isSaving}
                 className={`px-5 py-2 rounded-lg font-medium transition flex items-center gap-2 
-          ${
-                  isSubmitted || isSaving
-                    ? "opacity-50 cursor-not-allowed bg-green-600 text-white"
-                    : "bg-green-600 text-white hover:bg-green-700"
-                }`}
+          ${
+            isSubmitted || isSaving
+              ? "opacity-50 cursor-not-allowed bg-green-600 text-white"
+              : "bg-green-600 text-white hover:bg-green-700"
+          }`}
               >
                 {isSaving ? (
                   <>
-                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4A8 8 0 104 12z"></path>
+                    <svg
+                      className="animate-spin h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v4l3-3-3-3v4A8 8 0 104 12z"
+                      ></path>
                     </svg>
                     Saving...
                   </>
@@ -1170,11 +1210,11 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
                 onClick={handleNext}
                 disabled={isSubmitted || isSaving}
                 className={`px-5 py-2 rounded-lg font-medium transition flex items-center gap-2
-          ${
-                  isSubmitted || isSaving
-                    ? "opacity-50 cursor-not-allowed bg-blue-600 text-white"
-                    : "bg-blue-600 text-white hover:bg-blue-700"
-                }`}
+          ${
+            isSubmitted || isSaving
+              ? "opacity-50 cursor-not-allowed bg-blue-600 text-white"
+              : "bg-blue-600 text-white hover:bg-blue-700"
+          }`}
               >
                 Next <ArrowRight size={16} />
               </button>
@@ -1185,17 +1225,33 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
                 onClick={handleUpdateSubmit}
                 disabled={isSubmitted || isSaving}
                 className={`px-6 py-2 rounded-lg font-medium transition flex items-center gap-2
-          ${
-                  isSubmitted || isSaving
-                    ? "opacity-50 cursor-not-allowed bg-green-600 text-white"
-                    : "bg-green-600 text-white hover:bg-green-700"
-                }`}
+          ${
+            isSubmitted || isSaving
+              ? "opacity-50 cursor-not-allowed bg-green-600 text-white"
+              : "bg-green-600 text-white hover:bg-green-700"
+          }`}
               >
                 {isSaving ? (
                   <>
-                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4A8 8 0 104 12z"></path>
+                    <svg
+                      className="animate-spin h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v4l3-3-3-3v4A8 8 0 104 12z"
+                      ></path>
                     </svg>
                     Saving...
                   </>

@@ -73,7 +73,7 @@ export default function Page() {
   // Typed as any to allow mixed null/string types easily
 // Page.js: State to hold details of existing attachments (around line 60)
 const [existingFiles, setExistingFiles] = useState<any>({
-  logoCompany: null, // Will hold {id: string, filename: string}
+  logoCompany: null, // Will hold {id: string, filename: string, path: string}
   logoClient: null,
   vatCertificate: null,
   tradeLicense: null,
@@ -134,10 +134,10 @@ useEffect(() => {
     return;
   }
 
-  // FIX: Check if the object exists and has an ID
-  if (existingFiles.logoCompany?.id) {
-    // Use the ID to construct the API URL
-    setCompanyLogoPreview(`/api/all-leads/files/${existingFiles.logoCompany.id}`);
+  // FIX: Check if the object exists and has a PATH (Local File)
+  if (existingFiles.logoCompany?.path) {
+    // Use the path directly as the src
+    setCompanyLogoPreview(existingFiles.logoCompany.path);
     return;
   }
 
@@ -154,10 +154,10 @@ useEffect(() => {
     return;
   }
 
-  // FIX: Check if the object exists and has an ID
-  if (existingFiles.logoClient?.id) {
-    // Use the ID to construct the API URL
-    setClientLogoPreview(`/api/all-leads/files/${existingFiles.logoClient.id}`);
+  // FIX: Check if the object exists and has a PATH (Local File)
+  if (existingFiles.logoClient?.path) {
+    // Use the path directly as the src
+    setClientLogoPreview(existingFiles.logoClient.path);
     return;
   }
 
@@ -189,12 +189,12 @@ useEffect(() => {
             const fileMap: any = {};
             if (l.attachments) {
               l.attachments.forEach((att: any) => {
-                const fileId = att.fileId || att._id; 
-                
-                if (fileId) {
+                // Modified: We now look for 'path' or '_id'
+                if (att.filename) {
                     const fileObject = {
-                        id: fileId,
-                        filename: att.filename
+                        id: att._id || att.fileId, // Keep for safety
+                        filename: att.filename,
+                        path: att.path // <--- THIS IS KEY FOR PUBLIC FOLDER IMAGES
                     };
                     
                     if (att.fieldname === "companyLogo")
@@ -594,7 +594,7 @@ useEffect(() => {
     <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 flex justify-center">
       <div className="w-full max-w-4xl bg-white rounded-2xl border border-slate-400 shadow-lg p-5 sm:p-6 md:p-4">
         {/* HEADER */}
-        <div className="text-center  py-2">
+        <div className="text-center  py-2">
           {/* Logo */}
           <div className="flex justify-center">
             {/* Using Next.js Image component is better for optimization but using a standard img tag here since this is a pure React file */}
@@ -628,7 +628,7 @@ useEffect(() => {
                 </div>
 
                 {/* Subtitle */}
-                <p className="text-gray-600 text-xs sm:text-sm md:text-base max-w-xl mx-auto  leading-relaxed">
+                <p className="text-gray-600 text-xs sm:text-sm md:text-base max-w-xl mx-auto  leading-relaxed">
                   Please share the details below so we can configure your valet
                   parking automation.
                 </p>
@@ -645,9 +645,9 @@ useEffect(() => {
               {/* Scroll wrapper */}
               <div
                 className="
-      w-full flex overflow-x-auto no-scrollbar scroll-smooth 
-      rounded-lg border border-gray-300 bg-white shadow-md
-    "
+      w-full flex overflow-x-auto no-scrollbar scroll-smooth 
+      rounded-lg border border-gray-300 bg-white shadow-md
+    "
                 style={{ WebkitOverflowScrolling: "touch" }}
               >
                 {[
@@ -667,18 +667,18 @@ useEffect(() => {
                       key={tab.label}
                       onClick={() => validateBeforeJump(stepNumber)}
                       className={`
-            flex items-center justify-center gap-1 flex-1 
-            px-4 py-3 text-xs font-medium whitespace-nowrap
-            transition-all duration-200 select-none
-            border-r border-gray-300
-            ${
+            flex items-center justify-center gap-1 flex-1 
+            px-4 py-3 text-xs font-medium whitespace-nowrap
+            transition-all duration-200 select-none
+            border-r border-gray-300
+            ${
               isActive
                 ? "text-black bg-[#ae5c83] text-white font-semibold"
                 : isCompleted
                 ? "text-gray-700 hover:bg-gray-200"
                 : "text-gray-500 hover:bg-gray-200"
             }
-          `}
+          `}
                     >
                       {tab.icon} {tab.label}
                     </button>
@@ -1676,7 +1676,7 @@ useEffect(() => {
                     onClick={handleFinalSubmit}
                     disabled={isReadOnly} // Disable submit button
                     className={`px-6 py-3 rounded-lg text-sm shadow-sm transition-all
-                  ${
+                  ${
                       isReadOnly
                         ? "bg-gray-400 cursor-not-allowed text-gray-100"
                         : "bg-green-600 hover:bg-green-700 text-white"

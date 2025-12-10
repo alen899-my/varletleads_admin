@@ -3,10 +3,10 @@ import mongoose from "mongoose";
 const LeadSchema = new mongoose.Schema(
   {
     referenceId: {
-  type: String,
-  unique: true,
-  required: true,
-},
+      type: String,
+      unique: true,
+      required: true,
+    },
     // Step fields remain...
     locationName: String,
     capacity: Number,
@@ -37,23 +37,22 @@ const LeadSchema = new mongoose.Schema(
     adminPhone: String,
     trainingRequired: String,
     status: {
-  type: String,
-  enum: ["pending", "completed"],
-  default: "pending",
-},
-
+      type: String,
+      enum: ["pending", "completed"],
+      default: "pending",
+    },
 
     attachments: [
       {
         fieldname: String,
         filename: String,
-        fileId: mongoose.Schema.Types.ObjectId,
+        // Changed from fileId (ObjectId) to path (String) for local storage
+        path: String, 
       },
     ],
 
     documentSubmitMethod: String,
   },
-  
   { timestamps: true }
 );
 

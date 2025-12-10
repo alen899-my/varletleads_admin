@@ -1,7 +1,8 @@
 import { connectDB } from "@/lib/mongodb";
 import Lead from "@/models/Lead";
-import { GridFSBucket } from "mongodb";
 import { NextResponse } from "next/server";
+import path from "path";
+import { writeFile, mkdir } from "fs/promises";
 
 function generateReference() {
   const random = Math.floor(100000 + Math.random() * 900000);
@@ -11,12 +12,11 @@ function generateReference() {
 export async function POST(req) {
   try {
     const conn = await connectDB();
-    const db = conn.connection.getClient().db();
-
+    // GridFS/DB Client logic removed as we are saving to disk
+    
     const formData = await req.formData();
-
-    const bucket = new GridFSBucket(db, { bucketName: "uploads" });
-
+    
+    // Create attachments array
     const attachments = [];
 
     const allowedImages = ["image/png", "image/jpeg"];
@@ -24,7 +24,7 @@ export async function POST(req) {
 
     const fileFields = ["companyLogo", "clientLogo", "vatCertificate", "tradeLicense"];
 
-    // Upload all files concurrently → much faster
+    // Process files concurrently
     await Promise.all(
       fileFields.map(async (field) => {
         const file = formData.get(field);
@@ -43,19 +43,29 @@ export async function POST(req) {
         // Convert file to buffer
         const buffer = Buffer.from(await file.arrayBuffer());
 
-        // Upload to GridFS
-        const uploadStream = bucket.openUploadStream(file.name);
+        // --- NEW LOCAL SAVE LOGIC ---
+        
+        // 1. Define safe filename (timestamp + sanitized original name)
+        const timestamp = Date.now();
+        const safeName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
+        const filename = `${timestamp}-${safeName}`;
 
-        await new Promise((resolve, reject) => {
-          uploadStream.on("finish", resolve);
-          uploadStream.on("error", reject);
-          uploadStream.end(buffer);
-        });
+        // 2. Define path (public/uploads)
+        // ensure you create a folder named 'uploads' inside your 'public' folder
+        const uploadDir = path.join(process.cwd(), "public", "uploads");
+        
+        // 3. Ensure directory exists
+        await mkdir(uploadDir, { recursive: true });
 
+        // 4. Write file to disk
+        const filePath = path.join(uploadDir, filename);
+        await writeFile(filePath, buffer);
+
+        // 5. Push metadata (saving the public URL path)
         attachments.push({
           fieldname: field,
           filename: file.name,
-          fileId: uploadStream.id.toString(),
+          path: `/uploads/${filename}`, // This acts as the ID/URL
         });
       })
     );
