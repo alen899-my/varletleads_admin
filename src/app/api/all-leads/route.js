@@ -2,6 +2,9 @@ import { connectDB } from "@/lib/mongodb";
 import Lead from "@/models/Lead";
 import { NextResponse } from "next/server";
 
+// Force dynamic ensures Vercel doesn't cache the API response statically
+export const dynamic = "force-dynamic";
+
 export async function GET(req) {
   try {
     await connectDB();
@@ -15,7 +18,7 @@ export async function GET(req) {
     const skip = (page - 1) * limit;
 
     // -------------------------------
-    // 🔍 Dynamic Query (unchanged)
+    // 🔍 Dynamic Query
     // -------------------------------
     let query = {};
 
@@ -28,6 +31,7 @@ export async function GET(req) {
         { adminPhone: regex },
         { locationName: regex },
         { referenceId: regex },
+        { driverList: regex }, // Added ability to search drivers
       ];
     }
 
@@ -41,6 +45,7 @@ export async function GET(req) {
     const [total, leads] = await Promise.all([
       Lead.countDocuments(query),
       Lead.find(query)
+        .lean() // Converts Mongoose docs to plain JS objects (Faster)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)

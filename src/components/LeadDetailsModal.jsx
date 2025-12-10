@@ -49,10 +49,10 @@ export default function LeadDetailsModal({ open, onClose, data }) {
     if (!files[file.fieldname]) files[file.fieldname] = file;
   });
 
-  // Helper to get URL: Priority is 'path' (Public folder), fallback to API if only ID exists (Old data)
+  // Helper to get URL: Priority is 'path' (Vercel Blob), fallback to API if only ID exists (Legacy)
   const getFileUrl = (file) => {
     if (!file) return null;
-    if (file.path) return file.path; // ✅ NEW WAY: Direct path
+    if (file.path) return file.path; // ✅ Direct path (Vercel Blob URL)
     if (file.fileId || file._id) return `/api/all-leads/files/${file.fileId || file._id}`; // Legacy fallback
     return null;
   };
@@ -129,7 +129,7 @@ export default function LeadDetailsModal({ open, onClose, data }) {
 
                   {/* ORIGINAL TEXT LOOP */}
                   {Object.entries(data).map(([key, value]) => {
-                    if (["_id", "__v", "status", "attachments"].includes(key) || typeof value === "object") return null;
+                    if (["_id", "__v", "status", "attachments", "createdAt", "updatedAt"].includes(key) || typeof value === "object") return null;
 
                     return (
                       <div key={key} className="p-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
@@ -162,7 +162,7 @@ export default function LeadDetailsModal({ open, onClose, data }) {
                         <div className="mt-2 relative w-full h-[200px] sm:h-[150px] md:h-[180px] lg:h-[220px] bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
                           {preview ? (
                             <Image
-                              unoptimized
+                              unoptimized // Necessary for Vercel Blob external URLs
                               src={preview}
                               fill
                               onClick={() => setPreviewSrc(preview)}
@@ -182,7 +182,7 @@ export default function LeadDetailsModal({ open, onClose, data }) {
                             rel="noopener noreferrer"
                             className="mt-2 w-full flex items-center justify-center gap-2 text-xs p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-100"
                           >
-                            <Download size={14} /> Download
+                            <Download size={14} /> Open / Download
                           </a>
                         )}
                       </div>
@@ -213,7 +213,7 @@ export default function LeadDetailsModal({ open, onClose, data }) {
                             rel="noopener noreferrer"
                             className="mt-2 flex items-center justify-center gap-2 text-xs border border-gray-300 dark:border-gray-600 p-2 rounded bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100"
                           >
-                            <Download size={14} /> Download
+                            <Download size={14} /> Open / Download
                           </a>
                         )}
                       </div>
