@@ -62,6 +62,10 @@ export default function Page() {
     adminName: "",
     adminEmail: "",
     adminPhone: "",
+    logoCompany: "",
+    logoClient: "",
+    vatCertificate: "",
+    tradeLicense: "",
   });
 
   // State to hold details of existing attachments
@@ -184,7 +188,7 @@ export default function Page() {
                         filename: att.filename,
                         path: att.path // <--- THIS WILL NOW BE A VERCEL BLOB URL
                     };
-                     
+                      
                     if (att.fieldname === "companyLogo")
                         fileMap.logoCompany = fileObject;
                     if (att.fieldname === "clientLogo")
@@ -299,13 +303,24 @@ export default function Page() {
     .min(1, { message: "Capacity must be at least 1" })
     .max(1500, { message: "Capacity cannot exceed 1500" });
 
-  const handleFinalSubmit = async () => {
+const handleFinalSubmit = async () => {
     // --- NEW CHECK: STOP SUBMIT IF READ ONLY ---
     if (isReadOnly) {
-      alert("This lead is marked as COMPLETED and cannot be edited.");
+      setWizardError("This lead is marked as COMPLETED and cannot be edited.");
+      window.scrollTo(0, 0);
       return;
     }
+    
+    // Final Validation Check before submitting (checks all, including file sizes)
+    if (!validateStep6()) {
+        setWizardError("Please resolve the errors in the document section (Max size 500KB).");
+        window.scrollTo(0, 0);
+        return;
+    }
+
     setIsSubmitting(true);
+    setWizardError(""); // Clear previous errors
+    
     const formDataToSend = new FormData();
 
     // Append all text fields
@@ -315,97 +330,65 @@ export default function Page() {
       }
     });
 
-    // Attach files (converted to backend schema keys)
-    // For Edit Mode: If user didn't select a new file, we send nothing for that field
-    // The backend PUT logic handles keeping the old file if new one isn't provided.
-    if (formData.logoCompany)
-      formDataToSend.append("companyLogo", formData.logoCompany);
-
-    if (formData.logoClient)
-      formDataToSend.append("clientLogo", formData.logoClient);
-
-    if (formData.vatCertificate)
-      formDataToSend.append("vatCertificate", formData.vatCertificate);
-
-    if (formData.tradeLicense)
-      formDataToSend.append("tradeLicense", formData.tradeLicense);
+    // Attach files 
+    if (formData.logoCompany) formDataToSend.append("companyLogo", formData.logoCompany);
+    if (formData.logoClient) formDataToSend.append("clientLogo", formData.logoClient);
+    if (formData.vatCertificate) formDataToSend.append("vatCertificate", formData.vatCertificate);
+    if (formData.tradeLicense) formDataToSend.append("tradeLicense", formData.tradeLicense);
 
     // --- SUBMISSION LOGIC ---
     let url = "/api/leads";
     let method = "POST";
 
     if (isEditMode) {
-      url = `/api/all-leads/${leadId}`; // Using the PUT route provided
+      url = `/api/all-leads/${leadId}`;
       method = "PUT";
     }
 
-    // Submit request
-    const res = await fetch(url, {
-      method: method,
-      body: formDataToSend,
-    });
+    try {
+      // Submit request
+      const res = await fetch(url, {
+        method: method,
+        body: formDataToSend,
+      });
 
-    // Fix: Prevent JSON parse error if server crashed
-    if (!res.ok) {
-      alert("❌ Error submitting form. Server returned: " + res.status);
-      setIsSubmitting(false); // Stop loader
-      return;
-    }
-
-    const data = await res.json();
-
-    if (data.success) {
-      // Always store reference (POST or PUT)
-      // Backend returns newLead, so fallback safe:
-      const ref = data.referenceId ?? data.lead?.referenceId ?? referenceId;
-      setReferenceId(ref);
-
-      // Show success UI for both POST and PUT
-      setIsSubmitted(true);
-
-      // Only clear form if creating new (POST)
-      if (!isEditMode) {
-        setFormData({
-          locationName: "",
-          capacity: "",
-          waitTime: "",
-          mapsUrl: "",
-          latitude: "",
-          longitude: "",
-          timing: "",
-          address: "",
-
-          lobbies: "",
-          keyRooms: "",
-          distance: "",
-          supervisorUser: "yes",
-          validationUser: "no",
-          reportUser: "yes",
-
-          ticketType: "system-generated",
-          feeType: "free",
-          ticketPricing: "",
-          vatType: "inclusive",
-
-          driverCount: "",
-          driverList: "",
-
-          adminName: "",
-          adminEmail: "",
-          adminPhone: "",
-          trainingRequired: "yes",
-
-          logoCompany: null,
-          logoClient: null,
-          vatCertificate: null,
-          tradeLicense: null,
-          documentSubmitMethod: "",
-        });
-        setCurrentStep(1);
+      // Fix: Prevent JSON parse error if server crashed
+      if (!res.ok) {
+        setWizardError("❌ Error submitting form. Server returned: " + res.status);
+        setIsSubmitting(false); 
+        window.scrollTo(0, 0); // Scroll to top to show error
+        return;
       }
-    } else {
-      alert("⚠️ Submission failed: " + data.message);
+
+      const data = await res.json();
+
+      if (data.success) {
+        const ref = data.referenceId ?? data.lead?.referenceId ?? referenceId;
+        setReferenceId(ref);
+        setIsSubmitted(true);
+        setWizardError(""); // Clear any errors on success
+
+        if (!isEditMode) {
+          // Reset form logic...
+          setFormData({
+            locationName: "", capacity: "", waitTime: "", mapsUrl: "", latitude: "", longitude: "", timing: "", address: "",
+            lobbies: "", keyRooms: "", distance: "", supervisorUser: "yes", validationUser: "no", reportUser: "yes",
+            ticketType: "system-generated", feeType: "free", ticketPricing: "", vatType: "inclusive",
+            driverCount: "", driverList: "", adminName: "", adminEmail: "", adminPhone: "", trainingRequired: "yes",
+            logoCompany: null, logoClient: null, vatCertificate: null, tradeLicense: null, documentSubmitMethod: "",
+          });
+          setCurrentStep(1);
+        }
+      } else {
+        // Show API error message in the div
+        setWizardError("⚠️ Submission failed: " + data.message);
+        window.scrollTo(0, 0);
+      }
+    } catch (error) {
+      setWizardError("⚠️ Network error. Please try again.");
+      window.scrollTo(0, 0);
     }
+    
     setIsSubmitting(false);
   };
 
@@ -473,7 +456,43 @@ export default function Page() {
     return true;
   };
 
-  const validateStep6 = () => true;
+  const validateStep6 = () => {
+    // ✅ Define Max Size (500KB)
+    const MAX_FILE_SIZE = 500 * 1024; // 500KB in bytes
+
+    // ✅ Zod Schema for File
+    const fileSchema = z
+      .custom<File>((file) => file instanceof File, "Invalid file")
+      .refine((file) => file.size <= MAX_FILE_SIZE, {
+        message: "File size must be less than 500KB.",
+      });
+
+    let newErrors: any = {};
+    let isValid = true;
+
+    // List of file fields to check
+    const fileFields = ["logoCompany", "logoClient", "vatCertificate", "tradeLicense"];
+
+    fileFields.forEach((field) => {
+      // Only validate if a NEW file has been uploaded (it is a File object)
+      if (formData[field] instanceof File) {
+        const result = fileSchema.safeParse(formData[field]);
+        if (!result.success) {
+          // Extract error message
+          newErrors[field] = result.error.issues[0].message;
+          isValid = false;
+        } else {
+            newErrors[field] = ""; // Clear error if valid
+        }
+      } else {
+        // Don't clear error if it was set dynamically by onChange
+        if(!errors[field]) newErrors[field] = "";
+      }
+    });
+
+    setErrors((prev: any) => ({ ...prev, ...newErrors }));
+    return isValid;
+  };
   const handleNext = () => {
     const validations: Record<number, () => boolean> = {
       1: validateStep1,
@@ -503,6 +522,8 @@ export default function Page() {
     existingFileName,
     showPreview,
     previewUrl,
+    error,
+    setErrors, // ✅ Added setErrors prop
   }: {
     label: string;
     name: string;
@@ -512,6 +533,8 @@ export default function Page() {
     existingFileName: any;
     showPreview?: boolean;
     previewUrl?: string | null;
+    error?: string;
+    setErrors: any; // ✅ Type for setErrors
   }) => {
     // Typed useRef
     const fileRef = useRef<HTMLInputElement>(null);
@@ -520,9 +543,15 @@ export default function Page() {
       <div
         className={`border rounded-lg p-3 bg-gray-50 flex flex-col gap-2 ${
           isReadOnly ? "opacity-70 pointer-events-none" : ""
-        }`}
+        } ${error ? "border-red-500 bg-red-50" : "border-gray-200"}`}
       >
-        <label className="text-sm font-medium text-gray-900">{label}</label>
+       <div className="flex justify-between items-center">
+            <label className={`text-sm font-medium ${error ? "text-red-600" : "text-gray-900"}`}>
+                {label}
+            </label>
+            {/* ✅ Display the error message text */}
+            {error && <span className="text-xs text-red-600 font-semibold">{error}</span>}
+        </div>
 
         {/* Preview Container */}
         {showPreview && previewUrl && (
@@ -542,12 +571,30 @@ export default function Page() {
           accept={accept}
           name={name}
           disabled={isReadOnly} 
-          onChange={(e: any) =>
-            setFormData((prev: any) => ({
-              ...prev,
-              [name]: e.target.files[0],
-            }))
-          }
+          onChange={(e: any) => {
+            const selectedFile = e.target.files[0];
+            
+            // ✅ IMMEDIATE VALIDATION
+            if (selectedFile) {
+                // 500KB Limit
+                if (selectedFile.size > 500 * 1024) {
+                    setErrors((prev: any) => ({
+                        ...prev,
+                        [name]: "File size must be less than 500KB."
+                    }));
+                } else {
+                    setErrors((prev: any) => ({
+                        ...prev,
+                        [name]: ""
+                    }));
+                }
+                
+                setFormData((prev: any) => ({
+                    ...prev,
+                    [name]: selectedFile,
+                }));
+            }
+          }}
           className="hidden"
         />
 
@@ -556,7 +603,9 @@ export default function Page() {
           type="button"
           onClick={() => fileRef.current?.click()}
           disabled={isReadOnly} 
-          className="flex items-center justify-between border border-gray-300 bg-white rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition"
+          className={`flex items-center justify-between border bg-white rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition ${
+             error ? "border-red-300 text-red-700" : "border-gray-300"
+          }`}
         >
           <span className="truncate text-left">
             {file
@@ -569,7 +618,7 @@ export default function Page() {
           {file || existingFileName ? (
             <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 ml-2" />
           ) : (
-            <Upload className="w-4 h-4 text-gray-500 flex-shrink-0 ml-2" />
+            <Upload className={`w-4 h-4 flex-shrink-0 ml-2 ${error ? "text-red-500" : "text-gray-500"}`} />
           )}
         </button>
       </div>
@@ -583,7 +632,7 @@ export default function Page() {
   flex 
   justify-center 
   items-start 
-  md:items-center    
+  md:items-center   
   px-0 
 ">
 
@@ -600,7 +649,7 @@ export default function Page() {
     sm:px-6        
     md:px-10  
     lg:px-16        
-    xl:px-24       
+    xl:px-24        
 
     py-6
   ">
@@ -1086,18 +1135,18 @@ export default function Page() {
                 {/* Buttons */}
                 <div className="pt-2 flex justify-between items-center">
                   <button
-  onClick={() => setCurrentStep((prev) => prev - 1)}
-  className="
+ onClick={() => setCurrentStep((prev) => prev - 1)}
+ className="
    flex items-center gap-2 
-    px-4 py-2 rounded-lg 
-    text-sm font-medium
-    border border-gray-400 
-    active:scale-[0.97]
-    transition-all duration-200
-    shadow-sm
-  "
+   px-4 py-2 rounded-lg 
+   text-sm font-medium
+   border border-gray-400 
+   active:scale-[0.97]
+   transition-all duration-200
+   shadow-sm
+ "
 >
-  ← Back
+ ← Back
 </button>
 
                   <button
@@ -1279,18 +1328,18 @@ export default function Page() {
                 {/* Buttons */}
                 <div className="pt-2 flex justify-between">
                   <button
-  onClick={() => setCurrentStep((prev) => prev - 1)}
-  className="
-    flex items-center gap-2 
-    px-4 py-2 rounded-lg 
-    text-sm font-medium
-    border border-gray-400 
-    active:scale-[0.97]
-    transition-all duration-200
-    shadow-sm
-  "
+ onClick={() => setCurrentStep((prev) => prev - 1)}
+ className="
+   flex items-center gap-2 
+   px-4 py-2 rounded-lg 
+   text-sm font-medium
+   border border-gray-400 
+   active:scale-[0.97]
+   transition-all duration-200
+   shadow-sm
+ "
 >
-  ← Back
+ ← Back
 </button>
 
                   <button
@@ -1372,18 +1421,18 @@ export default function Page() {
                 {/* Step Action Buttons */}
                 <div className="pt-2 flex justify-between">
                   <button
-  onClick={() => setCurrentStep((prev) => prev - 1)}
-  className="
-    flex items-center gap-2 
-    px-4 py-2 rounded-lg 
-    text-sm font-medium
-    border border-gray-400 
-    active:scale-[0.97]
-    transition-all duration-200
-    shadow-sm
-  "
+ onClick={() => setCurrentStep((prev) => prev - 1)}
+ className="
+   flex items-center gap-2 
+   px-4 py-2 rounded-lg 
+   text-sm font-medium
+   border border-gray-400 
+   active:scale-[0.97]
+   transition-all duration-200
+   shadow-sm
+ "
 >
-  ← Back
+ ← Back
 </button>
 
                   <button
@@ -1556,18 +1605,18 @@ export default function Page() {
                 {/* Buttons */}
                 <div className="pt-2 flex justify-between">
                    <button
-  onClick={() => setCurrentStep((prev) => prev - 1)}
-  className="
-    flex items-center gap-2 
-    px-4 py-2 rounded-lg 
-    text-sm font-medium
-    border border-gray-400 
-    active:scale-[0.97]
-    transition-all duration-200
-    shadow-sm
-  "
+ onClick={() => setCurrentStep((prev) => prev - 1)}
+ className="
+   flex items-center gap-2 
+   px-4 py-2 rounded-lg 
+   text-sm font-medium
+   border border-gray-400 
+   active:scale-[0.97]
+   transition-all duration-200
+   shadow-sm
+ "
 >
-  ← Back
+ ← Back
 </button>
 
                   <button
@@ -1610,7 +1659,9 @@ export default function Page() {
                     setFormData={setFormData}
                     existingFileName={existingFiles.logoCompany?.filename}
                     showPreview={true}
-                    previewUrl={companyLogoPreview} // Pass the state for company preview
+                    previewUrl={companyLogoPreview} 
+                    error={errors.logoCompany}
+                    setErrors={setErrors} // ✅ Passed setErrors
                   />
 
                   {/* CLIENT LOGO - WITH PREVIEW */}
@@ -1622,7 +1673,9 @@ export default function Page() {
                     setFormData={setFormData}
                     existingFileName={existingFiles.logoClient?.filename}
                     showPreview={true}
-                    previewUrl={clientLogoPreview} // Pass the state for client preview
+                    previewUrl={clientLogoPreview}
+                    error={errors.logoClient} 
+                    setErrors={setErrors} // ✅ Passed setErrors
                   />
 
                   {/* VAT CERTIFICATE */}
@@ -1633,6 +1686,8 @@ export default function Page() {
                     accept="application/pdf"
                     setFormData={setFormData}
                     existingFileName={existingFiles.vatCertificate?.filename}
+                    error={errors.vatCertificate}
+                    setErrors={setErrors} // ✅ Passed setErrors
                   />
 
                   {/* TRADE LICENSE */}
@@ -1643,6 +1698,8 @@ export default function Page() {
                     accept="application/pdf"
                     setFormData={setFormData}
                     existingFileName={existingFiles.tradeLicense?.filename}
+                    error={errors.tradeLicense}
+                    setErrors={setErrors} // ✅ Passed setErrors
                   />
                 </div>
 
@@ -1666,18 +1723,18 @@ export default function Page() {
                 {/* Buttons */}
                 <div className="flex justify-between pt-4">
                   <button
-  onClick={() => setCurrentStep((prev) => prev - 1)}
-  className="
-    flex items-center gap-2 
-    px-4 py-2 rounded-lg 
-    text-sm font-medium
-    border border-gray-400 
-    active:scale-[0.97]
-    transition-all duration-200
-    shadow-sm
-  "
+ onClick={() => setCurrentStep((prev) => prev - 1)}
+ className="
+   flex items-center gap-2 
+   px-4 py-2 rounded-lg 
+   text-sm font-medium
+   border border-gray-400 
+   active:scale-[0.97]
+   transition-all duration-200
+   shadow-sm
+ "
 >
-  ← Back
+ ← Back
 </button>
 
                   <button
@@ -1730,7 +1787,7 @@ export default function Page() {
  {isSubmitted && (
   <div className="flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-4">
     <div className="w-full max-w-md rounded-2xl p-8 text-center bg-white shadow-xl border border-gray-200">
-       
+        
       {/* Success Icon */}
       <div className="w-20 h-20 flex items-center justify-center rounded-full bg-green-100 mx-auto mb-4 shadow-sm">
         <CheckCircle className="w-12 h-12 text-green-600" />
