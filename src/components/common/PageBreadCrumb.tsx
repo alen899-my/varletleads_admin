@@ -254,7 +254,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
         return Object.keys(newErrors).length === 0;
     };
 
-    // ✅ UPDATED: Step 6 validation prevents proceeding if errors exist
+    // ✅ Step 6 validation
     const validateStep6 = () => {
         const fileKeys = ["logoCompany", "logoClient", "vatCertificate", "tradeLicense"];
         // If any of these keys have an error message, validation fails
@@ -502,12 +502,15 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                                     <input type="number" name="capacity" placeholder="Total slots" value={formData.capacity} onChange={handleChange} className={`${inputClass} ${errors.capacity ? "border-red-500" : ""}`} />
                                     {errors.capacity && <small className="text-red-500 text-xs">{errors.capacity}</small>}
                                 </div>
+                                {/* Updated Label */}
                                 <div><label className={labelClass}>Average Waiting Time</label><input type="text" name="waitTime" placeholder="e.g. 15 mins" value={formData.waitTime} onChange={(e) => setFormData({ ...formData, waitTime: e.target.value })} className={inputClass} /></div>
-                                <div><label className={labelClass}>Maps URL</label><input type="url" name="mapsUrl" placeholder="Google Maps Link" value={formData.mapsUrl} onChange={(e) => setFormData({ ...formData, mapsUrl: e.target.value })} className={inputClass} /></div>
+                                {/* Updated Label */}
+                                <div><label className={labelClass}>Google Maps Location URL</label><input type="url" name="mapsUrl" placeholder="Google Maps Link" value={formData.mapsUrl} onChange={(e) => setFormData({ ...formData, mapsUrl: e.target.value })} className={inputClass} /></div>
                                 <div><label className={labelClass}>Latitude</label><input type="text" name="latitude" placeholder="25.2852° N" value={formData.latitude} onChange={(e) => setFormData({ ...formData, latitude: e.target.value })} className={inputClass} /></div>
                                 <div><label className={labelClass}>Longitude</label><input type="text" name="longitude" placeholder="55.3598° E" value={formData.longitude} onChange={(e) => setFormData({ ...formData, longitude: e.target.value })} className={inputClass} /></div>
                                 <div className="md:col-span-2"><label className={labelClass}>Operation Timing</label><input type="text" name="timing" placeholder="e.g. 24 Hours" value={formData.timing} onChange={(e) => setFormData({ ...formData, timing: e.target.value })} className={inputClass} /></div>
-                                <div className="md:col-span-2"><label className={labelClass}>Location TRN / Address</label><textarea rows={3} name="address" placeholder="Registered Address" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} className={`${inputClass} resize-none`} /></div>
+                                {/* Updated Label */}
+                                <div className="md:col-span-2"><label className={labelClass}>Location TRN / Registered Address</label><textarea rows={3} name="address" placeholder="Registered Address" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} className={`${inputClass} resize-none`} /></div>
                             </div>
                         
                         </div>
@@ -517,9 +520,12 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                     {currentStep === 2 && (
                         <div className="space-y-4 animate-in fade-in slide-in-from-right-8 duration-500">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div><label className={labelClass}>Number of lobbies</label><input type="number" name="lobbies" placeholder="e.g. 2" value={formData.lobbies} onChange={handleChange} className={inputClass} /></div>
-                                <div><label className={labelClass}>Key control rooms</label><input type="number" name="keyRooms" placeholder="e.g. 1" value={formData.keyRooms} onChange={handleChange} className={inputClass} /></div>
-                                <div className="md:col-span-2"><label className={labelClass}>Distance (Lobby to Key Room)</label><input type="text" name="distance" placeholder="e.g. 50 meters" value={formData.distance} onChange={handleChange} className={inputClass} /></div>
+                                {/* Updated Label */}
+                                <div><label className={labelClass}>Number of lobbies / entrances</label><input type="number" name="lobbies" placeholder="e.g. 2" value={formData.lobbies} onChange={handleChange} className={inputClass} /></div>
+                                {/* Updated Label */}
+                                <div><label className={labelClass}>Number of key control rooms</label><input type="number" name="keyRooms" placeholder="e.g. 1" value={formData.keyRooms} onChange={handleChange} className={inputClass} /></div>
+                                {/* Updated Label */}
+                                <div className="md:col-span-2"><label className={labelClass}>Distance between lobby & key room</label><input type="text" name="distance" placeholder="e.g. 50 meters" value={formData.distance} onChange={handleChange} className={inputClass} /></div>
                                 
                                 {/* Radio Groups */}
                                 {[
@@ -556,7 +562,8 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                                     </div>
                                 </div>
                                 <div className="md:col-span-1 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700">
-                                    <label className={`${labelClass} mb-2 block`}>Fee Type</label>
+                                    {/* Updated Label */}
+                                    <label className={`${labelClass} mb-2 block`}>Valet Fee Type</label>
                                     <div className="flex flex-wrap gap-4">
                                         {["fixed", "hourly", "free"].map(type => (
                                             <label key={type} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 capitalize">
@@ -593,7 +600,8 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                                     <input type="number" name="driverCount" placeholder="e.g. 15" value={formData.driverCount} onChange={handleChange} className={inputClass} />
                                 </div>
                                 <div className="col-span-2">
-                                    <label className={`${labelClass} flex items-center gap-1 mb-1`}>Drivers list <FileText className="w-4 h-4 text-gray-400" /></label>
+                                    {/* Updated Label */}
+                                    <label className={`${labelClass} flex items-center gap-1 mb-1`}>Drivers list (Employee ID & full name) <FileText className="w-4 h-4 text-gray-400" /></label>
                                     <textarea rows={6} name="driverList" placeholder={`e.g.\n1001 - John Doe\n1002 - Jane Smith`} value={formData.driverList} onChange={handleChange} className={`${inputClass} font-mono text-sm resize-none`} />
                                     <p className="text-xs text-blue-600 dark:text-blue-400 mt-2 bg-blue-50 dark:bg-blue-900/20 p-2 rounded">ℹ️ Large lists can be emailed separately.</p>
                                 </div>
@@ -608,10 +616,12 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                             <div className="space-y-4">
                                 <div><label className={labelClass}>Full Name <span className="text-red-500">*</span></label><input type="text" name="adminName" placeholder="e.g. Ayush Aggarwal" value={formData.adminName} onChange={handleChange} className={`${inputClass} ${errors.adminName ? "border-red-500" : ""}`} />{errors.adminName && <p className="text-xs text-red-500">{errors.adminName}</p>}</div>
                                 <div><label className={labelClass}>Email Address <span className="text-red-500">*</span></label><input type="email" name="adminEmail" placeholder="e.g. admin@example.com" value={formData.adminEmail} onChange={handleChange} className={`${inputClass} ${errors.adminEmail ? "border-red-500" : ""}`} />{errors.adminEmail && <p className="text-xs text-red-500">{errors.adminEmail}</p>}</div>
-                                <div><label className={labelClass}>Mobile Number <span className="text-red-500">*</span></label><input type="tel" name="adminPhone" placeholder="e.g. 971521234567" value={formData.adminPhone} onChange={handleChange} className={`${inputClass} ${errors.adminPhone ? "border-red-500" : ""}`} />{errors.adminPhone && <p className="text-xs text-red-500">{errors.adminPhone}</p>}</div>
+                                {/* Updated Label */}
+                                <div><label className={labelClass}>Mobile / WhatsApp Number <span className="text-red-500">*</span></label><input type="tel" name="adminPhone" placeholder="e.g. 971521234567" value={formData.adminPhone} onChange={handleChange} className={`${inputClass} ${errors.adminPhone ? "border-red-500" : ""}`} />{errors.adminPhone && <p className="text-xs text-red-500">{errors.adminPhone}</p>}</div>
                                 
                                 <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700">
-                                    <label className={`${labelClass} mb-3 block`}>Training Required</label>
+                                    {/* Updated Label */}
+                                    <label className={`${labelClass} mb-3 block`}>Super admin will receive full application training</label>
                                     <div className="flex gap-6">
                                         <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300"><input type="radio" name="trainingRequired" value="yes" checked={formData.trainingRequired === "yes"} onChange={handleChange} className="accent-blue-600 w-4 h-4" /> Yes</label>
                                         <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300"><input type="radio" name="trainingRequired" value="no" checked={formData.trainingRequired === "no"} onChange={handleChange} className="accent-blue-600 w-4 h-4" /> No</label>
@@ -625,15 +635,16 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                     {/* STEP 6: DOCS */}
                     {currentStep === 6 && (
                         <div className="space-y-4 animate-in fade-in slide-in-from-right-8 duration-500">
-                            {/* ✅ Updated File Upload Blocks with Error Handling */}
+                            {/* ✅ Updated File Upload Blocks with Error Handling and Correct Labels */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <FileUploadBlock label="Company Logo" name="logoCompany" accept="image/*" file={formData.logoCompany} setFormData={setFormData} error={errors.logoCompany} setErrors={setErrors} />
-                                <FileUploadBlock label="Client Logo" name="logoClient" accept="image/*" file={formData.logoClient} setFormData={setFormData} error={errors.logoClient} setErrors={setErrors} />
-                                <FileUploadBlock label="VAT Certificate" name="vatCertificate" accept="application/pdf" file={formData.vatCertificate} setFormData={setFormData} error={errors.vatCertificate} setErrors={setErrors} />
-                                <FileUploadBlock label="Trade License" name="tradeLicense" accept="application/pdf" file={formData.tradeLicense} setFormData={setFormData} error={errors.tradeLicense} setErrors={setErrors} />
+                                <FileUploadBlock label="Company Logo (JPG/PNG)" name="logoCompany" accept="image/*" file={formData.logoCompany} setFormData={setFormData} error={errors.logoCompany} setErrors={setErrors} />
+                                <FileUploadBlock label="Client Logo (JPG/PNG)" name="logoClient" accept="image/*" file={formData.logoClient} setFormData={setFormData} error={errors.logoClient} setErrors={setErrors} />
+                                <FileUploadBlock label="VAT Certificate (PDF)" name="vatCertificate" accept="application/pdf" file={formData.vatCertificate} setFormData={setFormData} error={errors.vatCertificate} setErrors={setErrors} />
+                                <FileUploadBlock label="Trade License (PDF)" name="tradeLicense" accept="application/pdf" file={formData.tradeLicense} setFormData={setFormData} error={errors.tradeLicense} setErrors={setErrors} />
                             </div>
                             <div>
-                                <label className={labelClass}>Submission Method</label>
+                                {/* Updated Label */}
+                                <label className={labelClass}>How will you send documents?</label>
                                 <textarea rows={3} name="documentSubmitMethod" placeholder="e.g. Emailing later" value={formData.documentSubmitMethod} onChange={handleChange} className={inputClass} />
                             </div>
                             
