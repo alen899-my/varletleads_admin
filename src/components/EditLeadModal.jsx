@@ -395,7 +395,7 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
         ref={modalRef}
         className="
     w-full max-w-4xl 
-    h-[90vh]      /* 👈 FIXED HEIGHT */
+    h-[90vh]       /* 👈 FIXED HEIGHT */
     shadow-xl relative 
     bg-white dark:bg-gray-900 border border-gray-400 dark:border-gray-600 
     flex flex-col rounded-xl overflow-hidden
@@ -1164,6 +1164,47 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
 
           {/* BUTTONS ALWAYS HORIZONTAL */}
           <div className="flex flex-row items-center gap-3 flex-wrap">
+            {/* SAVE BUTTON - VISIBLE ON ALL STEPS */}
+            <button
+              onClick={handleUpdateSubmit}
+              disabled={isSubmitted || isSaving}
+              className={`px-6 py-2 rounded-lg font-medium transition flex items-center gap-2
+          ${
+            isSubmitted || isSaving
+              ? "opacity-50 cursor-not-allowed bg-green-600 text-white"
+              : "bg-green-600 text-white hover:bg-green-700"
+          }`}
+            >
+              {isSaving ? (
+                <>
+                  <svg
+                    className="animate-spin h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v4l3-3-3-3v4A8 8 0 104 12z"
+                    ></path>
+                  </svg>
+                  Saving...
+                </>
+              ) : (
+                "Save"
+              )}
+            </button>
+
+            {/* NEXT BUTTON - VISIBLE ONLY IF STEP < 6 */}
             {currentStep < 6 && (
               <button
                 onClick={handleNext}
@@ -1176,47 +1217,6 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
           }`}
               >
                 Next <ArrowRight size={16} />
-              </button>
-            )}
-
-            {currentStep === 6 && (
-              <button
-                onClick={handleUpdateSubmit}
-                disabled={isSubmitted || isSaving}
-                className={`px-6 py-2 rounded-lg font-medium transition flex items-center gap-2
-          ${
-            isSubmitted || isSaving
-              ? "opacity-50 cursor-not-allowed bg-green-600 text-white"
-              : "bg-green-600 text-white hover:bg-green-700"
-          }`}
-              >
-                {isSaving ? (
-                  <>
-                    <svg
-                      className="animate-spin h-4 w-4 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8v4l3-3-3-3v4A8 8 0 104 12z"
-                      ></path>
-                    </svg>
-                    Saving...
-                  </>
-                ) : (
-                  "Save"
-                )}
               </button>
             )}
           </div>
