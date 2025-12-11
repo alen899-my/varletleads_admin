@@ -229,6 +229,15 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
       return;
     }
 
+    // Check if there are any lingering file errors
+    const hasFileErrors = Object.keys(errors).some(key => 
+      ["logoCompany", "logoClient", "vatCertificate", "tradeLicense"].includes(key)
+    );
+    if (hasFileErrors) {
+      setWizardError("Please resolve document errors (Max 500KB) before saving.");
+      return;
+    }
+
     setIsSaving(true); // Start saving/loading process
 
     const formDataToSend = new FormData();
@@ -271,7 +280,7 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
     }
   };
 
-  // --- MODIFIED FILE UPLOAD COMPONENT ---
+  // --- MODIFIED FILE UPLOAD COMPONENT (WITH VALIDATION) ---
   const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
     const fileRef = useRef(null);
 
@@ -295,11 +304,24 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
       ? `Current: ${currentFileName.filename}`
       : "No file chosen";
 
+    // 🔴 NEW: Check for errors specifically for this field
+    const fieldError = errors[name];
+
     return (
-      <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800 flex flex-col gap-2">
-        <label className="text-sm font-medium text-gray-900 dark:text-gray-200">
-          {label}
-        </label>
+      <div 
+        className={`border rounded-lg p-3 bg-gray-50 dark:bg-gray-800 flex flex-col gap-2 
+        ${fieldError 
+            ? "border-red-500 bg-red-50 dark:border-red-500 dark:bg-red-900/20" 
+            : "border-gray-200 dark:border-gray-700"
+        }`}
+      >
+        <div className="flex justify-between items-center">
+            <label className={`text-sm font-medium ${fieldError ? "text-red-600" : "text-gray-900 dark:text-gray-200"}`}>
+            {label}
+            </label>
+            {/* 🔴 Display Error Message */}
+            {fieldError && <span className="text-xs text-red-600 font-bold">{fieldError}</span>}
+        </div>
 
         {/* 📌 Conditional Preview for Images */}
         {/* Existing Image Preview */}
@@ -353,9 +375,31 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
           type="file"
           accept={accept}
           name={name}
-          onChange={(e) =>
-            setFormData((prev) => ({ ...prev, [name]: e.target.files?.[0] }))
-          }
+          onChange={(e) => {
+            const selectedFile = e.target.files?.[0];
+            
+            // 🔴 NEW: Validation Logic
+            if(selectedFile) {
+                const MAX_SIZE = 500 * 1024; // 500KB
+                
+                if(selectedFile.size > MAX_SIZE) {
+                    // Set Error
+                    setErrors(prev => ({...prev, [name]: "File size must be less than 500KB"}));
+                    // Reset value so we don't store invalid file
+                    e.target.value = ""; 
+                    return; 
+                } else {
+                    // Clear error if valid
+                    setErrors(prev => {
+                        const newErrs = {...prev};
+                        delete newErrs[name];
+                        return newErrs;
+                    });
+                    // Update State
+                    setFormData((prev) => ({ ...prev, [name]: selectedFile }));
+                }
+            }
+          }}
           className="hidden"
         />
 
@@ -363,9 +407,13 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="flex items-center justify-between border border-gray-300 dark:border-gray-600 bg-white 
-            dark:bg-gray-700 rounded-lg px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 
-            dark:hover:bg-gray-600 transition mt-1"
+          className={`flex items-center justify-between border bg-white 
+            dark:bg-gray-700 rounded-lg px-4 py-2 text-sm hover:bg-gray-100 
+            dark:hover:bg-gray-600 transition mt-1
+            ${fieldError 
+                ? "border-red-300 text-red-700 dark:border-red-500 dark:text-red-300" 
+                : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200"
+            }`}
         >
           <span className="truncate">
             {file
@@ -377,7 +425,7 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
           {file ? (
             <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
           ) : (
-            <Upload className="w-4 h-4 text-gray-400" />
+            <Upload className={`w-4 h-4 ${fieldError ? "text-red-500" : "text-gray-400"}`} />
           )}
         </button>
       </div>

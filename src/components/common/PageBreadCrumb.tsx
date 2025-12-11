@@ -32,6 +32,10 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
         adminName: "",
         adminEmail: "",
         adminPhone: "",
+        logoCompany: "",
+        logoClient: "",
+        vatCertificate: "",
+        tradeLicense: "",
     });
 
     // --- CLICK OUTSIDE & ESCAPE KEY LOGIC ---
@@ -150,6 +154,12 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
             return;
         }
 
+        // ✅ Final Check for File Size Errors
+        if (!validateStep6()) {
+            setWizardError("Please resolve the errors in the document section (Max size 500KB).");
+            return;
+        }
+
         setIsSaving(true);
         const formDataToSend = new FormData();
         
@@ -243,7 +253,14 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
-    const validateStep6 = () => true;
+
+    // ✅ UPDATED: Step 6 validation prevents proceeding if errors exist
+    const validateStep6 = () => {
+        const fileKeys = ["logoCompany", "logoClient", "vatCertificate", "tradeLicense"];
+        // If any of these keys have an error message, validation fails
+        const hasErrors = fileKeys.some(key => errors[key]);
+        return !hasErrors;
+    };
 
     const handleNext = () => {
         const validations: Record<number, () => boolean> = {
@@ -257,8 +274,8 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
         setCurrentStep(prev => prev + 1);
     };
 
-    // --- REFINED FILE UPLOAD BLOCK ---
-    const FileUploadBlock = ({ label, name, accept, file, setFormData }: any) => {
+    // --- REFINED FILE UPLOAD BLOCK WITH VALIDATION ---
+    const FileUploadBlock = ({ label, name, accept, file, setFormData, error, setErrors }: any) => {
         const fileRef = useRef<HTMLInputElement>(null);
         const [previewUrl, setPreviewUrl] = useState<string | null>(null);
         
@@ -280,8 +297,13 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
         }, [file, isImage]);
         
         return (
-            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800 flex flex-col gap-2">
-                <label className="text-sm font-medium text-gray-900 dark:text-gray-100">{label}</label>
+            <div className={`border rounded-lg p-3 bg-gray-50 dark:bg-gray-800 flex flex-col gap-2 
+                ${error ? "border-red-500 bg-red-50 dark:border-red-500 dark:bg-red-900/20" : "border-gray-300 dark:border-gray-700"}`}>
+                
+                <div className="flex justify-between items-center">
+                    <label className={`text-sm font-medium ${error ? "text-red-600" : "text-gray-900 dark:text-gray-100"}`}>{label}</label>
+                    {error && <span className="text-xs text-red-600 font-semibold">{error}</span>}
+                </div>
                 
                 {/* Image Preview Area */}
                 {previewUrl && (
@@ -296,7 +318,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
 
                 {/* File Info Area (for PDF or when no preview) */}
                 {(!previewUrl && file) && (
-                     <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 p-2 border border-dashed border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-700/50">
+                      <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 p-2 border border-dashed border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-700/50">
                         {isPdf ? <FileText className="w-4 h-4 text-red-500" /> : <FileText className="w-4 h-4 text-blue-500" />}
                         <span className="truncate">{file.name}</span>
                     </div>
@@ -307,19 +329,39 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                     type="file"
                     accept={accept}
                     name={name}
-                    onChange={(e: any) => setFormData((prev: any) => ({ ...prev, [name]: e.target.files[0] }))}
+                    onChange={(e: any) => {
+                        const selectedFile = e.target.files[0];
+                        if (selectedFile) {
+                            // ✅ 500KB Validation
+                            if (selectedFile.size > 500 * 1024) {
+                                setErrors((prev: any) => ({ ...prev, [name]: "File size must be less than 500KB" }));
+                                e.target.value = ""; // Clear input
+                            } else {
+                                // Clear error
+                                setErrors((prev: any) => {
+                                    const newErrs = { ...prev };
+                                    delete newErrs[name];
+                                    return newErrs;
+                                });
+                                setFormData((prev: any) => ({ ...prev, [name]: selectedFile }));
+                            }
+                        }
+                    }}
                     className="hidden"
                 />
                 
                 <button
                     type="button"
                     onClick={() => fileRef.current?.click()}
-                    className="flex items-center justify-between border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg px-4 py-2 text-sm text-gray-700 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-600 transition mt-1"
+                    className={`flex items-center justify-between border bg-white dark:bg-gray-700 rounded-lg px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 transition mt-1
+                    ${error 
+                        ? "border-red-300 text-red-700 dark:border-red-500 dark:text-red-300" 
+                        : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-100"}`}
                 >
                     <span className="truncate">
                         {file ? `Change: ${file.name}` : "Upload File"}
                     </span>
-                    {file ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Upload className="w-4 h-4 text-gray-500 dark:text-gray-400" />}
+                    {file ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Upload className={`w-4 h-4 ${error ? "text-red-500" : "text-gray-500 dark:text-gray-400"}`} />}
                 </button>
             </div>
         );
@@ -583,11 +625,12 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                     {/* STEP 6: DOCS */}
                     {currentStep === 6 && (
                         <div className="space-y-4 animate-in fade-in slide-in-from-right-8 duration-500">
+                            {/* ✅ Updated File Upload Blocks with Error Handling */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <FileUploadBlock label="Company Logo" name="logoCompany" accept="image/*" file={formData.logoCompany} setFormData={setFormData} />
-                                <FileUploadBlock label="Client Logo" name="logoClient" accept="image/*" file={formData.logoClient} setFormData={setFormData} />
-                                <FileUploadBlock label="VAT Certificate" name="vatCertificate" accept="application/pdf" file={formData.vatCertificate} setFormData={setFormData} />
-                                <FileUploadBlock label="Trade License" name="tradeLicense" accept="application/pdf" file={formData.tradeLicense} setFormData={setFormData} />
+                                <FileUploadBlock label="Company Logo" name="logoCompany" accept="image/*" file={formData.logoCompany} setFormData={setFormData} error={errors.logoCompany} setErrors={setErrors} />
+                                <FileUploadBlock label="Client Logo" name="logoClient" accept="image/*" file={formData.logoClient} setFormData={setFormData} error={errors.logoClient} setErrors={setErrors} />
+                                <FileUploadBlock label="VAT Certificate" name="vatCertificate" accept="application/pdf" file={formData.vatCertificate} setFormData={setFormData} error={errors.vatCertificate} setErrors={setErrors} />
+                                <FileUploadBlock label="Trade License" name="tradeLicense" accept="application/pdf" file={formData.tradeLicense} setFormData={setFormData} error={errors.tradeLicense} setErrors={setErrors} />
                             </div>
                             <div>
                                 <label className={labelClass}>Submission Method</label>
