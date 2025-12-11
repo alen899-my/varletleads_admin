@@ -40,7 +40,7 @@ export async function GET(req) {
     }
 
     // -------------------------------
-    // 🚀 Run Queries in Parallel (50–70% faster)
+   
     // -------------------------------
     const [total, leads] = await Promise.all([
       Lead.countDocuments(query),

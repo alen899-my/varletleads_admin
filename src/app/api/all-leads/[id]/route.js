@@ -1,19 +1,17 @@
 import { connectDB } from "@/lib/mongodb";
 import Lead from "@/models/Lead";
 import { NextResponse } from "next/server";
-import { put } from "@vercel/blob"; // Import Vercel Blob
+import { put, del } from "@vercel/blob"; // 1. Added 'del' import
 
 // ---------------------------------------------------------
 // 1. GET Method - This POPULATES the form fields
 // ---------------------------------------------------------
 export async function GET(req, { params }) {
   try {
-    // Await params (Required in Next.js 15+)
     const { id } = await params;
 
     await connectDB();
 
-    // Find the specific lead by the ID provided in the URL
     const lead = await Lead.findById(id);
 
     if (!lead) {
@@ -23,7 +21,6 @@ export async function GET(req, { params }) {
       );
     }
 
-    // Return the lead data so the frontend can fill the state
     return NextResponse.json({
       success: true,
       lead,
@@ -44,72 +41,75 @@ export async function PUT(req, { params }) {
   try {
     const { id } = await params;
     
-    // Connect to DB (No need for GridFS connection anymore)
     await connectDB();
 
     const formData = await req.formData();
     
-    // Prepare the update object
     const updateData = {};
-    const attachments = []; // To store new file metadata
+    const attachments = []; 
 
     // 1. Process Fields & Files
-    // We use Promise.all to handle multiple async blob uploads if necessary
     const fileProcessingPromises = [];
 
     for (const [key, value] of formData.entries()) {
-      // If it's a File (and not empty)
       if (value instanceof File && value.size > 0) {
         
-        // --- VERCEL BLOB UPLOAD LOGIC ---
         const processFile = async () => {
+            // Note: Added addRandomSuffix: true to prevent conflicts as discussed
             const safeName = value.name.replace(/[^a-zA-Z0-9.]/g, "_");
-            const filename = `leads/${Date.now()}-${safeName}`; // Unique path
+            const filename = `leads/${Date.now()}-${safeName}`; 
 
-            // Upload to Vercel Blob
             const blob = await put(filename, value, {
                 access: 'public',
+                addRandomSuffix: true, 
             });
 
-            // Add to attachments array for the DB
             attachments.push({
-                fieldname: key,          // e.g., "companyLogo"
+                fieldname: key,          
                 filename: value.name,
-                path: blob.url,          // Vercel Blob URL acts as the reference
-                // contentType and uploadDate are handled by Blob or DB defaults
+                path: blob.url,          
             });
         };
         fileProcessingPromises.push(processFile());
 
       } else if (typeof value === 'string') {
-        // It's a normal text field
         updateData[key] = value;
       }
     }
 
-    // Wait for all uploads to finish
     await Promise.all(fileProcessingPromises);
 
-    // 2. Find the existing lead to merge attachments
+    // 2. Find the existing lead
     const existingLead = await Lead.findById(id);
     if (!existingLead) {
         return NextResponse.json({ success: false, message: "Lead not found" }, { status: 404 });
     }
 
-    // 3. Logic to Merge Attachments:
-    // We start with the existing attachments.
-    // If a NEW file was uploaded for a specific fieldname (e.g. 'companyLogo'),
-    // we assume it replaces the old one.
-    
+    // 3. Logic to Merge Attachments AND DELETE OLD FILES
     let finalAttachments = existingLead.attachments || [];
 
     if (attachments.length > 0) {
+        const deletionPromises = [];
+
         attachments.forEach(newFile => {
-            // Remove old file entry for this specific fieldname if it exists
-            finalAttachments = finalAttachments.filter(oldFile => oldFile.fieldname !== newFile.fieldname);
-            // Add the new file
+            // A. Find the old file for this specific field (e.g., 'companyLogo')
+            const oldFile = finalAttachments.find(f => f.fieldname === newFile.fieldname);
+
+            // B. If an old file exists, delete it from Vercel Blob
+            if (oldFile && oldFile.path) {
+                console.log(`Deleting old file: ${oldFile.path}`);
+                deletionPromises.push(del(oldFile.path));
+            }
+
+            // C. Remove old file metadata from the array
+            finalAttachments = finalAttachments.filter(old => old.fieldname !== newFile.fieldname);
+            
+            // D. Add the new file metadata
             finalAttachments.push(newFile);
         });
+
+        // Wait for deletions to ensure Vercel is clean
+        await Promise.all(deletionPromises);
     }
 
     updateData.attachments = finalAttachments;
@@ -118,7 +118,7 @@ export async function PUT(req, { params }) {
     const updatedLead = await Lead.findByIdAndUpdate(
       id,
       { $set: updateData },
-      { new: true, runValidators: true } // Return the updated doc
+      { new: true, runValidators: true } 
     );
 
     return NextResponse.json({
