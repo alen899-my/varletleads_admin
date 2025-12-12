@@ -234,7 +234,7 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
       ["logoCompany", "logoClient", "vatCertificate", "tradeLicense"].includes(key)
     );
     if (hasFileErrors) {
-      setWizardError("Please resolve document errors (Max 500KB) before saving.");
+      setWizardError("⚠️ Please resolve the errors in the document section (Max size 500KB).");
       return;
     }
 
@@ -649,7 +649,7 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-900 dark:text-gray-200">
-                      Avg Wait Time
+                      Average Waiting Time
                     </label>
                     <input
                       type="text"
@@ -661,7 +661,7 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-900 dark:text-gray-200">
-                      Maps URL
+                     Google Maps Location URL
                     </label>
                     <input
                       type="url"
@@ -709,7 +709,7 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
                   </div>
                   <div className="md:col-span-1">
                     <label className="text-sm font-medium text-gray-900 dark:text-gray-200">
-                      Address / TRN
+                      Location TRN / Registered Address
                     </label>
                     <textarea
                       rows={2}
