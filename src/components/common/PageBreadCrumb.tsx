@@ -491,6 +491,15 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                     {/* STEP 1: LOCATION */}
                     {currentStep === 1 && (
                         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div>
+                  <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
+                    Location Information
+                  </h2>
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                    Basic details about the property where valet parking will be
+                    operated.
+                  </p>
+                </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="md:col-span-1">
                                     <label className={labelClass}>Location Name <span className="text-red-500">*</span></label>
@@ -519,6 +528,14 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                     {/* STEP 2: USERS */}
                     {currentStep === 2 && (
                         <div className="space-y-4 animate-in fade-in slide-in-from-right-8 duration-500">
+                              <div>
+                  <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
+                    On-Site User Setup
+                  </h2>
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                    Internal users + operational setup details.
+                  </p>
+                </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {/* Updated Label */}
                                 <div><label className={labelClass}>Number of lobbies / entrances</label><input type="number" name="lobbies" placeholder="e.g. 2" value={formData.lobbies} onChange={handleChange} className={inputClass} /></div>
@@ -553,6 +570,14 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                     {/* STEP 3: PRICING */}
                     {currentStep === 3 && (
                         <div className="space-y-4 animate-in fade-in slide-in-from-right-8 duration-500">
+                             <div>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                    Valet Ticket & Pricing
+                  </h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Tell us how tickets are generated and how you charge guests.
+                  </p>
+                </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="md:col-span-1 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700">
                                     <label className={`${labelClass} mb-2 block`}>Ticket Type</label>
@@ -594,6 +619,15 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                     {/* STEP 4: DRIVERS */}
                     {currentStep === 4 && (
                         <div className="space-y-4 animate-in fade-in slide-in-from-right-8 duration-500">
+                                  <div>
+                                              <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                                <UserCog className="w-5 h-5 text-blue-600 dark:text-blue-500" />{" "}
+                                                Drivers / CVA Team
+                                              </h2>
+                                              <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                Details of drivers who will be mapped to this location.
+                                              </p>
+                                            </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="col-span-2">
                                     <label className={`${labelClass} flex items-center gap-1 mb-1`}>Number of drivers <Users className="w-4 h-4 text-gray-400" /></label>
@@ -613,6 +647,16 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                     {/* STEP 5: ADMIN */}
                     {currentStep === 5 && (
                         <div className="space-y-4 animate-in fade-in slide-in-from-right-8 duration-500">
+                             <div>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                    <ShieldUser className="w-5 h-5 text-blue-600 dark:text-blue-500" />
+                    Super Admin Contact
+                  </h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Main person responsible for valet operations & application
+                    access.
+                  </p>
+                </div>
                             <div className="space-y-4">
                                 <div><label className={labelClass}>Full Name <span className="text-red-500">*</span></label><input type="text" name="adminName" placeholder="e.g. Ayush Aggarwal" value={formData.adminName} onChange={handleChange} className={`${inputClass} ${errors.adminName ? "border-red-500" : ""}`} />{errors.adminName && <p className="text-xs text-red-500">{errors.adminName}</p>}</div>
                                 <div><label className={labelClass}>Email Address <span className="text-red-500">*</span></label><input type="email" name="adminEmail" placeholder="e.g. admin@example.com" value={formData.adminEmail} onChange={handleChange} className={`${inputClass} ${errors.adminEmail ? "border-red-500" : ""}`} />{errors.adminEmail && <p className="text-xs text-red-500">{errors.adminEmail}</p>}</div>
@@ -635,6 +679,14 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                     {/* STEP 6: DOCS */}
                     {currentStep === 6 && (
                         <div className="space-y-4 animate-in fade-in slide-in-from-right-8 duration-500">
+                              <div>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    📎 Required Documents
+                  </h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Upload now or submit later via email/WhatsApp.
+                  </p>
+                </div>
                             {/* ✅ Updated File Upload Blocks with Error Handling and Correct Labels */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <FileUploadBlock label="Company Logo (JPG/PNG)" name="logoCompany" accept="image/*" file={formData.logoCompany} setFormData={setFormData} error={errors.logoCompany} setErrors={setErrors} />
