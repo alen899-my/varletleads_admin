@@ -1,7 +1,7 @@
 import { connectDB } from "@/lib/mongodb";
 import Lead from "@/models/Lead";
 import { NextResponse } from "next/server";
-import { put } from "@vercel/blob"; // Import Vercel Blob
+import { put } from "@vercel/blob"; 
 
 function generateReference() {
   const random = Math.floor(100000 + Math.random() * 900000);
@@ -40,23 +40,18 @@ export async function POST(req) {
         }
 
         // --- VERCEL BLOB UPLOAD LOGIC ---
-        
-        // 1. Define filename (Vercel Blob handles uniqueness automatically, but adding prefix helps organization)
-        // We do not need a timestamp here necessarily as Vercel adds a hash, but it keeps names clean.
         const safeName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
-        const filename = `leads/${safeName}`; // Puts it in a 'leads' folder in your blob store
+        const filename = `leads/${safeName}`; 
 
-        // 2. Upload to Vercel Blob
         const blob = await put(filename, file, {
           access: 'public',
           addRandomSuffix: true,
         });
 
-        // 3. Push metadata (saving the Blob URL)
         attachments.push({
           fieldname: field,
           filename: file.name,
-          path: blob.url, // This is the public URL (e.g. https://store.vercel.../file.png)
+          path: blob.url, 
         });
       })
     );
@@ -65,7 +60,16 @@ export async function POST(req) {
     const leadData = {};
 
     formData.forEach((value, key) => {
-      if (!fileFields.includes(key)) leadData[key] = value;
+      // Skip file fields
+      if (fileFields.includes(key)) return;
+
+      // ✅ CHANGE IS HERE: Convert comma-separated strings back to Arrays for MongoDB
+      if (key === "ticketType" || key === "feeType") {
+         // If value exists, split by ", ". If empty, save empty array [].
+         leadData[key] = value ? value.toString().split(", ") : [];
+      } else {
+         leadData[key] = value;
+      }
     });
 
     const referenceId = generateReference();

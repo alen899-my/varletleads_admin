@@ -1,7 +1,7 @@
 import { connectDB } from "@/lib/mongodb";
 import Lead from "@/models/Lead";
 import { NextResponse } from "next/server";
-import { put, del } from "@vercel/blob"; // 1. Added 'del' import
+import { put, del } from "@vercel/blob";
 
 // ---------------------------------------------------------
 // 1. GET Method - This POPULATES the form fields
@@ -35,7 +35,7 @@ export async function GET(req, { params }) {
 }
 
 // ---------------------------------------------------------
-// 2. PUT Method - This UPDATES the data when "Update" is clicked
+// 2. PUT Method - This UPDATES the data
 // ---------------------------------------------------------
 export async function PUT(req, { params }) {
   try {
@@ -53,9 +53,8 @@ export async function PUT(req, { params }) {
 
     for (const [key, value] of formData.entries()) {
       if (value instanceof File && value.size > 0) {
-        
+        // --- FILE UPLOAD LOGIC ---
         const processFile = async () => {
-            // Note: Added addRandomSuffix: true to prevent conflicts as discussed
             const safeName = value.name.replace(/[^a-zA-Z0-9.]/g, "_");
             const filename = `leads/${Date.now()}-${safeName}`; 
 
@@ -73,7 +72,14 @@ export async function PUT(req, { params }) {
         fileProcessingPromises.push(processFile());
 
       } else if (typeof value === 'string') {
-        updateData[key] = value;
+        // ✅ CHANGED: Logic to handle Multi-Select Arrays
+        if (key === "ticketType" || key === "feeType") {
+            // Frontend sends "Option A, Option B" -> Convert back to ["Option A", "Option B"]
+            updateData[key] = value ? value.split(", ") : [];
+        } else {
+            // Handle standard text fields
+            updateData[key] = value;
+        }
       }
     }
 
@@ -92,7 +98,7 @@ export async function PUT(req, { params }) {
         const deletionPromises = [];
 
         attachments.forEach(newFile => {
-            // A. Find the old file for this specific field (e.g., 'companyLogo')
+            // A. Find the old file for this specific field
             const oldFile = finalAttachments.find(f => f.fieldname === newFile.fieldname);
 
             // B. If an old file exists, delete it from Vercel Blob
@@ -108,7 +114,6 @@ export async function PUT(req, { params }) {
             finalAttachments.push(newFile);
         });
 
-        // Wait for deletions to ensure Vercel is clean
         await Promise.all(deletionPromises);
     }
 

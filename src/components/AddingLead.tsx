@@ -32,7 +32,6 @@ import {
 import { useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { z } from "zod";
-import { useDebounce } from "../lib/useDebounce";
 
 export default function Page() {
   // Get ID from URL parameters
@@ -56,12 +55,8 @@ export default function Page() {
   const [companyLogoPreview, setCompanyLogoPreview] = useState<string | null>(null);
   const [clientLogoPreview, setClientLogoPreview] = useState<string | null>(null);
   // --- NEW: LOCATION SEARCH STATE ---
-  const [suggestions, setSuggestions] = useState<any[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
-  const wrapperRef = useRef<HTMLDivElement>(null); // For closing dropdown
+  
 
-  // Debounce the search term (500ms delay)
   
   // Typed as any to allow dynamic property assignment
   const [errors, setErrors] = useState<any>({
@@ -105,8 +100,8 @@ export default function Page() {
     reportUser: "yes",
 
     // STEP 3
-    ticketType: "system-generated",
-    feeType: "free",
+    ticketType: [],
+    feeType:[],
     ticketPricing: "",
     vatType: "inclusive",
 
@@ -127,7 +122,7 @@ export default function Page() {
     tradeLicense: null,
     documentSubmitMethod: "",
   });
-const debouncedSearchTerm = useDebounce(formData.locationName, 500);
+
   // --- LOGO PREVIEW LOGIC (COMPANY) ---
   useEffect(() => {
     if (formData.logoCompany instanceof File) {
@@ -248,73 +243,11 @@ const debouncedSearchTerm = useDebounce(formData.locationName, 500);
     }
   }, [leadId, isEditMode]);
 
-  // --- NEW: HANDLE CLICK OUTSIDE DROPDOWN ---
-  useEffect(() => {
-    function handleClickOutside(event: any) {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
-        setShowSuggestions(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [wrapperRef]);
+  
 
-  // --- NEW: SEARCH EFFECT ---
-  useEffect(() => {
-    const searchLocation = async () => {
-      // Don't search if read-only, empty, or just selected an address
-      if (isReadOnly || !debouncedSearchTerm || debouncedSearchTerm.length < 3) {
-        setSuggestions([]);
-        return;
-      }
 
-      // Check if current input matches the already selected address (prevents loop)
-      if (debouncedSearchTerm === formData.address || debouncedSearchTerm === formData.locationName) {
-         // This check is a bit loose, but helps prevent searching what we just clicked
-         // Ideally, you'd have a flag 'isUserTyping', but this works for simple cases.
-      }
 
-      setIsSearching(true);
-      try {
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-            debouncedSearchTerm
-          )}&addressdetails=1&limit=5`
-        );
-        const data = await response.json();
-        setSuggestions(data);
-        setShowSuggestions(true);
-      } catch (error) {
-        console.error("Error fetching location:", error);
-      } finally {
-        setIsSearching(false);
-      }
-    };
 
-    // Only trigger search if the suggestion box is meant to be open or we are typing fresh
-    if (debouncedSearchTerm && debouncedSearchTerm !== formData.address) {
-       searchLocation();
-    }
-  }, [debouncedSearchTerm, isReadOnly]);
-
-  // --- NEW: HANDLE SELECT LOCATION ---
-  const handleSelectLocation = (place: any) => {
-    // Construct Google Maps Link manually
-    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lon}`;
-
-    setFormData((prev: any) => ({
-      ...prev,
-      locationName: place.display_name.split(",")[0], // Short name
-      address: place.display_name, // Full address
-      latitude: place.lat,
-      longitude: place.lon,
-      mapsUrl: googleMapsUrl,
-    }));
-
-    setErrors((prev: any) => ({ ...prev, locationName: "" }));
-    setSuggestions([]);
-    setShowSuggestions(false);
-  };
   const validateBeforeJump = (targetStep: number) => {
     if (targetStep < currentStep) {
       setWizardError("");
@@ -377,7 +310,80 @@ const debouncedSearchTerm = useDebounce(formData.locationName, 500);
     .number()
     .min(1, { message: "Capacity must be at least 1" })
     .max(1500, { message: "Capacity cannot exceed 1500" });
+  const handleTicketTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value, checked } = e.target;
+    setFormData((prev: any) => {
+      // Ensure current is an array (safety check)
+      const current = Array.isArray(prev.ticketType) ? prev.ticketType : [];
+      
+      if (checked) {
+        // Add to array
+        return { ...prev, ticketType: [...current, value] };
+      } else {
+        // Remove from array
+        return { ...prev, ticketType: current.filter((item: string) => item !== value) };
+      }
+    });
+  };
+  const handleFeeTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value, checked } = e.target;
+    setFormData((prev: any) => {
+      // Ensure current is an array (safety check)
+      const current = Array.isArray(prev.feeType) ? prev.feeType : [];
+      
+      if (checked) {
+        // Add to array
+        return { ...prev, feeType: [...current, value] };
+      } else {
+        // Remove from array
+        return { ...prev, feeType: current.filter((item: string) => item !== value) };
+      }
+    });
+  };
+  // 1. Handle extracting Lat/Long when URL is pasted
+  const handleMapUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    let newLat = formData.latitude;
+    let newLng = formData.longitude;
 
+    // Regex to find coordinates in Google Maps URL (looks for patterns like @25.123,55.123 or q=25.123,55.123)
+    // Matches typical lat,long pattern
+    const coordRegex = /(-?\d+(\.\d+)?),\s*(-?\d+(\.\d+)?)/;
+    const match = url.match(coordRegex);
+
+    if (match) {
+      // split the match to get lat and long
+      // usually found as "25.276987,55.296249"
+      const coords = match[0].split(",");
+      if(coords.length === 2) {
+          newLat = coords[0].trim();
+          newLng = coords[1].trim();
+      }
+    }
+
+    setFormData((prev: any) => ({
+      ...prev,
+      mapsUrl: url,
+      latitude: newLat,
+      longitude: newLng,
+    }));
+  };
+
+  // 2. Handle generating URL when Lat or Long is typed
+  const handleCoordinateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
+    setFormData((prev: any) => {
+      const newData = { ...prev, [name]: value };
+      
+      // Only generate URL if BOTH lat and long are present and URL is empty or auto-generated
+      if (newData.latitude && newData.longitude) {
+        newData.mapsUrl = `https://www.google.com/maps?q=${newData.latitude},${newData.longitude}`;
+      }
+      
+      return newData;
+    });
+  };
 const handleFinalSubmit = async () => {
     // --- NEW CHECK: STOP SUBMIT IF READ ONLY ---
     if (isReadOnly) {
@@ -400,7 +406,10 @@ const handleFinalSubmit = async () => {
 
     // Append all text fields
     Object.entries(formData).forEach(([key, value]) => {
-      if (value !== null && typeof value !== "object") {
+      if (Array.isArray(value)) {
+        // Convert array to comma-separated string (e.g., "e-ticket, pre-printed")
+        formDataToSend.append(key, value.join(", ")); 
+      } else if (value !== null && typeof value !== "object") {
         formDataToSend.append(key, value as string);
       }
     });
@@ -747,8 +756,8 @@ const handleFinalSubmit = async () => {
                 <div className="flex items-center justify-center flex-col gap-1">
                   <p className="uppercase text-sm sm:text-xl tracking-wider font-semibold text-[#ae5c83] px-4 py-1  ">
                     {isEditMode
-                      ? "Edit Valet Parking Lead"
-                      : "New Valet Parking Lead – Registration Form"}
+                      ? "Edit Valet Parking Location"
+                      : "New Valet Parking Location – Registration Form"}
                   </p>
 
                   {/* --- NEW: COMPLETED WARNING BANNER --- */}
@@ -851,7 +860,7 @@ const handleFinalSubmit = async () => {
               <></>
             )}
 
-            {/* STEP 1: LOCATION INFORMATION */}
+           {/* STEP 1: LOCATION INFORMATION */}
             {currentStep === 1 && (
               <div
                 className={`space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500 ${
@@ -864,64 +873,32 @@ const handleFinalSubmit = async () => {
                     Location Information
                   </h2>
                   <p className="text-xs sm:text-sm text-gray-500">
-                    Basic details about the property where valet parking will be
-                    operated.
+                    Basic details about the property where valet parking will be operated.
                   </p>
                 </div>
 
                 {/* Form Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 <div className="md:col-span-1 relative" ref={wrapperRef}>
+                  
+                  {/* Location Name (Standard Input) */}
+                  <div className="md:col-span-1">
                     <label className="text-sm font-medium text-gray-900">
                       Location Name <span className="text-red-500">*</span>
                     </label>
-                    
-                    <div className="relative">
-                      <input
-                        type="text"
-                        name="locationName"
-                        disabled={isReadOnly}
-                        autoComplete="off"
-                        placeholder="Type to search (e.g. Dubai Mall)"
-                        value={formData.locationName}
-                        onChange={(e: any) => {
-                          setFormData({ ...formData, locationName: e.target.value });
-                          setErrors({ ...errors, locationName: "" });
-                          if(e.target.value.length > 2) setShowSuggestions(true);
-                        }}
-                        className={`input w-full ${
-                          errors.locationName ? "border-red-500" : ""
-                        }`}
-                      />
-                      
-                      {/* Loading Spinner */}
-                      {isSearching && (
-                        <div className="absolute right-3 top-3">
-                          <div className="w-4 h-4 border-2 border-gray-300 border-t-[#ae5c83] rounded-full animate-spin"></div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* SUGGESTIONS DROPDOWN */}
-                    {showSuggestions && suggestions.length > 0 && (
-                      <ul className="absolute z-50 w-full bg-white border border-gray-200 shadow-xl rounded-md max-h-60 overflow-y-auto mt-1">
-                        {suggestions.map((place) => (
-                          <li
-                            key={place.place_id}
-                            onClick={() => handleSelectLocation(place)}
-                            className="p-3 text-sm hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0 text-gray-700 flex flex-col"
-                          >
-                            <span className="font-medium text-gray-900">
-                              {place.display_name.split(",")[0]}
-                            </span>
-                            <span className="text-xs text-gray-500 truncate">
-                              {place.display_name}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-
+                    <input
+                      type="text"
+                      name="locationName"
+                      disabled={isReadOnly}
+                      placeholder="e.g. Grand Hyatt Dubai"
+                      value={formData.locationName}
+                      onChange={(e: any) => {
+                        setFormData({ ...formData, locationName: e.target.value });
+                        setErrors({ ...errors, locationName: "" });
+                      }}
+                      className={`input ${
+                        errors.locationName ? "border-red-500" : ""
+                      }`}
+                    />
                     {errors.locationName && (
                       <small className="text-red-500 text-xs">
                         {errors.locationName}
@@ -966,70 +943,11 @@ const handleFinalSubmit = async () => {
                       disabled={isReadOnly}
                       placeholder="e.g., 10 – 15 mins"
                       value={formData.waitTime}
-                      onChange={(e: any) =>
-                        setFormData({ ...formData, waitTime: e.target.value })
-                      }
+                      onChange={handleChange}
                       className="input"
                     />
                   </div>
-
-                  {/* Google Maps Link */}
-                  <div className="md:col-span-1">
-                    <label className="text-sm font-medium text-gray-900">
-                      Google Maps Location URL
-                    </label>
-                    <input
-                      type="url"
-                      name="mapsUrl"
-                      disabled={isReadOnly}
-                      placeholder="Paste Google Maps share link"
-                      value={formData.mapsUrl}
-                      onChange={(e: any) =>
-                        setFormData({ ...formData, mapsUrl: e.target.value })
-                      }
-                      className="input"
-                    />
-                  </div>
-
-                 {/* Latitude */}
-                  <div>
-                    <label className="text-sm font-medium text-gray-900">
-                      Latitude
-                    </label>
-                    <input
-                      type="text"
-                      name="latitude"
-                      disabled={isReadOnly}
-                      readOnly // Make it read-only if you want to force auto-fill
-                      placeholder="e.g., 25.2852° N"
-                      value={formData.latitude}
-                      onChange={(e: any) =>
-                        setFormData({ ...formData, latitude: e.target.value })
-                      }
-                      className="input bg-gray-50" // Added gray background
-                    />
-                  </div>
-
-                  {/* Longitude */}
-                  <div>
-                    <label className="text-sm font-medium text-gray-900">
-                      Longitude
-                    </label>
-                    <input
-                      type="text"
-                      name="longitude"
-                      disabled={isReadOnly}
-                      readOnly
-                      placeholder="e.g., 55.3598° E"
-                      value={formData.longitude}
-                      onChange={(e: any) =>
-                        setFormData({ ...formData, longitude: e.target.value })
-                      }
-                      className="input bg-gray-50" // Added gray background
-                    />
-                  </div>
-
-                  {/* Operation Timing */}
+                   {/* Operation Timing */}
                   <div>
                     <label className="text-sm font-medium text-gray-900">
                       Operation Timing
@@ -1040,9 +958,57 @@ const handleFinalSubmit = async () => {
                       disabled={isReadOnly}
                       placeholder="e.g., 24 Hours / 10 AM – 2 AM"
                       value={formData.timing}
-                      onChange={(e: any) =>
-                        setFormData({ ...formData, timing: e.target.value })
-                      }
+                      onChange={handleChange}
+                      className="input"
+                    />
+                  </div>
+
+                 
+
+                  {/* Latitude (Auto-fills URL) */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-900">
+                      Latitude
+                    </label>
+                    <input
+                      type="text"
+                      name="latitude"
+                      disabled={isReadOnly}
+                      placeholder="e.g., 25.2852"
+                      value={formData.latitude}
+                      onChange={handleCoordinateChange} // ✅ Custom Handler
+                      className="input"
+                    />
+                  </div>
+
+                  {/* Longitude (Auto-fills URL) */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-900">
+                      Longitude
+                    </label>
+                    <input
+                      type="text"
+                      name="longitude"
+                      disabled={isReadOnly}
+                      placeholder="e.g., 55.3598"
+                      value={formData.longitude}
+                      onChange={handleCoordinateChange} // ✅ Custom Handler
+                      className="input"
+                    />
+                  </div>
+
+                  {/* Google Maps Link (Auto-fills Coords) */}
+                  <div className="md:col-span-1">
+                    <label className="text-sm font-medium text-gray-900">
+                      Google Maps Location URL
+                    </label>
+                    <input
+                      type="url"
+                      name="mapsUrl"
+                      disabled={isReadOnly}
+                      placeholder="Paste Link -> Auto-fills Lat/Long"
+                      value={formData.mapsUrl}
+                      onChange={handleMapUrlChange} // ✅ Custom Handler
                       className="input"
                     />
                   </div>
@@ -1056,11 +1022,9 @@ const handleFinalSubmit = async () => {
                       rows={3}
                       name="address"
                       disabled={isReadOnly}
-                      placeholder="TRN and full registered address of the property"
+                      placeholder="TRN and full registered address"
                       value={formData.address}
-                      onChange={(e: any) =>
-                        setFormData({ ...formData, address: e.target.value })
-                      }
+                      onChange={handleChange}
                       className="textarea resize-none"
                     />
                   </div>
@@ -1070,7 +1034,7 @@ const handleFinalSubmit = async () => {
                 <div className="pt-2 flex justify-end">
                   <button
                     onClick={handleNext}
-                    className="btn-primary flex items-center gap-2 pointer-events-auto" // Ensure button works even if parent is disabled
+                    className="btn-primary flex items-center gap-2 pointer-events-auto"
                   >
                     Next Step
                     <ArrowRight className="w-4 h-4" />
@@ -1078,7 +1042,6 @@ const handleFinalSubmit = async () => {
                 </div>
               </div>
             )}
-
             {currentStep === 2 && (
               <div
                 className={`space-y-3 animate-in fade-in slide-in-from-right-8 duration-500 ${
@@ -1271,7 +1234,7 @@ const handleFinalSubmit = async () => {
             {/* STEP 3: VALET TICKET & PRICING */}
             {currentStep === 3 && (
               <div
-                className={`space-y-3 animate-in fade-in slide-in-from-right-8 duration-500 ${
+                className={`space-y-4 animate-in fade-in slide-in-from-right-8 duration-500 ${
                   isReadOnly ? "pointer-events-none opacity-80" : ""
                 }`}
               >
@@ -1286,98 +1249,169 @@ const handleFinalSubmit = async () => {
                 </div>
 
                 {/* Form Fields Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {/* Ticket Type */}
-                  <div className="md:col-span-1 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                    <label className="block text-sm font-medium text-gray-900 mb-2 flex items-center gap-2">
-                      Ticket Type
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Ticket Type */}
+                  <div className="md:col-span-2  bg-gray-50 rounded-lg border border-gray-100">
+                    <label className="block text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
+                      Ticket Type <span className="text-gray-400 text-xs font-normal">(Select all that apply)</span>
                     </label>
 
-                    <div className="flex flex-col sm:flex-row gap-4">
-                      <label className="flex items-center gap-2 cursor-pointer">
+                    {/* Grid Layout for Multiple Choice */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-2">
+                      
+                      {/* Option 1: Pre-printed Paper */}
+                      <label className={`flex items-center gap-2 cursor-pointer  rounded transition  ${
+                        formData.ticketType?.includes("pre-printed-paper") 
+                          ? "" 
+                          : ""
+                      }`}>
                         <input
-                          type="radio"
+                          type="checkbox"
                           name="ticketType"
-                          value="pre-printed"
+                          value="pre-printed-paper"
                           disabled={isReadOnly}
-                          checked={formData.ticketType === "pre-printed"}
-                          onChange={handleChange}
-                          className="w-4 h-4"
+                          checked={formData.ticketType?.includes("pre-printed-paper")}
+                          onChange={handleTicketTypeChange}
+                        
+                          className="w-4 h-4 text-[#ae5c83] rounded focus:ring-[#ae5c83] accent-[#ae5c83]"
                         />
                         <span className="text-sm text-gray-700">
-                          Pre-printed ticket
+                          Pre-printed ticket paper
                         </span>
                       </label>
 
-                      <label className="flex items-center gap-2 cursor-pointer">
+                      {/* Option 2: Pre-printed Plastic */}
+                      <label className={`flex items-center gap-2 cursor-pointer  rounded transition  ${
+                        formData.ticketType?.includes("pre-printed-plastic") 
+                          ? "" 
+                          : ""
+                      }`}>
                         <input
-                          type="radio"
+                          type="checkbox"
+                          name="ticketType"
+                          value="pre-printed-plastic"
+                          disabled={isReadOnly}
+                          checked={formData.ticketType?.includes("pre-printed-plastic")}
+                          onChange={handleTicketTypeChange}
+                          className="w-4 h-4 text-[#ae5c83] rounded focus:ring-[#ae5c83] accent-[#ae5c83]"
+                        />
+                        <span className="text-sm text-gray-700">
+                          Pre-printed reusable plastic ticket
+                        </span>
+                      </label>
+
+                      {/* Option 3: System Generated */}
+                      <label className={`flex items-center gap-2 cursor-pointer  rounded transition  ${
+                        formData.ticketType?.includes("system-generated") 
+                          ? "" 
+                          : ""
+                      }`}>
+                        <input
+                          type="checkbox"
                           name="ticketType"
                           value="system-generated"
                           disabled={isReadOnly}
-                          checked={formData.ticketType === "system-generated"}
-                          onChange={handleChange}
-                          className="w-4 h-4"
+                          checked={formData.ticketType?.includes("system-generated")}
+                          onChange={handleTicketTypeChange}
+                          className="w-4 h-4 text-[#ae5c83] rounded focus:ring-[#ae5c83] accent-[#ae5c83]"
                         />
                         <span className="text-sm text-gray-700">
-                          Ticket generated by system
+                          System generated ticket
                         </span>
                       </label>
+
+                      {/* Option 4: E-Ticket */}
+                      <label className={`flex items-center gap-2 cursor-pointer  rounded transition  ${
+                        formData.ticketType?.includes("e-ticket") 
+                          ? "" 
+                          : ""
+                      }`}>
+                        <input
+                          type="checkbox"
+                          name="ticketType"
+                          value="e-ticket"
+                          disabled={isReadOnly}
+                          checked={formData.ticketType?.includes("e-ticket")}
+                          onChange={handleTicketTypeChange}
+                          className="w-4 h-4 text-[#ae5c83] rounded focus:ring-[#ae5c83] accent-[#ae5c83]"
+                        />
+                        <span className="text-sm text-gray-700">
+                          E-ticket
+                        </span>
+                      </label>
+
                     </div>
                   </div>
 
                   {/* Valet Fee Type */}
-                  <div className="md:col-span-1 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                    <label className="block text-sm font-medium text-gray-900 mb-2 flex items-center gap-2">
-                      Valet Fee Type
+                  <div className="md:col-span-2  bg-gray-50 rounded-lg border border-gray-100">
+                    <label className="block text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
+                      Valet Fee Type <span className="text-gray-400 text-xs font-normal">(Select all that apply)</span>
                     </label>
 
-                    <div className="flex flex-wrap gap-4">
-                      <label className="flex items-center gap-2 cursor-pointer">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-2">
+                      
+                      {/* Option 1: Fixed Fee */}
+                      <label className={`flex items-center gap-2 cursor-pointer  rounded transition  ${
+                        formData.feeType?.includes("fixed") 
+                          ? "" 
+                          : ""
+                      }`}>
                         <input
-                          type="radio"
+                          type="checkbox"
                           name="feeType"
                           value="fixed"
                           disabled={isReadOnly}
-                          checked={formData.feeType === "fixed"}
-                          onChange={handleChange}
-                          className="w-4 h-4"
+                          checked={formData.feeType?.includes("fixed")}
+                          onChange={handleFeeTypeChange}
+                          className="w-4 h-4 text-[#ae5c83] rounded focus:ring-[#ae5c83] accent-[#ae5c83]"
                         />
                         <span className="text-sm text-gray-700">Fixed fee</span>
                       </label>
 
-                      <label className="flex items-center gap-2 cursor-pointer">
+                      {/* Option 2: Hourly */}
+                      <label className={`flex items-center gap-2 cursor-pointer  rounded transition  ${
+                        formData.feeType?.includes("hourly") 
+                          ? "" 
+                          : ""
+                      }`}>
                         <input
-                          type="radio"
+                          type="checkbox"
                           name="feeType"
                           value="hourly"
                           disabled={isReadOnly}
-                          checked={formData.feeType === "hourly"}
-                          onChange={handleChange}
-                          className="w-4 h-4"
+                          checked={formData.feeType?.includes("hourly")}
+                          onChange={handleFeeTypeChange}
+                          className="w-4 h-4 text-[#ae5c83] rounded focus:ring-[#ae5c83] accent-[#ae5c83]"
                         />
                         <span className="text-sm text-gray-700">Hourly</span>
                       </label>
 
-                      <label className="flex items-center gap-2 cursor-pointer">
+                      {/* Option 3: Free */}
+                      <label className={`flex items-center gap-2 cursor-pointer rounded transition  ${
+                        formData.feeType?.includes("free") 
+                          ? "" 
+                          : ""
+                      }`}>
                         <input
-                          type="radio"
+                          type="checkbox"
                           name="feeType"
                           value="free"
                           disabled={isReadOnly}
-                          checked={formData.feeType === "free"}
-                          onChange={handleChange}
-                          className="w-4 h-4"
+                          checked={formData.feeType?.includes("free")}
+                          onChange={handleFeeTypeChange}
+                          className="w-4 h-4 text-[#ae5c83] rounded focus:ring-[#ae5c83] accent-[#ae5c83]"
                         />
                         <span className="text-sm text-gray-700">
                           Free (complimentary)
                         </span>
                       </label>
+
                     </div>
                   </div>
 
                   {/* Ticket Pricing */}
-                  <div className="md:col-span-2">
+                  <div className="md:col-span-2 ">
                     <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
                       Ticket Prices (AED)
                       <Banknote className="w-4 h-4 text-gray-400" />
@@ -1399,9 +1433,9 @@ const handleFinalSubmit = async () => {
                   </div>
 
                   {/* VAT Handling */}
-                  <div className="md:col-span-2 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <div className="md:col-span-2 bg-gray-50 rounded-lg border border-gray-100">
                     <label className="block text-sm font-medium text-gray-900 mb-2 flex items-center gap-2">
-                      VAT Handling
+                      Tax Handling
                     </label>
 
                     <div className="flex flex-wrap gap-4">

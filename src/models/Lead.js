@@ -24,8 +24,14 @@ const LeadSchema = new mongoose.Schema(
     validationUser: String,
     reportUser: String,
 
-    ticketType: String,
-    feeType: String,
+    ticketType: {
+      type: [String], 
+      default: []
+    },
+    feeType: {
+      type: [String],
+      default: []
+    },
     ticketPricing: String,
     vatType: String,
 
