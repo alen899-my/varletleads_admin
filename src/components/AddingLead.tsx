@@ -1,5 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import { LeadPDFDocument } from "@/components/LeadPDFDocument"; // Adjust path
+import { Download } from "lucide-react"; // Import Download icon
 import {
   CarFront,
   MapPin,
@@ -32,6 +35,7 @@ import {
 import { useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { z } from "zod";
+import ReviewModal from "@/components/ReviewModal"; // Adjust path based on where you saved it
 
 export default function Page() {
   // Get ID from URL parameters
@@ -54,9 +58,10 @@ export default function Page() {
   // --- MODIFIED: State for both logo previews ---
   const [companyLogoPreview, setCompanyLogoPreview] = useState<string | null>(null);
   const [clientLogoPreview, setClientLogoPreview] = useState<string | null>(null);
-  // --- NEW: LOCATION SEARCH STATE ---
+// --- NEW: REVIEW MODAL STATE ---
+  const [showReviewModal, setShowReviewModal] = useState(false);
   
-
+const [isClient, setIsClient] = useState(false); // <--- ADD THIS
   
   // Typed as any to allow dynamic property assignment
   const [errors, setErrors] = useState<any>({
@@ -243,7 +248,9 @@ export default function Page() {
     }
   }, [leadId, isEditMode]);
 
-  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
 
 
@@ -384,6 +391,17 @@ export default function Page() {
       return newData;
     });
   };
+
+  // --- NEW: TRIGGER REVIEW POPUP ---
+  const handleReviewClick = () => {
+     // Run validation for the last step before showing review
+     if (!validateStep6()) {
+        setWizardError("Please resolve the errors in the document section (Max size 500KB).");
+        return;
+     }
+     setWizardError(""); // Clear errors
+     setShowReviewModal(true); // Open the modal
+  };
 const handleFinalSubmit = async () => {
     // --- NEW CHECK: STOP SUBMIT IF READ ONLY ---
     if (isReadOnly) {
@@ -450,6 +468,7 @@ const handleFinalSubmit = async () => {
         const ref = data.referenceId ?? data.lead?.referenceId ?? referenceId;
         setReferenceId(ref);
         setIsSubmitted(true);
+        setShowReviewModal(false);
         setWizardError(""); // Clear any errors on success
 
         if (!isEditMode) {
@@ -852,16 +871,107 @@ const handleFinalSubmit = async () => {
                 ></div>
               </div>
             </div>
-            {isSubmitted ? (
-              // ✅ SUCCESS MESSAGE
-              <div className=" bg-green-200 mb-3 text-[#ae5c83] p-4 rounded-lg text-center shadow-md animate-in fade-in duration-500">
-                {isEditMode
-                  ? "🎉 Successfully Updated! Changes have been saved."
-                  : "🎉 Congratulations! We’ve received your submission. Our team will review and contact you soon."}
+ {isSubmitted && (
+          <div className="flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-4 h-full py-10">
+            <div className="w-full max-w-md rounded-2xl p-8 text-center bg-white shadow-xl border border-gray-200">
+              
+              {/* Success Icon */}
+              <div className="w-20 h-20 flex items-center justify-center rounded-full bg-green-100 mx-auto mb-4 shadow-sm">
+                <CheckCircle className="w-12 h-12 text-green-600" />
               </div>
-            ) : (
-              <></>
-            )}
+
+              {/* Title */}
+              <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">
+                {isEditMode ? "Update Successful 🎉" : "You're All Set! 🚗"}
+              </h2>
+
+              {/* Subtitle */}
+              <p className="text-gray-600 text-sm mt-2 leading-relaxed">
+                {isEditMode ? (
+                  "Your valet update has been successfully saved."
+                ) : (
+                  <>
+                    Thanks for applying to join the team! <br />
+                    Your onboarding request has been received.
+                  </>
+                )}
+              </p>
+
+              {/* Reference Box */}
+              <div className="mt-6 rounded-xl bg-gray-50 p-5 border border-gray-300 shadow-inner relative">
+                <p className="text-xs font-semibold text-gray-500 tracking-wide">
+                  REFERENCE NUMBER
+                </p>
+
+                <p className="text-3xl font-extrabold text-[#ae5c83] tracking-widest mt-1">
+                  {referenceId}
+                </p>
+
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(referenceId || "");
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="absolute top-3 right-3 text-xs bg-white border border-gray-300 hover:bg-gray-100 px-2 py-1 rounded-lg transition shadow-sm flex items-center gap-1"
+                >
+                  {copied ? "✔ Copied!" : <span className="flex items-center gap-1">📋 Copy</span>}
+                </button>
+              </div>
+
+              {/* Buttons Section */}
+              <div className="flex flex-col gap-3 mt-8">
+                
+                {/* ✅ PDF DOWNLOAD BUTTON (Only renders on client) */}
+                {isClient && (
+                  <PDFDownloadLink
+                    document={<LeadPDFDocument formData={formData} referenceId={referenceId} />}
+                    fileName={`Valet_Registration_${referenceId || "New"}.pdf`}
+                    className="w-full text-decoration-none"
+                  >
+                    {({ blob, url, loading, error }) => (
+                      <button
+                        disabled={loading}
+                        className={`
+                          w-full flex items-center justify-center gap-2 px-8 py-3 rounded-xl font-bold shadow-sm transition-all
+                          ${loading 
+                            ? "bg-gray-100 text-gray-400 cursor-wait border border-gray-200" 
+                            : "bg-slate-800 text-white hover:bg-slate-900 hover:shadow-md active:scale-[0.98]"
+                          }
+                        `}
+                      >
+                        {loading ? (
+                          "Generating PDF..."
+                        ) : (
+                          <>
+                            <Download size={18} /> Download Summary PDF
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </PDFDownloadLink>
+                )}
+
+                {/* Go Home Button */}
+                <button
+                  onClick={() => router.push("/")}
+                  className="
+                    w-full
+                    bg-[#ae5c83] hover:bg-[#923c63] 
+                    px-8 py-3 
+                    rounded-xl 
+                    text-white font-semibold 
+                    shadow-md hover:shadow-lg 
+                    transition-all duration-200
+                    active:scale-[0.98]
+                  "
+                >
+                  Go to Homepage
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
            {/* STEP 1: LOCATION INFORMATION */}
             {currentStep === 1 && (
@@ -1883,48 +1993,19 @@ const handleFinalSubmit = async () => {
  ← Back
 </button>
 
-                  <button
-                    onClick={handleFinalSubmit}
-                    disabled={isReadOnly} // Disable submit button
-                    className={`px-6 py-3 rounded-lg text-sm shadow-sm transition-all
-                  ${
-                      isReadOnly
-                        ? "bg-gray-400 cursor-not-allowed text-gray-100"
-                        : "bg-green-600 hover:bg-green-700 text-white"
-                    }`}
-                  >
-                    {isReadOnly
-                      ? "Locked (Completed)"
-                      : isSubmitting
-                      ? (
-                          <span className="flex items-center gap-2">
-                            <svg
-                              className="animate-spin h-4 w-4 text-white"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                            >
-                              <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                              ></circle>
-                              <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8v4l3-3-3-3v4A8 8 0 104 12z"
-                              ></path>
-                            </svg>
-                            Processing
-                          </span>
-                        )
-                      : isEditMode
-                      ? "Update Lead"
-                      : "Finish & Submit"}
-                  </button>
+                 <button
+  onClick={handleReviewClick} // <--- NEW: Opens modal instead of submitting directly
+  disabled={isReadOnly} 
+  className={`px-6 py-3 rounded-lg text-sm shadow-sm transition-all
+    ${isReadOnly
+       ? "bg-gray-400 cursor-not-allowed text-gray-100"
+       : "bg-green-600 hover:bg-green-700 text-white"
+     }`}
+>
+  {isReadOnly
+    ? "Locked (Completed)"
+    : "Review & Submit"} {/* Changed text to be clearer */}
+</button>
                 </div>
               </div>
             )}
@@ -2003,6 +2084,14 @@ const handleFinalSubmit = async () => {
 )}
 
       </div>
+      <ReviewModal
+        isOpen={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        onSubmit={handleFinalSubmit}
+        formData={formData}
+        existingFiles={existingFiles}
+        isSubmitting={isSubmitting}
+      />
     </div>
   );
 }
