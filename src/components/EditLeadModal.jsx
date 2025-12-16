@@ -442,7 +442,7 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
       <div
         ref={modalRef}
         className="
-    w-full max-w-4xl 
+    w-full max-w-5xl 
     h-[90vh]       /* 👈 FIXED HEIGHT */
     shadow-xl relative 
     bg-white dark:bg-gray-900 border border-gray-400 dark:border-gray-600 
@@ -1190,7 +1190,7 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
 
         <div
           className="shrink-0 bg-white dark:bg-gray-900 border-t border-gray-300 dark:border-gray-700 
-    px-4 py-4 flex items-center justify-between gap-4"
+    px-4 py-16 flex items-center justify-between gap-4"
         >
           {/* BACK BUTTON */}
           {currentStep > 1 ? (
@@ -1211,7 +1211,8 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
           )}
 
           {/* BUTTONS ALWAYS HORIZONTAL */}
-          <div className="flex flex-row items-center gap-3 flex-wrap">
+         <div className="flex flex-row items-center gap-3 flex-wrap self-center">
+
             {/* SAVE BUTTON - VISIBLE ON ALL STEPS */}
             <button
               onClick={handleUpdateSubmit}

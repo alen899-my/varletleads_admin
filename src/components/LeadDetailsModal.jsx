@@ -92,7 +92,7 @@ export default function LeadDetailsModal({ open, onClose, data }) {
         <div
           ref={modalRef}
           className={`
-            w-full max-w-6xl max-h-[90vh] shadow-xl
+            w-full max-w-5xl max-h-[90vh] shadow-xl
             bg-white dark:bg-gray-900 border border-gray-400 dark:border-gray-600
             flex flex-col rounded-xl overflow-hidden
           `}

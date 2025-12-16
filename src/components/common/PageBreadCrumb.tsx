@@ -379,8 +379,8 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
             <div
                 ref={modalRef}
                 className={`
-                    w-full max-w-4xl 
-                    h-[85vh]         /* 👈 Fixed height */
+                    w-full max-w-5xl 
+                    h-[90vh]         /* 👈 Fixed height */
                     shadow-2xl
                     bg-white dark:bg-gray-900 border border-gray-400 dark:border-gray-600
                     flex flex-col rounded-xl overflow-hidden
