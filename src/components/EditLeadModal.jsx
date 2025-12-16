@@ -473,7 +473,7 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
           className={`
     p-4 sm:p-6 space-y-4 flex-1 overflow-y-auto
     min-h-[420px]     /* 👈 prevents jumping */
-    max-h-[65vh]      /* 👈 ensures scrolling instead of resize */
+       /* 👈 ensures scrolling instead of resize */
     transition-all duration-300 ease-in-out
     [&::-webkit-scrollbar]:w-2
     [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-gray-950
@@ -1190,7 +1190,7 @@ export default function EditLeadModal({ isOpen, onClose, leadData, onUpdate }) {
 
         <div
           className="shrink-0 bg-white dark:bg-gray-900 border-t border-gray-300 dark:border-gray-700 
-    px-4 py-16 flex items-center justify-between gap-4"
+    px-4 py-4 flex items-center justify-between gap-4"
         >
           {/* BACK BUTTON */}
           {currentStep > 1 ? (
