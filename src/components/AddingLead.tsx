@@ -32,6 +32,7 @@ import {
 import { useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { z } from "zod";
+import { useDebounce } from "../lib/useDebounce";
 
 export default function Page() {
   // Get ID from URL parameters
@@ -54,7 +55,14 @@ export default function Page() {
   // --- MODIFIED: State for both logo previews ---
   const [companyLogoPreview, setCompanyLogoPreview] = useState<string | null>(null);
   const [clientLogoPreview, setClientLogoPreview] = useState<string | null>(null);
+  // --- NEW: LOCATION SEARCH STATE ---
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null); // For closing dropdown
 
+  // Debounce the search term (500ms delay)
+  
   // Typed as any to allow dynamic property assignment
   const [errors, setErrors] = useState<any>({
     locationName: "",
@@ -119,7 +127,7 @@ export default function Page() {
     tradeLicense: null,
     documentSubmitMethod: "",
   });
-
+const debouncedSearchTerm = useDebounce(formData.locationName, 500);
   // --- LOGO PREVIEW LOGIC (COMPANY) ---
   useEffect(() => {
     if (formData.logoCompany instanceof File) {
@@ -240,6 +248,73 @@ export default function Page() {
     }
   }, [leadId, isEditMode]);
 
+  // --- NEW: HANDLE CLICK OUTSIDE DROPDOWN ---
+  useEffect(() => {
+    function handleClickOutside(event: any) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [wrapperRef]);
+
+  // --- NEW: SEARCH EFFECT ---
+  useEffect(() => {
+    const searchLocation = async () => {
+      // Don't search if read-only, empty, or just selected an address
+      if (isReadOnly || !debouncedSearchTerm || debouncedSearchTerm.length < 3) {
+        setSuggestions([]);
+        return;
+      }
+
+      // Check if current input matches the already selected address (prevents loop)
+      if (debouncedSearchTerm === formData.address || debouncedSearchTerm === formData.locationName) {
+         // This check is a bit loose, but helps prevent searching what we just clicked
+         // Ideally, you'd have a flag 'isUserTyping', but this works for simple cases.
+      }
+
+      setIsSearching(true);
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+            debouncedSearchTerm
+          )}&addressdetails=1&limit=5`
+        );
+        const data = await response.json();
+        setSuggestions(data);
+        setShowSuggestions(true);
+      } catch (error) {
+        console.error("Error fetching location:", error);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    // Only trigger search if the suggestion box is meant to be open or we are typing fresh
+    if (debouncedSearchTerm && debouncedSearchTerm !== formData.address) {
+       searchLocation();
+    }
+  }, [debouncedSearchTerm, isReadOnly]);
+
+  // --- NEW: HANDLE SELECT LOCATION ---
+  const handleSelectLocation = (place: any) => {
+    // Construct Google Maps Link manually
+    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lon}`;
+
+    setFormData((prev: any) => ({
+      ...prev,
+      locationName: place.display_name.split(",")[0], // Short name
+      address: place.display_name, // Full address
+      latitude: place.lat,
+      longitude: place.lon,
+      mapsUrl: googleMapsUrl,
+    }));
+
+    setErrors((prev: any) => ({ ...prev, locationName: "" }));
+    setSuggestions([]);
+    setShowSuggestions(false);
+  };
   const validateBeforeJump = (targetStep: number) => {
     if (targetStep < currentStep) {
       setWizardError("");
@@ -796,25 +871,57 @@ const handleFinalSubmit = async () => {
 
                 {/* Form Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Full Row - Location Name */}
-                  <div className="md:col-span-1">
+                 <div className="md:col-span-1 relative" ref={wrapperRef}>
                     <label className="text-sm font-medium text-gray-900">
                       Location Name <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="text"
-                      name="locationName"
-                      disabled={isReadOnly}
-                      placeholder="e.g. Grand Hyatt Dubai - Main Entrance"
-                      value={formData.locationName}
-                      onChange={(e: any) => {
-                        setFormData({ ...formData, locationName: e.target.value });
-                        setErrors({ ...errors, locationName: "" }); // remove error live
-                      }}
-                      className={`input ${
-                        errors.locationName ? "border-red-500" : ""
-                      }`}
-                    />
+                    
+                    <div className="relative">
+                      <input
+                        type="text"
+                        name="locationName"
+                        disabled={isReadOnly}
+                        autoComplete="off"
+                        placeholder="Type to search (e.g. Dubai Mall)"
+                        value={formData.locationName}
+                        onChange={(e: any) => {
+                          setFormData({ ...formData, locationName: e.target.value });
+                          setErrors({ ...errors, locationName: "" });
+                          if(e.target.value.length > 2) setShowSuggestions(true);
+                        }}
+                        className={`input w-full ${
+                          errors.locationName ? "border-red-500" : ""
+                        }`}
+                      />
+                      
+                      {/* Loading Spinner */}
+                      {isSearching && (
+                        <div className="absolute right-3 top-3">
+                          <div className="w-4 h-4 border-2 border-gray-300 border-t-[#ae5c83] rounded-full animate-spin"></div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* SUGGESTIONS DROPDOWN */}
+                    {showSuggestions && suggestions.length > 0 && (
+                      <ul className="absolute z-50 w-full bg-white border border-gray-200 shadow-xl rounded-md max-h-60 overflow-y-auto mt-1">
+                        {suggestions.map((place) => (
+                          <li
+                            key={place.place_id}
+                            onClick={() => handleSelectLocation(place)}
+                            className="p-3 text-sm hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0 text-gray-700 flex flex-col"
+                          >
+                            <span className="font-medium text-gray-900">
+                              {place.display_name.split(",")[0]}
+                            </span>
+                            <span className="text-xs text-gray-500 truncate">
+                              {place.display_name}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
                     {errors.locationName && (
                       <small className="text-red-500 text-xs">
                         {errors.locationName}
@@ -884,7 +991,7 @@ const handleFinalSubmit = async () => {
                     />
                   </div>
 
-                  {/* Latitude */}
+                 {/* Latitude */}
                   <div>
                     <label className="text-sm font-medium text-gray-900">
                       Latitude
@@ -893,12 +1000,13 @@ const handleFinalSubmit = async () => {
                       type="text"
                       name="latitude"
                       disabled={isReadOnly}
+                      readOnly // Make it read-only if you want to force auto-fill
                       placeholder="e.g., 25.2852° N"
                       value={formData.latitude}
                       onChange={(e: any) =>
                         setFormData({ ...formData, latitude: e.target.value })
                       }
-                      className="input"
+                      className="input bg-gray-50" // Added gray background
                     />
                   </div>
 
@@ -911,12 +1019,13 @@ const handleFinalSubmit = async () => {
                       type="text"
                       name="longitude"
                       disabled={isReadOnly}
+                      readOnly
                       placeholder="e.g., 55.3598° E"
                       value={formData.longitude}
                       onChange={(e: any) =>
                         setFormData({ ...formData, longitude: e.target.value })
                       }
-                      className="input"
+                      className="input bg-gray-50" // Added gray background
                     />
                   </div>
 
