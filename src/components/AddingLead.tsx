@@ -715,9 +715,10 @@ const handleFinalSubmit = async () => {
   bg-white 
   flex 
   justify-center 
-  items-start 
-  md:items-center   
-  px-0 
+ items-start      // ✅ FIX 1: Aligns to top (prevents vertical jumping)
+      pt-3            // ✅ Add padding from top so it doesn't touch edge
+      pb-10            // Add padding at bottom
+      px-4
 ">
 
   <div className="
@@ -727,7 +728,7 @@ const handleFinalSubmit = async () => {
  
     border border-slate-300 
     shadow-lg
-
+    
  
     px-4          
     sm:px-6        
@@ -736,6 +737,8 @@ const handleFinalSubmit = async () => {
     xl:px-24        
 
     py-6
+    min-h-[850px]  // ✅ FIX 2: Forces a tall height so card size doesn't shrink on short steps
+        flex flex-col  // Enables flexbox for spacing
   ">
 
         {/* HEADER */}
@@ -1006,7 +1009,7 @@ const handleFinalSubmit = async () => {
                       type="url"
                       name="mapsUrl"
                       disabled={isReadOnly}
-                      placeholder="Paste Link -> Auto-fills Lat/Long"
+                      placeholder="Paste Location Link "
                       value={formData.mapsUrl}
                       onChange={handleMapUrlChange} // ✅ Custom Handler
                       className="input"
