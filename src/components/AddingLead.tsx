@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect,useMemo } from "react";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { LeadPDFDocument } from "@/components/LeadPDFDocument"; // Adjust path
 import { Download } from "lucide-react"; // Import Download icon
@@ -83,6 +83,7 @@ const [isClient, setIsClient] = useState(false); // <--- ADD THIS
     vatCertificate: null,
     tradeLicense: null,
   });
+
 
   // Placeholder for form data state
   const [formData, setFormData] = useState<any>({
@@ -472,15 +473,7 @@ const handleFinalSubmit = async () => {
         setWizardError(""); // Clear any errors on success
 
         if (!isEditMode) {
-          // Reset form logic...
-          setFormData({
-            locationName: "", capacity: "", waitTime: "", mapsUrl: "", latitude: "", longitude: "", timing: "", address: "",
-            lobbies: "", keyRooms: "", distance: "", supervisorUser: "yes", validationUser: "no", reportUser: "yes",
-            ticketType: "system-generated", feeType: "free", ticketPricing: "", vatType: "inclusive",
-            driverCount: "", driverList: "", adminName: "", adminEmail: "", adminPhone: "", trainingRequired: "yes",
-            logoCompany: null, logoClient: null, vatCertificate: null, tradeLicense: null, documentSubmitMethod: "",
-          });
-          setCurrentStep(1);
+         
         }
       } else {
         // Show API error message in the div
@@ -614,7 +607,14 @@ const handleFinalSubmit = async () => {
     setWizardError(""); // Clear if valid
     setCurrentStep((prev) => prev + 1);
   };
-
+  const pdfDocument = useMemo(() => {
+  return (
+    <LeadPDFDocument
+      formData={formData}
+      referenceId={referenceId}
+    />
+  );
+}, [referenceId]); // 👈 IMPORTANT
   // --- MODIFIED FILE UPLOAD COMPONENT ---
   const FileUploadBlock = ({
     label,
@@ -871,107 +871,7 @@ const handleFinalSubmit = async () => {
                 ></div>
               </div>
             </div>
- {isSubmitted && (
-          <div className="flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-4 h-full py-10">
-            <div className="w-full max-w-md rounded-2xl p-8 text-center bg-white shadow-xl border border-gray-200">
-              
-              {/* Success Icon */}
-              <div className="w-20 h-20 flex items-center justify-center rounded-full bg-green-100 mx-auto mb-4 shadow-sm">
-                <CheckCircle className="w-12 h-12 text-green-600" />
-              </div>
 
-              {/* Title */}
-              <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">
-                {isEditMode ? "Update Successful 🎉" : "You're All Set! 🚗"}
-              </h2>
-
-              {/* Subtitle */}
-              <p className="text-gray-600 text-sm mt-2 leading-relaxed">
-                {isEditMode ? (
-                  "Your valet update has been successfully saved."
-                ) : (
-                  <>
-                    Thanks for applying to join the team! <br />
-                    Your onboarding request has been received.
-                  </>
-                )}
-              </p>
-
-              {/* Reference Box */}
-              <div className="mt-6 rounded-xl bg-gray-50 p-5 border border-gray-300 shadow-inner relative">
-                <p className="text-xs font-semibold text-gray-500 tracking-wide">
-                  REFERENCE NUMBER
-                </p>
-
-                <p className="text-3xl font-extrabold text-[#ae5c83] tracking-widest mt-1">
-                  {referenceId}
-                </p>
-
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(referenceId || "");
-                    setCopied(true);
-                    setTimeout(() => setCopied(false), 2000);
-                  }}
-                  className="absolute top-3 right-3 text-xs bg-white border border-gray-300 hover:bg-gray-100 px-2 py-1 rounded-lg transition shadow-sm flex items-center gap-1"
-                >
-                  {copied ? "✔ Copied!" : <span className="flex items-center gap-1">📋 Copy</span>}
-                </button>
-              </div>
-
-              {/* Buttons Section */}
-              <div className="flex flex-col gap-3 mt-8">
-                
-                {/* ✅ PDF DOWNLOAD BUTTON (Only renders on client) */}
-                {isClient && (
-                  <PDFDownloadLink
-                    document={<LeadPDFDocument formData={formData} referenceId={referenceId} />}
-                    fileName={`Valet_Registration_${referenceId || "New"}.pdf`}
-                    className="w-full text-decoration-none"
-                  >
-                    {({ blob, url, loading, error }) => (
-                      <button
-                        disabled={loading}
-                        className={`
-                          w-full flex items-center justify-center gap-2 px-8 py-3 rounded-xl font-bold shadow-sm transition-all
-                          ${loading 
-                            ? "bg-gray-100 text-gray-400 cursor-wait border border-gray-200" 
-                            : "bg-slate-800 text-white hover:bg-slate-900 hover:shadow-md active:scale-[0.98]"
-                          }
-                        `}
-                      >
-                        {loading ? (
-                          "Generating PDF..."
-                        ) : (
-                          <>
-                            <Download size={18} /> Download Summary PDF
-                          </>
-                        )}
-                      </button>
-                    )}
-                  </PDFDownloadLink>
-                )}
-
-                {/* Go Home Button */}
-                <button
-                  onClick={() => router.push("/")}
-                  className="
-                    w-full
-                    bg-[#ae5c83] hover:bg-[#923c63] 
-                    px-8 py-3 
-                    rounded-xl 
-                    text-white font-semibold 
-                    shadow-md hover:shadow-lg 
-                    transition-all duration-200
-                    active:scale-[0.98]
-                  "
-                >
-                  Go to Homepage
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
            {/* STEP 1: LOCATION INFORMATION */}
             {currentStep === 1 && (
@@ -1339,6 +1239,7 @@ const handleFinalSubmit = async () => {
                     className="btn-primary flex gap-2 pointer-events-auto"
                   >
                     Next Step
+                    <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -1462,7 +1363,8 @@ const handleFinalSubmit = async () => {
                       Valet Fee Type <span className="text-gray-400 text-xs font-normal">(Select all that apply)</span>
                     </label>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-2">
+                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-3 gap-x-6">
+
                       
                       {/* Option 1: Fixed Fee */}
                       <label className={`flex items-center gap-2 cursor-pointer  rounded transition  ${
@@ -1603,6 +1505,7 @@ const handleFinalSubmit = async () => {
                     className="btn-primary pointer-events-auto"
                   >
                     Next Step
+                    <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -1999,7 +1902,7 @@ const handleFinalSubmit = async () => {
   className={`px-6 py-3 rounded-lg text-sm shadow-sm transition-all
     ${isReadOnly
        ? "bg-gray-400 cursor-not-allowed text-gray-100"
-       : "bg-green-600 hover:bg-green-700 text-white"
+       : "bg-[#ae5c83] hover:bg-[#ae5c83] text-white"
      }`}
 >
   {isReadOnly
@@ -2011,39 +1914,36 @@ const handleFinalSubmit = async () => {
             )}
           </>
         )}
- {isSubmitted && (
-  <div className="flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-4">
-    <div className="w-full max-w-md rounded-2xl p-8 text-center bg-white shadow-xl border border-gray-200">
+{isSubmitted && (
+  <div className="flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-4 h-full py-8">
+    <div className="w-full max-w-md rounded-lg p-6 text-center bg-white shadow-md border border-gray-200">
         
       {/* Success Icon */}
-      <div className="w-20 h-20 flex items-center justify-center rounded-full bg-green-100 mx-auto mb-4 shadow-sm">
-        <CheckCircle className="w-12 h-12 text-green-600" />
+      <div className="w-16 h-16 flex items-center justify-center rounded-full bg-green-50 mx-auto mb-4 shadow-sm">
+        <CheckCircle className="w-10 h-10 text-green-600" />
       </div>
 
       {/* Title */}
-      <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">
-        {isEditMode ? "Update Successful 🎉" : "You're All Set! 🚗"}
+      <h2 className="text-xl font-bold text-gray-900 tracking-tight">
+        {isEditMode ? "Update Successful" : "Submission Successful"}
       </h2>
 
       {/* Subtitle */}
       <p className="text-gray-600 text-sm mt-2 leading-relaxed">
         {isEditMode ? (
-          "Your valet update has been successfully saved."
+          "The location details have been successfully updated."
         ) : (
-          <>
-            Thanks for applying to join the team! <br />
-            Your onboarding request has been received. Our team will review it and contact you shortly.
-          </>
+          "Your registration has been received. Our team will review the details and contact you shortly."
         )}
       </p>
 
       {/* Reference Box */}
-      <div className="mt-6 rounded-xl bg-gray-50 p-5 border border-gray-300 shadow-inner relative">
-        <p className="text-xs font-semibold text-gray-500 tracking-wide">
-          REFERENCE NUMBER
+      <div className="mt-5 rounded-lg bg-gray-50 p-4 border border-gray-200 relative text-left">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          Reference Number
         </p>
 
-        <p className="text-3xl font-extrabold text-[#ae5c83] tracking-widest mt-1">
+        <p className="text-2xl font-bold text-gray-900 mt-1 font-mono tracking-tight">
           {referenceId}
         </p>
 
@@ -2053,32 +1953,88 @@ const handleFinalSubmit = async () => {
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
           }}
-          className="absolute top-3 right-3 text-xs bg-white border border-gray-300 hover:bg-gray-100 px-2 py-1 rounded-lg transition shadow-sm flex items-center gap-1"
+          className="absolute top-4 right-4 text-xs bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-2.5 py-1.5 rounded-md transition-all flex items-center gap-1.5 font-medium"
         >
-          {copied ? "✔ Copied!" : <span className="flex items-center gap-1">📋 Copy</span>}
+          {copied ? (
+            <>
+              <CheckCircle size={14} className="text-green-600" /> Copied
+            </>
+          ) : (
+            <>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clipboard"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg> Copy
+            </>
+          )}
         </button>
       </div>
 
       {/* Reminder */}
-      <p className="text-xs text-gray-500 mt-2">
-        Please save this reference number for future communication.
+      <p className="text-xs text-gray-500 mt-2 text-left">
+        Please quote this reference number in future correspondence.
       </p>
 
-      {/* CTA Button */}
-      <button
-        onClick={() => router.push("/")}
-        className="
-          mt-6 
-          bg-[#ae5c83] hover:bg-[#923c63] 
-          px-8 py-3 
-          rounded-xl 
-          text-white font-semibold 
-          shadow-md hover:shadow-lg 
-          transition-all duration-200
-        "
-      >
-        Go to Homepage
-      </button>
+      {/* Buttons Section - Changed to grid-cols-2 for two columns */}
+     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6 w-full">
+
+        
+        {/* ✅ PDF DOWNLOAD BUTTON (Only renders on client) */}
+        {isClient && (
+          <PDFDownloadLink
+  document={pdfDocument}
+  fileName={`Valet_Registration_${referenceId || "New"}.pdf`}
+
+
+            className="w-full text-decoration-none"
+          >
+            {({ blob, url, loading, error }) => (
+              <button
+                disabled={loading}
+                className={`
+                  w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-md font-medium text-sm transition-all border
+                  ${loading 
+                    ? "bg-gray-50 text-gray-400 cursor-wait border-gray-400" 
+                    : "bg-white text-gray-700 border-gray-400 hover:bg-gray-50 hover:border-gray-400 active:bg-gray-100"
+                  }
+                `}
+              >
+                {loading ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4A8 8 0 104 12z"></path>
+                    </svg>
+                    <span className="truncate">Generating...</span>
+                  </>
+                ) : (
+                  <>
+                    <Download size={16} className="flex-shrink-0" /> 
+                    {/* Changed text here */}
+                    <span className="truncate">Download PDF</span>
+                  </>
+                )}
+              </button>
+            )}
+          </PDFDownloadLink>
+        )}
+
+        {/* Go Home Button */}
+        <button
+          onClick={() => router.push("/")}
+          className="
+            w-full
+            bg-[#ae5c83] hover:bg-[#923c63] 
+            px-3 py-2.5 
+            rounded-md
+            text-white font-medium text-sm
+            shadow-sm hover:shadow
+            transition-all duration-200
+            active:scale-[0.98]
+            flex items-center justify-center gap-2
+          "
+        >
+          <span className="truncate">Go to Homepage</span>
+        </button>
+      </div>
+     
     </div>
   </div>
 )}

@@ -270,7 +270,7 @@ export default function ReviewModal({
                 <ReviewRow label="Full Name" value={formData.adminName} />
                 <ReviewRow label="Email Address" value={formData.adminEmail} />
                 <ReviewRow label="Mobile / WhatsApp Number" value={formData.adminPhone} />
-                <ReviewRow label="Super admin will receive full application training" value={formData.trainingRequired === 'yes' ? <span className="text-emerald-600 font-bold flex items-center gap-1"><CheckCircle size={14}/> Yes, training required</span> : "No"} />
+                <ReviewRow label="Super admin will receive full application training" value={formData.trainingRequired === 'yes' ? <span className=" flex items-center gap-1"> Yes, training required</span> : "No"} />
               </div>
             </section>
 
@@ -317,7 +317,7 @@ export default function ReviewModal({
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4A8 8 0 104 12z"></path>
                 </svg>
-                Processing...
+                Submitting...
               </>
             ) : (
               <>
