@@ -518,10 +518,16 @@ const handleFinalSubmit = async () => {
       if (data.success) {
         const finalRefId = data.referenceId ?? data.lead?.referenceId ?? referenceId;
         setReferenceId(finalRefId);
-       
+        try {
+            // Keep the modal open so the user sees "Submitting..." while PDF generates
+            await uploadPdfToBlob(finalRefId, formData); 
+        } catch (pdfError) {
+            console.error("PDF Upload failed but Lead saved", pdfError);
+            // Optional: You might want to warn the user here, 
+            // but we usually proceed to success since the Lead is saved.
+        }
         setShowReviewModal(false);
-        await uploadPdfToBlob(finalRefId, formData);
-
+        
         // 3. Only show success state after everything is done
         setIsSubmitted(true);
         setWizardError(""); // Clear any errors on success
@@ -1973,7 +1979,7 @@ const handleFinalSubmit = async () => {
           </>
         )}
 {isSubmitted && (
-  <div className="flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-300 h-full py-12 px-4 bg-gray-50">
+   <div className="flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-300 h-full  ">
     {/* Increased max-width to lg for better spacing, added richer shadow */}
     <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl border border-gray-100 overflow-hidden">
       
@@ -2029,7 +2035,7 @@ const handleFinalSubmit = async () => {
       </div>
 
       {/* --- Bottom Section: Actions (Gray Background) --- */}
-      <div className="bg-gray-50 p-8 border-t border-gray-100">
+      <div className="-50 p-8 border-t border-gray-100">
         <h3 className="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wider">
           Next Steps
         </h3>
@@ -2038,10 +2044,12 @@ const handleFinalSubmit = async () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           
           {/* ACTION 1: DOWNLOAD PDF */}
+         {/* ACTION 1: DOWNLOAD PDF */}
           <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between">
             <div>
                 <div className="bg-blue-100 w-10 h-10 rounded-lg flex items-center justify-center text-blue-600 mb-3">
-                    <Download size={20} />
+                    {/* ✅ CHANGED: Used FileText to look like a document */}
+                    <FileText size={20} />
                 </div>
                 <h4 className="font-semibold text-gray-900">Download PDF</h4>
                 <p className="text-sm text-gray-500 mt-1 mb-4">Save a copy for your records.</p>

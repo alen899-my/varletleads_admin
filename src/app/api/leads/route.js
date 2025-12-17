@@ -1,19 +1,41 @@
 import { connectDB } from "@/lib/mongodb";
 import Lead from "@/models/Lead";
 import { NextResponse } from "next/server";
-import { put } from "@vercel/blob"; 
+import { put } from "@vercel/blob";
+import mongoose from "mongoose"; // ✅ Added mongoose import
 
-function generateReference() {
-  const random = Math.floor(100000 + Math.random() * 900000);
-  return `VAL-${random}`;
-}
+// ❌ DELETED the old generateReference function from here
 
 export async function POST(req) {
   try {
     await connectDB();
-    
+
     const formData = await req.formData();
-    
+
+    // --- NEW SEQUENTIAL ID LOGIC START ---
+    // 1. Define a temporary Counter model to track the sequence
+    // We check mongoose.models first to prevent recompilation errors in dev mode
+    let CounterModel = mongoose.models.LeadCounter;
+    if (!CounterModel) {
+      const counterSchema = new mongoose.Schema({
+        _id: { type: String, required: true },
+        seq: { type: Number, default: 999 }, // Start at 999 so first increment makes it 1000
+      });
+      CounterModel = mongoose.model("LeadCounter", counterSchema);
+    }
+
+    // 2. Atomically find the counter doc and increment seq by 1
+    const counterDoc = await CounterModel.findOneAndUpdate(
+      { _id: "val_reference_id" }, // The unique name for this sequence
+      { $inc: { seq: 1 } }, // Increment by 1
+      { new: true, upsert: true } // Create if it doesn't exist, return the new value
+    );
+
+    // 3. Set the reference ID using the new sequence number
+    const referenceId = `VAL-${counterDoc.seq}`;
+    // --- NEW SEQUENTIAL ID LOGIC END ---
+
+
     // Create attachments array
     const attachments = [];
 
@@ -41,7 +63,7 @@ export async function POST(req) {
 
         // --- VERCEL BLOB UPLOAD LOGIC ---
         const safeName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
-        const filename = `leads/${safeName}`; 
+        const filename = `leads/${safeName}`;
 
         const blob = await put(filename, file, {
           access: 'public',
@@ -51,7 +73,7 @@ export async function POST(req) {
         attachments.push({
           fieldname: field,
           filename: file.name,
-          path: blob.url, 
+          path: blob.url,
         });
       })
     );
@@ -72,11 +94,11 @@ export async function POST(req) {
       }
     });
 
-    const referenceId = generateReference();
+    // ❌ DELETED OLD LINE: const referenceId = generateReference();
 
     const newLead = await Lead.create({
       ...leadData,
-      referenceId,
+      referenceId, // Uses the sequential ID generated above
       attachments,
     });
 
