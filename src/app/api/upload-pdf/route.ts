@@ -22,6 +22,7 @@ export async function POST(request: Request) {
       access: "public",
       // Optional: Add metadata if needed so you know which lead this belongs to later
       // token: '...', // if you need specific auth tokens
+      allowOverwrite: true
     });
 
     // 2. Return the public URL

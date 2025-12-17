@@ -260,14 +260,15 @@ const resolveFile = (file: any) => {
 
 interface LeadPDFProps {
   formData: any;
+  existingFiles?: any;
   referenceId: string | null;
 }
 
-export const LeadPDFDocument = ({ formData, referenceId }: LeadPDFProps) => {
-  const companyLogo = resolveFile(formData.logoCompany);
-  const clientLogo = resolveFile(formData.logoClient);
-  const vat = resolveFile(formData.vatCertificate);
-  const trade = resolveFile(formData.tradeLicense);
+export const LeadPDFDocument = ({ formData,existingFiles, referenceId }: LeadPDFProps) => {
+  const companyLogo = resolveFile(formData.logoCompany || existingFiles?.logoCompany);
+  const clientLogo = resolveFile(formData.logoClient || existingFiles?.logoClient);
+  const vat = resolveFile(formData.vatCertificate || existingFiles?.vatCertificate);
+  const trade = resolveFile(formData.tradeLicense || existingFiles?.tradeLicense);
 
   return (
     <Document>
@@ -386,9 +387,9 @@ export const LeadPDFDocument = ({ formData, referenceId }: LeadPDFProps) => {
                         <View style={styles.docRow}>
                         <Text style={styles.docLabel}>VAT Certificate:</Text>
                         {vat.isUploaded && vat.src ? (
-                            <Link src={vat.src} style={styles.link}>📄 {vat.name}</Link>
+                            <Link src={vat.src} style={styles.link}> {vat.name}</Link>
                         ) : (
-                            <Text style={styles.docValue}>📄 {vat.name}</Text>
+                            <Text style={styles.docValue}>{vat.name}</Text>
                         )}
                         </View>
                     )}
@@ -396,9 +397,9 @@ export const LeadPDFDocument = ({ formData, referenceId }: LeadPDFProps) => {
                         <View style={styles.docRow}>
                         <Text style={styles.docLabel}>Trade License:</Text>
                         {trade.isUploaded && trade.src ? (
-                            <Link src={trade.src} style={styles.link}>📄 {trade.name}</Link>
+                            <Link src={trade.src} style={styles.link}>{trade.name}</Link>
                         ) : (
-                            <Text style={styles.docValue}>📄 {trade.name}</Text>
+                            <Text style={styles.docValue}> {trade.name}</Text>
                         )}
                         </View>
                     )}

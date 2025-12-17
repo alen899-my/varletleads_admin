@@ -87,212 +87,239 @@ export default function LeadDetailsModal({ open, onClose, data }) {
   };
 
   return (
-    <>
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center p-4 z-[9999]">
-        <div
-          ref={modalRef}
-          className={`
-            w-full max-w-5xl max-h-[90vh] shadow-xl
-            bg-white dark:bg-gray-900 border border-gray-400 dark:border-gray-600
-            flex flex-col rounded-xl overflow-hidden
-          `}
-        >
-          <div className="shrink-0 bg-white dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 px-5 py-3 flex justify-between items-center">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Lead Details</h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Viewing client information</p>
-            </div>
-
-            <button
-              onClick={() => onClose(false)}
-              className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-            >
-              <X size={18} />
-            </button>
-          </div>
-
-          <div className={`
-            flex-1 overflow-y-auto p-4 space-y-4
-            [&::-webkit-scrollbar]:w-2
-            [&::-webkit-scrollbar-track]:bg-gray-100
-            dark:[&::-webkit-scrollbar-track]:bg-gray-950
-            [&::-webkit-scrollbar-thumb]:bg-gray-400
-            dark:[&::-webkit-scrollbar-thumb]:bg-gray-700
-            [&::-webkit-scrollbar-thumb]:rounded-full
-            hover:[&::-webkit-scrollbar-thumb]:bg-gray-500
-            dark:hover:[&::-webkit-scrollbar-thumb]:bg-gray-600
-          `}>
-
-            {/* ================== NEW STRUCTURE ================== */}
-            <div className="space-y-6">
-
-              {/* ------------------ SECTION: TEXT FIELDS ------------------ */}
-              <div>
-                <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2"> Lead Information</h3>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-
-                  {/* STATUS BADGE */}
-                  <div className="p-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
-                    <label className="text-xs text-gray-500 dark:text-gray-400 uppercase font-medium mb-1 block">
-                      Status
-                    </label>
-                    <span
-                      className={`px-3 py-1 text-xs rounded-md font-medium w-fit
-                      ${data.status === "completed"
-                        ? "bg-green-200 text-green-800 dark:bg-green-700 dark:text-white"
-                        : "bg-yellow-200 text-yellow-800 dark:bg-yellow-600 dark:text-black"
-                      }`}
-                    >
-                      {data.status}
-                    </span>
-                  </div>
-
-                  {/* ORIGINAL TEXT LOOP */}
-                  {Object.entries(data).map(([key, value]) => {
-                    if (["_id", "__v", "status", "attachments", "createdAt", "updatedAt"].includes(key) || typeof value === "object") return null;
-
-                    return (
-                      <div key={key} className="p-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
-                        <label className="text-xs uppercase text-gray-500 dark:text-gray-400 font-medium">{key.replace(/([A-Z])/g, " $1")}</label>
-                        <p className="mt-1 text-[15px] text-gray-800 dark:text-gray-100 break-all">
-                          {value || <i className="text-gray-400">No data</i>}
-                        </p>
-                      </div>
-                    );
-                  })}
-
-                </div>
-              </div>
-
-              {/* ------------------ SECTION: DOCUMENTS ------------------ */}
-              <div>
-                <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2"> Documents</h3>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-
-                  {/* IMAGE BLOCKS */}
-                  {["companyLogo", "clientLogo"].map((field) => {
-                    const stored = files[field];
-                    const preview = getFileUrl(stored);
-
-                    return (
-                      <div key={field} className="p-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
-                        <label className="text-xs text-gray-500 dark:text-gray-400 uppercase font-medium">{field.replace(/([A-Z])/g, " $1")}</label>
-                        
-                        <div className="mt-2 relative w-full h-[200px] sm:h-[150px] md:h-[180px] lg:h-[220px] bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
-                          {preview ? (
-                            <Image
-                              unoptimized // Necessary for Vercel Blob external URLs
-                              src={preview}
-                              fill
-                              onClick={() => setPreviewSrc(preview)}
-                              className="cursor-pointer object-cover"
-                              alt="Preview"
-                            />
-                          ) : (
-                            <span className="text-gray-400 text-sm flex justify-center items-center h-full">No Image</span>
-                          )}
-                        </div>
-
-                        {preview && (
-                          <button
-                            onClick={() => handleDownload(preview, stored?.filename || "download.png")}
-                            className="mt-2 w-full flex items-center justify-center gap-2 text-xs p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
-                          >
-                            <Download size={14} /> Download
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
-
-                  {/* PDF BLOCKS */}
-                  {["vatCertificate", "tradeLicense"].map((field) => {
-                    const stored = files[field];
-                    const downloadUrl = getFileUrl(stored);
-
-                    return (
-                      <div key={field} className="p-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
-                        <label className="text-xs text-gray-500 dark:text-gray-400 uppercase font-medium">{field.replace(/([A-Z])/g, " $1")}</label>
-
-                        <div className="mt-2 flex items-center gap-2 p-2 border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 rounded-lg">
-                          <FileText className="text-red-500" size={20} />
-                          <span className="text-sm truncate dark:text-gray-200 text-gray-700">
-                            {stored?.filename || "No Document"}
-                          </span>
-                        </div>
-
-                        {downloadUrl && (
-                          <button
-                            onClick={() => handleDownload(downloadUrl, stored?.filename || "document.pdf")}
-                            className="mt-2 w-full flex items-center justify-center gap-2 text-xs border border-gray-300 dark:border-gray-600 p-2 rounded bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
-                          >
-                            <Download size={14} /> Download
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
-
-                  {/* 🚨 KEEP ORIGINAL EDIT LINK CARD */}
-                  {data.status !== "completed" && (
-                    <div className="col-span-1 sm:col-span-2 lg:col-span-3 p-3 border border-blue-200 dark:border-blue-800 rounded-lg bg-blue-50 dark:bg-blue-900/10">
-                      <label className="text-xs text-blue-600 dark:text-blue-400 uppercase font-bold mb-2 flex items-center gap-2">
-                        Registration / Edit Link
-                      </label>
-
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <div className="flex-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm text-gray-600 dark:text-gray-300 font-mono truncate select-all">
-                          {editLink}
-                        </div>
-
-                        <div className="flex gap-2 shrink-0">
-                          <button
-                            onClick={handleCopy}
-                            className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition text-sm font-medium text-gray-700 dark:text-gray-200"
-                          >
-                            {copied ? <Check size={16} className="text-green-600" /> : <Copy size={16} />}
-                            {copied ? "Copied" : "Copy"}
-                          </button>
-
-                          <Link
-                            href={`/location-registration/${data._id}`}
-                            target="_blank"
-                            className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition text-sm font-medium"
-                          >
-                            <ExternalLink size={16} />
-                            Open
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                </div>
-              </div>
-            </div>
-            {/* ================== END STRUCTURE ================== */}
-
-          </div>
+<>
+  {/* CHANGED: Backdrop from bg-black/60 to softer bg-gray-900/80 */}
+  <div className="fixed inset-0 bg-gray-900/80 dark:bg-gray-950/80 backdrop-blur-sm flex justify-center items-center p-4 z-[9999]">
+    <div
+      ref={modalRef}
+      className={`
+        w-full max-w-5xl max-h-[90vh] shadow-2xl
+        bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800
+        flex flex-col rounded-xl overflow-hidden font-sans
+      `}
+      /* CHANGED above: dark:bg-gray-950 -> dark:bg-gray-900 for softer dark theme background */
+    >
+      {/* Header */}
+      <div className="shrink-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 px-6 py-4 flex justify-between items-center">
+        {/* CHANGED above: dark:bg-gray-950 -> dark:bg-gray-900 */}
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Lead Details</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Reference ID: {data.referenceId || "N/A"}</p>
         </div>
+
+        <button
+          onClick={() => onClose(false)}
+          // CHANGED hover: dark:hover:bg-gray-900 -> dark:hover:bg-gray-800 (lighter than bg)
+          className="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        >
+          <X size={20} />
+        </button>
       </div>
 
-      {previewSrc && (
-        <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-[10000]"
-          onClick={() => setPreviewSrc(null)}
-        >
-          <Image
-            unoptimized
-            src={previewSrc}
-            width={700}
-            height={700}
-            className="object-contain max-h-[90vh] rounded-lg shadow-xl"
-            alt="Expanded Preview"
-          />
+      <div className={`
+        flex-1 overflow-y-auto p-6 md:p-8
+        [&::-webkit-scrollbar]:w-2
+        [&::-webkit-scrollbar-track]:bg-transparent
+        [&::-webkit-scrollbar-thumb]:bg-gray-300
+        dark:[&::-webkit-scrollbar-thumb]:bg-gray-700
+        [&::-webkit-scrollbar-thumb]:rounded-full
+        hover:[&::-webkit-scrollbar-thumb]:bg-gray-400
+        dark:hover:[&::-webkit-scrollbar-thumb]:bg-gray-600
+      `}>
+
+        {/* ================== MAIN CONTENT CONTAINER ================== */}
+        <div className="space-y-10">
+
+          {/* ------------------ SECTION 1: LEAD INFORMATION ------------------ */}
+          <section>
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-6 pb-2 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2">
+              General Information
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-6">
+
+              {/* STATUS */}
+              <div className="flex flex-col">
+                <dt className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold mb-1.5">
+                  Status
+                </dt>
+                <dd>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize
+                    ${data.status === "completed"
+                      ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 ring-1 ring-inset ring-green-600/20"
+                      : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 ring-1 ring-inset ring-yellow-600/20"
+                    }`}
+                  >
+                    {data.status}
+                  </span>
+                </dd>
+              </div>
+
+              {/* DYNAMIC FIELDS LOOP */}
+              {Object.entries(data).map(([key, value]) => {
+                if (["_id", "__v", "status", "attachments", "createdAt", "updatedAt", "referenceId"].includes(key)) return null;
+                if (typeof value === "object" && value !== null && !Array.isArray(value)) return null;
+
+                return (
+                  <div key={key} className="flex flex-col">
+                    <dt className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold mb-1.5">
+                      {key.replace(/([A-Z])/g, " $1")}
+                    </dt>
+                    
+                    <dd className="text-[15px] text-gray-900 dark:text-gray-100 font-medium leading-snug break-words">
+                      {Array.isArray(value) ? (
+                        value.length > 0 ? (
+                          <div className="flex flex-wrap gap-2 mt-0.5">
+                            {value.map((item, idx) => (
+                              <span 
+                                key={idx} 
+                                // CHANGED badge bg: dark:bg-gray-800 to pop against gray-900 modal bg
+                                className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 capitalize"
+                              >
+                                {item.toString().replace(/-/g, " ")}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 dark:text-gray-600 text-sm">N/A</span>
+                        )
+                      ) : (
+                        value || <span className="text-gray-400 dark:text-gray-600 font-normal">N/A</span>
+                      )}
+                    </dd>
+                  </div>
+                );
+              })}
+
+            </div>
+          </section>
+
+          {/* ------------------ SECTION 2: DOCUMENTS ------------------ */}
+          <section>
+             <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-6 pb-2 border-b border-gray-100 dark:border-gray-800">
+              Uploaded Documents
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              {[...["companyLogo", "clientLogo"], ...["vatCertificate", "tradeLicense"]].map((field) => {
+                const stored = files[field];
+                const downloadUrl = getFileUrl(stored);
+                const isImage = ["companyLogo", "clientLogo"].includes(field);
+                const label = field.replace(/([A-Z])/g, " $1");
+
+                if (!stored?.filename) return null;
+
+                return (
+                  // CHANGED card bg: dark:bg-gray-900 -> dark:bg-gray-800 (to sit on top of modal bg)
+                  // CHANGED border: dark:border-gray-800 -> dark:border-gray-700 (for better definition)
+                  <div key={field} className="group flex items-start gap-4 p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 transition-colors shadow-sm">
+                    
+                    {/* Thumbnail Area */}
+                    {/* CHANGED thumbnail bg: dark:bg-gray-800 -> dark:bg-gray-700 (contrast inside card) */}
+                    <div className="shrink-0 relative w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-md overflow-hidden border border-gray-100 dark:border-gray-600 flex items-center justify-center">
+                        {isImage && downloadUrl ? (
+                             <Image
+                             unoptimized
+                             src={downloadUrl}
+                             fill
+                             onClick={() => setPreviewSrc(downloadUrl)}
+                             className="object-cover cursor-pointer"
+                             alt={label}
+                           />
+                        ) : (
+                            <FileText className="text-gray-400 dark:text-gray-500" size={24} />
+                        )}
+                    </div>
+
+                    {/* Info & Action Area */}
+                    <div className="flex-1 min-w-0 pt-0.5">
+                        <dt className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold truncate mb-0.5">{label}</dt>
+                        <dd className="text-sm font-medium text-gray-900 dark:text-white truncate">{stored.filename}</dd>
+                        
+                        {downloadUrl && (
+                            <button
+                                onClick={() => handleDownload(downloadUrl, stored.filename)}
+                                className="mt-1.5 flex items-center gap-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+                            >
+                                <Download size={12} /> Download
+                            </button>
+                        )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+              {!Object.keys(files).some(k => files[k]?.filename) && (
+                  <div className="text-sm text-gray-500 dark:text-gray-400 italic pl-1">No documents uploaded.</div>
+              )}
+          </section>
+
+          {/* ------------------ SECTION 3: EDIT LINK CTA ------------------ */}
+          {data.status !== "completed" && (
+            // CHANGED bg: dark:bg-blue-950/20 -> dark:bg-blue-900/20 (slightly softer)
+            <div className="rounded-lg border border-blue-100 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/20 p-4 sm:p-6">
+              <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-4 flex items-center gap-2">
+                Registration Link & Actions
+              </h4>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                {/* CHANGED input bg: dark:bg-gray-900 -> dark:bg-gray-800 (sit on top) */}
+                <div className="flex-1 bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-800 rounded-md px-3 py-2.5 text-sm text-gray-600 dark:text-gray-300 font-mono truncate select-all shadow-sm">
+                  {editLink}
+                </div>
+
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    onClick={handleCopy}
+                    // CHANGED button bg & hover: dark:bg-gray-900 -> 800, hover -> 700
+                    className="flex items-center gap-2 px-3 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm"
+                  >
+                    {copied ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}
+                    {copied ? "Copied" : "Copy"}
+                  </button>
+
+                  <Link
+                    href={`/location-registration/${data._id}`}
+                    target="_blank"
+                    className="flex items-center gap-2 px-3 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition text-sm font-medium shadow-sm"
+                  >
+                    <ExternalLink size={14} />
+                    Open
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
-      )}
-    </>
+        {/* ================== END MAIN CONTENT ================== */}
+
+      </div>
+    </div>
+  </div>
+
+  {/* Image Lightbox Preview */}
+  {previewSrc && (
+    // CHANGED backdrop: bg-black/90 -> bg-gray-900/95 (softer)
+    <div
+      className="fixed inset-0 bg-gray-900/95 dark:bg-black/90 backdrop-blur-sm flex justify-center items-center z-[10000] p-4"
+      onClick={() => setPreviewSrc(null)}
+    >
+      <Image
+        unoptimized
+        src={previewSrc}
+        width={800}
+        height={800}
+        className="object-contain max-h-full max-w-full rounded-lg overflow-hidden shadow-2xl"
+        alt="Expanded Preview"
+      />
+      <button className="absolute top-4 right-4 text-white/70 hover:text-white p-2 bg-gray-900/50 rounded-full transition-colors">
+          <X size={24} />
+      </button>
+    </div>
+  )}
+</>
   );
 }

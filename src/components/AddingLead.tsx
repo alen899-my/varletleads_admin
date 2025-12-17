@@ -408,15 +408,17 @@ const [isClient, setIsClient] = useState(false); // <--- ADD THIS
      setWizardError(""); // Clear errors
      setShowReviewModal(true); // Open the modal
   };
-    const uploadPdfToBlob = async (finalRefId: string, finalFormData: any) => {
+   const uploadPdfToBlob = async (finalRefId: string, finalFormData: any, finalExistingFiles: any) => {
     setIsPdfUploading(true);
     console.log("Starting PDF generation and upload process...");
 
     try {
-      // 1. Generate the PDF as a blob on the client side using the react-pdf 'pdf' function
-      // Note: We pass the freshly submitted data and reference ID here to ensure accuracy.
       const blob = await pdf(
-        <LeadPDFDocument formData={finalFormData} referenceId={finalRefId} />
+        <LeadPDFDocument 
+            formData={finalFormData} 
+            existingFiles={finalExistingFiles} // ✅ Pass it here
+            referenceId={finalRefId} 
+        />
       ).toBlob();
 
       if (!blob) throw new Error("Failed to generate PDF blob");
@@ -516,18 +518,19 @@ const handleFinalSubmit = async () => {
       const data = await res.json();
 
       if (data.success) {
-        const finalRefId = data.referenceId ?? data.lead?.referenceId ?? referenceId;
+       const finalRefId = data.referenceId ?? data.lead?.referenceId ?? referenceId;
         setReferenceId(finalRefId);
-        try {
+       try {
             // Keep the modal open so the user sees "Submitting..." while PDF generates
-            await uploadPdfToBlob(finalRefId, formData); 
+           await uploadPdfToBlob(finalRefId, formData, existingFiles);
         } catch (pdfError) {
             console.error("PDF Upload failed but Lead saved", pdfError);
             // Optional: You might want to warn the user here, 
             // but we usually proceed to success since the Lead is saved.
         }
         setShowReviewModal(false);
-        
+       
+
         // 3. Only show success state after everything is done
         setIsSubmitted(true);
         setWizardError(""); // Clear any errors on success
@@ -671,14 +674,15 @@ const handleFinalSubmit = async () => {
     setWizardError(""); // Clear if valid
     setCurrentStep((prev) => prev + 1);
   };
-  const pdfDocument = useMemo(() => {
+ const pdfDocument = useMemo(() => {
   return (
     <LeadPDFDocument
       formData={formData}
+      existingFiles={existingFiles} // ✅ Pass existing files here
       referenceId={referenceId}
     />
   );
-}, [referenceId]); // 👈 IMPORTANT
+}, [formData, existingFiles, referenceId]); // ✅ Add dependencies
   // --- MODIFIED FILE UPLOAD COMPONENT ---
   const FileUploadBlock = ({
     label,
@@ -1979,7 +1983,7 @@ const handleFinalSubmit = async () => {
           </>
         )}
 {isSubmitted && (
-   <div className="flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-300 h-full  ">
+  <div className="flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-300 h-full py-12 px-4 bg-gray-50">
     {/* Increased max-width to lg for better spacing, added richer shadow */}
     <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl border border-gray-100 overflow-hidden">
       
@@ -2035,7 +2039,7 @@ const handleFinalSubmit = async () => {
       </div>
 
       {/* --- Bottom Section: Actions (Gray Background) --- */}
-      <div className="-50 p-8 border-t border-gray-100">
+      <div className="bg-gray-50 p-8 border-t border-gray-100">
         <h3 className="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wider">
           Next Steps
         </h3>
@@ -2044,12 +2048,10 @@ const handleFinalSubmit = async () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           
           {/* ACTION 1: DOWNLOAD PDF */}
-         {/* ACTION 1: DOWNLOAD PDF */}
           <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between">
             <div>
                 <div className="bg-blue-100 w-10 h-10 rounded-lg flex items-center justify-center text-blue-600 mb-3">
-                    {/* ✅ CHANGED: Used FileText to look like a document */}
-                    <FileText size={20} />
+                    <Download size={20} />
                 </div>
                 <h4 className="font-semibold text-gray-900">Download PDF</h4>
                 <p className="text-sm text-gray-500 mt-1 mb-4">Save a copy for your records.</p>
