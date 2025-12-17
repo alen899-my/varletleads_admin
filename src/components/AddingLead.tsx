@@ -2092,9 +2092,9 @@ const handleFinalSubmit = async () => {
 
             <div className="relative z-10 mt-auto">
               {/* IMPORTANT: Ensure country code is included if needed (e.g. 97134382932) */}
-              <a
-                href={`https://wa.me/918921837945?text=${encodeURIComponent(
-                  `Hi, I have downloaded the registration PDF (Ref: ${referenceId}) and am attaching it here for quick review.`
+             <a
+                href={`https://wa.me/34382932?text=${encodeURIComponent(
+                  `Hi, here is the registration PDF for Ref ${referenceId}. You can view it here: ${pdfUrl}`
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
