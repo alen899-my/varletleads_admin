@@ -162,7 +162,7 @@ export default function SignUpForm() {
           {/* SUBMIT BUTTON */}
           <button
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-sm font-medium transition"
+            className="w-full bg-[#007bff] hover:bg-blue-700 text-white py-3 rounded-lg text-sm font-medium transition"
           >
             {loading ? "Creating account..." : "Sign Up"}
           </button>
@@ -171,7 +171,7 @@ export default function SignUpForm() {
         {/* FOOTER */}
         <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
           Already have an account?{" "}
-          <Link href="/signin" className="text-blue-600 hover:underline">
+          <Link href="/signin" className="text-[#007bff] hover:underline">
             Sign In
           </Link>
         </p>

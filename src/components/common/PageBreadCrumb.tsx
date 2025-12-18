@@ -368,7 +368,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
     };
 
     // Shared Input Styles
-    const inputClass = "w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all";
+    const inputClass = "w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-[#007bff] focus:border-transparent outline-none transition-all";
     const labelClass = "text-sm font-medium text-gray-900 dark:text-gray-100";
 
     return (
@@ -391,7 +391,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                 <div className="shrink-0 bg-white dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 px-5 py-4 flex justify-between items-start">
                     <div>
                         <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                            <UserCog className="w-5 h-5 text-blue-600 dark:text-blue-500" /> 
+                            <UserCog className="w-5 h-5 text-[#007bff] dark:text-blue-500" /> 
                             Add Lead Details
                         </h2>
                         <p className="text-xs text-gray-500 dark:text-gray-400">Add client information</p>
@@ -446,7 +446,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                                             transition-all duration-200 select-none border-r border-gray-300 dark:border-gray-600
                                             ${
                                                 isActive
-                                                    ? "bg-blue-600 text-white font-semibold shadow-md scale-[1.03]"
+                                                    ? "bg-[#007bff] text-white font-semibold shadow-md scale-[1.03]"
                                                     : isCompleted
                                                     ? "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
                                                     : "text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
@@ -474,7 +474,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                         </div>
                         <div className="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
                             <div 
-                                className="bg-blue-600 h-full rounded-full transition-all duration-300"
+                                className="bg-[#007bff] h-full rounded-full transition-all duration-300"
                                 style={{ width: `${(currentStep / 6) * 100}%` }}
                             ></div>
                         </div>
@@ -554,10 +554,10 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                                             <p className={`text-sm font-medium mb-2 text-gray-900 dark:text-gray-100`}>{item.label}</p>
                                             <div className="flex gap-6">
                                                 <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300">
-                                                    <input type="radio" name={item.name} value="yes" checked={(formData as any)[item.name] === "yes"} onChange={handleChange} className="accent-blue-600 w-4 h-4" /> Yes
+                                                    <input type="radio" name={item.name} value="yes" checked={(formData as any)[item.name] === "yes"} onChange={handleChange} className="accent-[#007bff] w-4 h-4" /> Yes
                                                 </label>
                                                 <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300">
-                                                    <input type="radio" name={item.name} value="no" checked={(formData as any)[item.name] === "no"} onChange={handleChange} className="accent-blue-600 w-4 h-4" /> No
+                                                    <input type="radio" name={item.name} value="no" checked={(formData as any)[item.name] === "no"} onChange={handleChange} className="accent-[#007bff] w-4 h-4" /> No
                                                 </label>
                                             </div>
                                     </div>
@@ -582,8 +582,8 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                                 <div className="md:col-span-1 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700">
                                     <label className={`${labelClass} mb-2 block`}>Ticket Type</label>
                                     <div className="flex flex-col sm:flex-row gap-4">
-                                        <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300"><input type="radio" name="ticketType" value="pre-printed" checked={formData.ticketType === "pre-printed"} onChange={handleChange} className="accent-blue-600 w-4 h-4" /> Pre-printed ticket</label>
-                                        <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300"><input type="radio" name="ticketType" value="system-generated" checked={formData.ticketType === "system-generated"} onChange={handleChange} className="accent-blue-600 w-4 h-4" /> Ticket generated by system</label>
+                                        <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300"><input type="radio" name="ticketType" value="pre-printed" checked={formData.ticketType === "pre-printed"} onChange={handleChange} className="accent-[#007bff] w-4 h-4" /> Pre-printed ticket</label>
+                                        <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300"><input type="radio" name="ticketType" value="system-generated" checked={formData.ticketType === "system-generated"} onChange={handleChange} className="accent-[#007bff] w-4 h-4" /> Ticket generated by system</label>
                                     </div>
                                 </div>
                                 <div className="md:col-span-1 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700">
@@ -592,7 +592,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                                     <div className="flex flex-wrap gap-4">
                                         {["fixed", "hourly", "Free (complimentary)"].map(type => (
                                             <label key={type} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 capitalize">
-                                                <input type="radio" name="feeType" value={type} checked={formData.feeType === type} onChange={handleChange} className="accent-blue-600 w-4 h-4" /> {type}
+                                                <input type="radio" name="feeType" value={type} checked={formData.feeType === type} onChange={handleChange} className="accent-[#007bff] w-4 h-4" /> {type}
                                             </label>
                                         ))}
                                     </div>
@@ -606,7 +606,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                                     <div className="flex gap-4">
                                         {["inclusive", "exclusive"].map(type => (
                                             <label key={type} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 capitalize">
-                                                <input type="radio" name="vatType" value={type} checked={formData.vatType === type} onChange={handleChange} className="accent-blue-600 w-4 h-4" /> {type}
+                                                <input type="radio" name="vatType" value={type} checked={formData.vatType === type} onChange={handleChange} className="accent-[#007bff] w-4 h-4" /> {type}
                                             </label>
                                         ))}
                                     </div>
@@ -621,7 +621,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                         <div className="space-y-4 animate-in fade-in slide-in-from-right-8 duration-500">
                                   <div>
                                               <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                                <UserCog className="w-5 h-5 text-blue-600 dark:text-blue-500" />{" "}
+                                                <UserCog className="w-5 h-5 text-[#007bff] dark:text-blue-500" />{" "}
                                                 Drivers / CVA Team
                                               </h2>
                                               <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -637,7 +637,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                                     {/* Updated Label */}
                                     <label className={`${labelClass} flex items-center gap-1 mb-1`}>Drivers list (Employee ID & full name) <FileText className="w-4 h-4 text-gray-400" /></label>
                                     <textarea rows={6} name="driverList" placeholder={`e.g.\n1001 - John Doe\n1002 - Jane Smith`} value={formData.driverList} onChange={handleChange} className={`${inputClass} font-mono text-sm resize-none`} />
-                                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-2 bg-blue-50 dark:bg-blue-900/20 p-2 rounded">ℹ️ Large lists can be emailed separately.</p>
+                                    <p className="text-xs text-[#007bff] dark:text-blue-400 mt-2 bg-blue-50 dark:bg-blue-900/20 p-2 rounded">ℹ️ Large lists can be emailed separately.</p>
                                 </div>
                             </div>
                         
@@ -649,7 +649,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                         <div className="space-y-4 animate-in fade-in slide-in-from-right-8 duration-500">
                              <div>
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                    <ShieldUser className="w-5 h-5 text-blue-600 dark:text-blue-500" />
+                    <ShieldUser className="w-5 h-5 text-[#007bff] dark:text-blue-500" />
                     Super Admin Contact
                   </h2>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -667,8 +667,8 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                                     {/* Updated Label */}
                                     <label className={`${labelClass} mb-3 block`}>Super admin will receive full application training</label>
                                     <div className="flex gap-6">
-                                        <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300"><input type="radio" name="trainingRequired" value="yes" checked={formData.trainingRequired === "yes"} onChange={handleChange} className="accent-blue-600 w-4 h-4" /> Yes</label>
-                                        <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300"><input type="radio" name="trainingRequired" value="no" checked={formData.trainingRequired === "no"} onChange={handleChange} className="accent-blue-600 w-4 h-4" /> No</label>
+                                        <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300"><input type="radio" name="trainingRequired" value="yes" checked={formData.trainingRequired === "yes"} onChange={handleChange} className="accent-[#007bff] w-4 h-4" /> Yes</label>
+                                        <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300"><input type="radio" name="trainingRequired" value="no" checked={formData.trainingRequired === "no"} onChange={handleChange} className="accent-[#007bff] w-4 h-4" /> No</label>
                                     </div>
                                 </div>
                             </div>
@@ -745,7 +745,7 @@ const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAd
                                 onClick={handleNext}
                                 disabled={isSaving}
                                 className="
-                                    bg-blue-600 hover:bg-blue-700 
+                                    bg-[#007bff] hover:bg-blue-700 
                                     text-white px-5 py-2 rounded-lg 
                                     shadow-md transition-all
                                 "
@@ -806,7 +806,7 @@ const PageBreadcrumb: React.FC<BreadcrumbProps> = ({ pageTitle, onLeadAdded }) =
                         inline-flex items-center justify-center gap-2 
                         w-fit sm:w-auto px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors
                         bg-[#007bff] hover:bg-[#007bff] text-white
-                        dark:bg-blue-600 dark:hover:bg-blue-500
+                        dark:bg-[#007bff] dark:hover:bg-blue-500
                     "
                 >
 

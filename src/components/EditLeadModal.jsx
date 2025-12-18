@@ -532,26 +532,28 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
       {/* --- MODAL CONTAINER --- */}
      <div 
   ref={modalRef} 
-  className="w-full max-w-5xl h-[85vh] flex flex-col bg-white dark:bg-gray-900 rounded-xl overflow-hidden shadow-2xl border border-gray-400"
+  className="w-full max-w-5xl h-[85vh] flex flex-col bg-white dark:bg-gray-900 rounded-xl overflow-hidden shadow-2xl"
 >
         {/* --- HEADER (Fixed) --- */}
-        <div className="shrink-0 bg-white dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 px-5 py-3 flex justify-between items-center z-20">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-              <UserCog className="w-5 h-5 text-blue-600 dark:text-blue-500" />
-              Edit Lead Details
-            </h2>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Update client information
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-          >
-            <X size={18} />
-          </button>
-        </div>
+<div className="shrink-0 bg-black border-b border-gray-800 px-6 py-4 flex justify-between items-center z-30">
+  <div>
+    <h2 className="text-xl font-bold text-white flex items-center gap-3">
+      <UserCog className="w-6 h-6 text-[#007bff]" />
+      Edit Lead Details
+    </h2>
+    <p className="text-[12px] text-gray-400 mt-1 font-medium tracking-wide uppercase opacity-90">
+      Update client information & registration data
+    </p>
+  </div>
+  
+  <button
+    onClick={onClose}
+    className="p-2.5 rounded-full text-gray-400 hover:text-white hover:bg-gray-800 transition-all duration-200"
+    aria-label="Close modal"
+  >
+    <X size={24} />
+  </button>
+</div>
   
         {/* --- CONTENT BODY (Scrollable) --- */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 animate-in fade-in slide-in-from-bottom-2 duration-500    transition-all duration-300 ease-in-out
@@ -595,7 +597,7 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
                       transition-all duration-200 select-none border-r border-gray-300 dark:border-gray-600
                       ${
                         isActive
-                          ? "bg-blue-600 text-white font-semibold shadow-md scale-[1.03]"
+                          ? "bg-[#007bff] text-white font-semibold shadow-md scale-[1.03]"
                           : isCompleted
                           ? "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
                           : "text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
@@ -616,7 +618,7 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
             </p>
             <div className="w-full bg-gray-200 dark:bg-gray-700 h-1.5 mt-2 rounded-full overflow-hidden">
               <div
-                className="bg-blue-600 h-full rounded-full transition-all duration-300"
+                className="bg-[#007bff] h-full rounded-full transition-all duration-300"
                 style={{ width: `${(currentStep / 6) * 100}%` }}
               ></div>
             </div>
@@ -658,12 +660,12 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
     {/* --- STATUS DROPDOWN --- */}
     <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-4 mb-2">
       <div className="flex items-center gap-2">
-        <Activity className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+        <Activity className="w-5 h-5 text-[#007bff] dark:text-blue-400" />
         <div>
           <p className="text-sm font-bold text-blue-900 dark:text-blue-200">
             Status
           </p>
-          <p className="text-xs text-blue-600 dark:text-blue-300">
+          <p className="text-xs text-[#007bff] dark:text-blue-300">
             Set the current progress of this lead
           </p>
         </div>
@@ -878,7 +880,7 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
                             value="yes"
                             checked={formData[item.key] === "yes"}
                             onChange={handleChange}
-                            className="w-4 h-4 !text-blue-600 !accent-blue-600 focus:ring-blue-500"
+                            className="w-4 h-4 !text-[#007bff] !accent-[#007bff] focus:ring-blue-500"
                           />{" "}
                           Yes
                         </label>
@@ -889,7 +891,7 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
                             value="no"
                             checked={formData[item.key] === "no"}
                             onChange={handleChange}
-                           className="w-4 h-4 !text-blue-600 !accent-blue-600 focus:ring-blue-500"
+                           className="w-4 h-4 !text-[#007bff] !accent-[#007bff] focus:ring-blue-500"
                           />{" "}
                           No
                         </label>
@@ -932,9 +934,9 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
                 value={type.id}
                 checked={formData.ticketType?.includes(type.id)}
                 onChange={handleTicketTypeChange}
-                className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 accent-blue-600"
+                className="w-4 h-4 text-[#007bff] rounded focus:ring-blue-500 accent-[#007bff]"
               />
-              <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+              <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-[#007bff] dark:group-hover:text-blue-400 transition-colors">
                 {type.label}
               </span>
             </label>
@@ -960,9 +962,9 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
                 value={fee.id}
                 checked={formData.feeType?.includes(fee.id)}
                 onChange={handleFeeTypeChange}
-                className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 accent-blue-600"
+                className="w-4 h-4 text-[#007bff] rounded focus:ring-blue-500 accent-[#007bff]"
               />
-              <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+              <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-[#007bff] dark:group-hover:text-blue-400 transition-colors">
                 {fee.label}
               </span>
             </label>
@@ -999,7 +1001,7 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
                 value={type}
                 checked={formData.vatType === type}
                 onChange={handleChange}
-               className="w-4 h-4 !text-blue-600 !accent-blue-600 focus:ring-blue-500"
+               className="w-4 h-4 !text-[#007bff] !accent-[#007bff] focus:ring-blue-500"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300 capitalize">{type}</span>
             </label>
@@ -1015,7 +1017,7 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
               <div className="space-y-3">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                    <UserCog className="w-5 h-5 text-blue-600 dark:text-blue-500" />{" "}
+                    <UserCog className="w-5 h-5 text-[#007bff] dark:text-blue-500" />{" "}
                     Drivers / CVA Team
                   </h2>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -1057,7 +1059,7 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
                 {/* Section Heading */}
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                    <ShieldUser className="w-5 h-5 text-blue-600 dark:text-blue-500" />
+                    <ShieldUser className="w-5 h-5 text-[#007bff] dark:text-blue-500" />
                     Super Admin Contact
                   </h2>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -1154,7 +1156,7 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
                         value="yes"
                         checked={formData.trainingRequired === "yes"}
                         onChange={handleChange}
-                       className="w-4 h-4 !text-blue-600 !accent-blue-600 focus:ring-blue-500"
+                       className="w-4 h-4 !text-[#007bff] !accent-[#007bff] focus:ring-blue-500"
                       />
                       Yes, they will be trained
                     </label>
@@ -1167,7 +1169,7 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
                         value="no"
                         checked={formData.trainingRequired === "no"}
                         onChange={handleChange}
-                        className="text-blue-600 focus:ring-blue-500"
+                        className="text-[#007bff] focus:ring-blue-500"
                       />
                       No / different plan
                     </label>
@@ -1181,7 +1183,7 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
     {/* Section Heading - Matches Step 5 Style */}
     <div>
       <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-        <FileText className="w-5 h-5 text-blue-600 dark:text-blue-500" />
+        <FileText className="w-5 h-5 text-[#007bff] dark:text-blue-500" />
         Required Documents
       </h2>
       <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -1252,7 +1254,7 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
         <button 
           onClick={() => setCurrentStep(prev => prev - 1)} 
           disabled={isSaving}
-          className="h-9 sm:h-10 flex items-center gap-2 px-2 sm:px-3 text-xs sm:text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all group disabled:opacity-50"
+          className="h-9 sm:h-10 flex items-center gap-2 px-2 sm:px-3 text-xs sm:text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-[#007bff] dark:hover:text-blue-400 transition-all group disabled:opacity-50"
         >
           <div className="p-1 sm:p-1.5 rounded-full bg-gray-100 dark:bg-gray-800 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 transition-colors">
             <ArrowRight className="rotate-180 w-3.5 h-3.5 sm:w-4 sm:h-4" /> 
@@ -1270,7 +1272,7 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
         <button
           onClick={handleUpdateSubmit}
           disabled={isSaving}
-          className="min-w-[70px] sm:min-w-[110px] h-9 sm:h-10 flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-5 border-2 border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-400 rounded-lg text-[11px] sm:text-sm font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all active:scale-95 disabled:opacity-50"
+          className="min-w-[70px] sm:min-w-[110px] h-9 sm:h-10 flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-5 border-2 border-[#007bff] text-[#007bff] dark:border-blue-500 dark:text-blue-400 rounded-lg text-[11px] sm:text-sm font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all active:scale-95 disabled:opacity-50"
         >
           {isSaving ? (
             <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -1284,7 +1286,7 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
       {currentStep < 6 ? (
         <button 
           onClick={handleNext} 
-          className="min-w-[70px] sm:min-w-[110px] h-9 sm:h-10 flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[11px] sm:text-sm font-bold shadow-md transition-all active:scale-95"
+          className="min-w-[70px] sm:min-w-[110px] h-9 sm:h-10 flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 bg-[#007bff] hover:bg-blue-700 text-white rounded-lg text-[11px] sm:text-sm font-bold shadow-md transition-all active:scale-95"
         >
           Next 
           <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -1310,6 +1312,7 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
         formData={formData}
         existingFiles={existingFiles}
         isSubmitting={isSaving}
+        themeColor="#007bff"
       />
     </div>
     

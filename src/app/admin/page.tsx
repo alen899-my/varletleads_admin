@@ -44,7 +44,7 @@ export default function AdminDashboard() {
 
           <button
             onClick={() => router.push("/")}
-            className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm"
+            className="mt-4 px-4 py-2 bg-[#007bff] hover:bg-blue-700 text-white rounded-md text-sm"
           >
             Go Back Home
           </button>

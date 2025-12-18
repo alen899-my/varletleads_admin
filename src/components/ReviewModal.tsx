@@ -1,7 +1,7 @@
 // components/ReviewModal.tsx
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import {
   MapPin,
   Building2,
@@ -23,6 +23,7 @@ interface ReviewModalProps {
   formData: any;
   existingFiles: any;
   isSubmitting: boolean;
+  themeColor?: string; // 👈 Add this prop
 }
 
 export default function ReviewModal({
@@ -32,17 +33,23 @@ export default function ReviewModal({
   formData,
   existingFiles,
   isSubmitting,
+  themeColor = "#ae5c83", // 👈 Default pink color
 }: ReviewModalProps) {
+  
+  // Create versions of the color with transparency for backgrounds and borders
+  const lightBg = useMemo(() => `${themeColor}1A`, [themeColor]); // 10% opacity
+  const lightBorder = useMemo(() => `${themeColor}33`, [themeColor]); // 20% opacity
+
   if (!isOpen) return null;
 
   // --- 1. Data Row Component ---
   const ReviewRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
-    <div className="grid grid-cols-1 sm:grid-cols-12 gap-y-1 gap-x-6 py-4 border-b border-slate-100 last:border-0 items-start">
-      <dt className="sm:col-span-4 text-sm font-medium text-slate-500 leading-6">
+    <div className="grid grid-cols-1 sm:grid-cols-12 gap-y-1 gap-x-6 py-4 border-b border-slate-100 dark:border-slate-800 last:border-0 items-start">
+      <dt className="sm:col-span-4 text-sm font-medium text-slate-500 dark:text-slate-400 leading-6">
         {label}
       </dt>
-      <dd className="sm:col-span-8 text-base font-medium text-slate-900 leading-6 break-words whitespace-pre-wrap">
-        {value ? value : <span className="text-slate-400 italic font-normal">Not provided</span>}
+      <dd className="sm:col-span-8 text-base font-medium text-slate-900 dark:text-slate-100 leading-6 break-words whitespace-pre-wrap">
+        {value ? value : <span className="text-slate-400 dark:text-slate-500 italic font-normal">Not provided</span>}
       </dd>
     </div>
   );
@@ -55,7 +62,7 @@ export default function ReviewModal({
           {arr.map((item) => (
             <span
               key={item}
-              className="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-slate-100 text-slate-800 border border-slate-200 capitalize"
+              className="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-gray-200 border border-slate-200 dark:border-slate-700 capitalize"
             >
               {item.replace(/-/g, " ")}
             </span>
@@ -76,8 +83,6 @@ export default function ReviewModal({
     let content = null;
     let badge = null;
 
-    // Helper to safely check if an object is a File (Duck Typing)
-    // This prevents the "instanceof File" error on the server
     const isFileObject = (obj: any): obj is File => {
        return (
          obj !== null &&
@@ -88,11 +93,8 @@ export default function ReviewModal({
        );
     };
 
-    // A. New File Uploaded
     if (isFileObject(newFile)) {
       const isImage = newFile.type.startsWith("image/");
-      
-      // Safe URL creation only on client side
       let previewUrl = null;
       if (typeof window !== 'undefined' && isImage) {
         try {
@@ -102,47 +104,51 @@ export default function ReviewModal({
         }
       }
       
-      badge = <span className="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">New Upload</span>;
+      badge = <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">New Upload</span>;
       
       content = (
         <div className="flex items-start gap-4">
           {isImage && previewUrl ? (
-            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-slate-200 shadow-sm bg-white">
+            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800">
               <img src={previewUrl} alt={label} className="h-full w-full object-cover" />
             </div>
           ) : (
-            <div className="h-12 w-12 shrink-0 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+            <div className="h-12 w-12 shrink-0 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400">
                {newFile.type === 'application/pdf' ? <FileText size={24} /> : <FileIcon size={24}/>}
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-slate-900 truncate">{newFile.name}</p>
-            <p className="text-xs text-slate-500 mt-0.5">{(newFile.size / 1024).toFixed(1)} KB</p>
+            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{newFile.name}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{(newFile.size / 1024).toFixed(1)} KB</p>
           </div>
         </div>
       );
     } 
-    // B. Existing Database File
     else if (existingFile && existingFile.filename) {
       const isImage = /\.(jpg|jpeg|png|webp)$/i.test(existingFile.filename);
-      
-      badge = <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">Existing File</span>;
+      badge = <span className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">Existing File</span>;
 
       content = (
         <div className="flex items-start gap-4">
           {isImage ? (
-            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-slate-200 shadow-sm bg-white">
+            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800">
                <img src={existingFile.path} alt={label} className="h-full w-full object-cover" />
             </div>
           ) : (
-             <div className="h-12 w-12 shrink-0 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+             <div className="h-12 w-12 shrink-0 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400">
                {existingFile.filename.endsWith('.pdf') ? <FileText size={24} /> : <FileIcon size={24}/>}
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-slate-900 truncate">{existingFile.filename}</p>
+            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{existingFile.filename}</p>
             {existingFile.path && (
-              <a href={existingFile.path} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs text-[#ae5c83] hover:underline mt-1 font-medium">
+              <a 
+                href={existingFile.path} 
+                target="_blank" 
+                rel="noreferrer" 
+                className="flex items-center gap-1 text-xs hover:underline mt-1 font-medium"
+                style={{ color: themeColor }} // 👈 Use dynamic color
+              >
                 View Document <ExternalLink size={10} />
               </a>
             )}
@@ -150,60 +156,69 @@ export default function ReviewModal({
         </div>
       );
     } 
-    // C. Empty State
     else {
        return (
-         <div className="p-4 border border-dashed border-slate-200 rounded-xl bg-slate-50/50 flex flex-col justify-center items-center text-center h-full min-h-[100px]">
-            <span className="text-slate-400 mb-1"><FileIcon size={20}/></span>
-            <span className="text-xs text-slate-400 font-medium">{label}</span>
-            <span className="text-[10px] text-slate-400 mt-1">Not attached</span>
+         <div className="p-4 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-800/50 flex flex-col justify-center items-center text-center h-full min-h-[100px]">
+            <span className="text-slate-400 dark:text-slate-500 mb-1"><FileIcon size={20}/></span>
+            <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">{label}</span>
+            <span className="text-[10px] text-slate-400 dark:text-slate-600 mt-1">Not attached</span>
          </div>
        )
     }
 
     return (
-      <div className="group relative rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition-all duration-200">
+      <div className="group relative rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 shadow-sm hover:shadow-md transition-all duration-200">
         <div className="absolute top-3 right-3">{badge}</div>
-        <div className="mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">{label}</div>
+        <div className="mb-2 text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider">{label}</div>
         {content}
       </div>
     );
   };
 
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-300">
       
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
         
         {/* --- Header --- */}
-        <div className="px-8 py-5 border-b border-slate-100 bg-white flex justify-between items-center shrink-0">
+        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-black flex justify-between items-center shrink-0">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-              <span className="bg-[#ae5c83]/10 text-[#ae5c83] p-1.5 rounded-lg">
+            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+              <span 
+                className="p-1.5 rounded-lg"
+                style={{ backgroundColor: lightBg, color: themeColor }} // 👈 Use dynamic color
+              >
                 <CheckCircle size={24} />
               </span>
               Final Review
             </h2>
-            <p className="text-sm text-slate-500 mt-1 ml-11">
+            <p className="text-sm text-white/80 mt-1 ml-11">
               Please ensure all details below are accurate before submission.
             </p>
           </div>
           <button 
             onClick={onClose} 
-            className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+            className="p-2 rounded-full hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
           >
             <X size={24} />
           </button>
         </div>
 
         {/* --- Scrollable Body --- */}
-        <div className="flex-1 overflow-y-auto bg-white p-8 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto bg-white dark:bg-slate-900 p-8 transition-all duration-300 ease-in-out
+    [&::-webkit-scrollbar]:w-2
+    [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-gray-950
+    [&::-webkit-scrollbar-thumb]:bg-gray-400 dark:[&::-webkit-scrollbar-thumb]:bg-gray-700
+    [&::-webkit-scrollbar-thumb]:rounded-full
+    hover:[&::-webkit-scrollbar-thumb]:bg-gray-500">
           
           <div className="space-y-10">
             {/* Section 1 */}
             <section>
-              <h3 className="flex items-center gap-2 text-sm font-bold text-[#ae5c83] uppercase tracking-wider mb-4 border-b border-[#ae5c83]/20 pb-2">
-                <MapPin size={18} /> Location Information
+              <h3 
+                className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider mb-6 pb-2 border-b border-slate-200 dark:border-slate-800 text-black dark:text-white"
+              >
+                <MapPin size={18} style={{ color: themeColor }} /> Location Information
               </h3>
               <div className="pl-2">
                 <ReviewRow label="Location Name" value={formData.locationName} />
@@ -211,9 +226,9 @@ export default function ReviewModal({
                 <ReviewRow label="Average Waiting Time" value={formData.waitTime} />
                 <ReviewRow 
                   label="Google Maps Location URL" 
-                  value={formData.mapsUrl ? <a href={formData.mapsUrl} target="_blank" rel="noreferrer" className="text-blue-600 hover:text-blue-800 hover:underline break-all flex items-center gap-1">{formData.mapsUrl} <ExternalLink size={12}/></a> : null} 
+                  value={formData.mapsUrl ? <a href={formData.mapsUrl} target="_blank" rel="noreferrer" className="text-[#007bff] dark:text-blue-400 hover:underline break-all flex items-center gap-1">{formData.mapsUrl} <ExternalLink size={12}/></a> : null} 
                 />
-                <ReviewRow label="Coordinates" value={(formData.latitude && formData.longitude) ? <span className="font-mono text-sm bg-slate-100 px-2 py-1 rounded border border-slate-200">{formData.latitude}, {formData.longitude}</span> : null} />
+                <ReviewRow label="Coordinates" value={(formData.latitude && formData.longitude) ? <span className="font-mono text-sm bg-slate-100 dark:bg-gray-800 px-2 py-1 rounded border border-slate-200 dark:border-slate-700">{formData.latitude}, {formData.longitude}</span> : null} />
                 <ReviewRow label="Operation Timing" value={formData.timing} />
                 <ReviewRow label="Location TRN / Registered Address" value={formData.address} />
               </div>
@@ -221,8 +236,10 @@ export default function ReviewModal({
 
             {/* Section 2 */}
             <section>
-              <h3 className="flex items-center gap-2 text-sm font-bold text-[#ae5c83] uppercase tracking-wider mb-4 border-b border-[#ae5c83]/20 pb-2">
-                <Building2 size={18} /> On-Site User Setup
+              <h3 
+                className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider mb-6 pb-2 border-b border-slate-200 dark:border-slate-800 text-black dark:text-white"
+              >
+                <Building2 size={18} style={{ color: themeColor }} /> On-Site User Setup
               </h3>
               <div className="pl-2">
                 <ReviewRow label="Number of lobbies / entrances" value={formData.lobbies} />
@@ -236,8 +253,10 @@ export default function ReviewModal({
 
             {/* Section 3 */}
             <section>
-              <h3 className="flex items-center gap-2 text-sm font-bold text-[#ae5c83] uppercase tracking-wider mb-4 border-b border-[#ae5c83]/20 pb-2">
-                <Coins size={18} /> Valet Ticket & Pricing
+              <h3 
+                className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider mb-6 pb-2 border-b border-slate-200 dark:border-slate-800 text-black dark:text-white"
+              >
+                <Coins size={18} style={{ color: themeColor }} /> Valet Ticket & Pricing
               </h3>
               <div className="pl-2">
                 <ReviewRow label="Ticket Type" value={formatArray(formData.ticketType)} />
@@ -249,22 +268,26 @@ export default function ReviewModal({
 
             {/* Section 4 */}
             <section>
-              <h3 className="flex items-center gap-2 text-sm font-bold text-[#ae5c83] uppercase tracking-wider mb-4 border-b border-[#ae5c83]/20 pb-2">
-                <CarFront size={18} /> Drivers / CVA Team
+              <h3 
+                className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider mb-6 pb-2 border-b border-slate-200 dark:border-slate-800 text-black dark:text-white"
+              >
+                <CarFront size={18} style={{ color: themeColor }} /> Drivers / CVA Team
               </h3>
               <div className="pl-2">
                 <ReviewRow label="Number of drivers" value={formData.driverCount} />
                 <ReviewRow 
                   label="Drivers list" 
-                  value={<div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-mono max-h-40 overflow-y-auto">{formData.driverList}</div>} 
+                  value={<div className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700 rounded-lg p-3 text-sm font-mono max-h-40 overflow-y-auto dark:text-slate-300">{formData.driverList}</div>} 
                 />
               </div>
             </section>
 
             {/* Section 5 */}
             <section>
-              <h3 className="flex items-center gap-2 text-sm font-bold text-[#ae5c83] uppercase tracking-wider mb-4 border-b border-[#ae5c83]/20 pb-2">
-                <ShieldUser size={18} /> Super Admin Contact
+              <h3 
+                className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider mb-6 pb-2 border-b border-slate-200 dark:border-slate-800 text-black dark:text-white"
+              >
+                <ShieldUser size={18} style={{ color: themeColor }} /> Super Admin Contact
               </h3>
               <div className="pl-2">
                 <ReviewRow label="Full Name" value={formData.adminName} />
@@ -276,8 +299,10 @@ export default function ReviewModal({
 
             {/* Section 6 */}
             <section>
-              <h3 className="flex items-center gap-2 text-sm font-bold text-[#ae5c83] uppercase tracking-wider mb-4 border-b border-[#ae5c83]/20 pb-2">
-                <ImageIcon size={18} /> Required Documents
+              <h3 
+                className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider mb-6 pb-2 border-b border-slate-200 dark:border-slate-800 text-black dark:text-white"
+              >
+                <ImageIcon size={18} style={{ color: themeColor }} /> Required Documents
               </h3>
               <div className="pl-2">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -294,14 +319,14 @@ export default function ReviewModal({
         </div>
 
         {/* --- Footer --- */}
-        <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 shrink-0">
+        <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-gray-900 flex justify-end gap-3 shrink-0">
           <button
             onClick={(e) => {
-    e.stopPropagation(); // 👈 ADD THIS: Prevents the click from reaching the parent modal
-    onClose();
-  }}
+                e.stopPropagation();
+                onClose();
+            }}
             disabled={isSubmitting}
-            className="px-4 py-2 rounded-lg text-sm font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition shadow-sm disabled:opacity-50"
+            className="px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-700 transition shadow-sm disabled:opacity-50"
           >
             Go Back & Edit
           </button>
@@ -311,8 +336,9 @@ export default function ReviewModal({
             disabled={isSubmitting}
             className={`
               px-5 py-2 rounded-lg text-sm font-bold text-white shadow-md hover:shadow-lg transition-all flex items-center gap-2
-              ${isSubmitting ? "bg-slate-400 cursor-not-allowed" : "bg-[#ae5c83] hover:bg-[#923c63] hover:scale-[1.02] active:scale-[0.98]"}
+              ${isSubmitting ? "bg-slate-400 dark:bg-gray-600 cursor-not-allowed" : "hover:scale-[1.02] active:scale-[0.98]"}
             `}
+            style={{ backgroundColor: isSubmitting ? undefined : themeColor }} // 👈 Use dynamic color
           >
             {isSubmitting ? (
               <>

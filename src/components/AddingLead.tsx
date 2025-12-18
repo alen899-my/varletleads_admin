@@ -2050,7 +2050,7 @@ const handleFinalSubmit = async () => {
           {/* ACTION 1: DOWNLOAD PDF */}
           <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between">
             <div>
-                <div className="bg-blue-100 w-10 h-10 rounded-lg flex items-center justify-center text-blue-600 mb-3">
+                <div className="bg-blue-100 w-10 h-10 rounded-lg flex items-center justify-center text-[#007bff] mb-3">
                     <Download size={20} />
                 </div>
                 <h4 className="font-semibold text-gray-900">Download PDF</h4>

@@ -333,10 +333,10 @@ useEffect(() => {
                               className="
           flex items-center justify-center w-8 h-8 rounded-md
           bg-[#007bff] text-white border border-blue-500/50
-          hover:bg-[#007bff] hover:border-blue-600 transition-all
+          hover:bg-[#007bff] hover:border-[#007bff] transition-all
 
-          dark:bg-blue-700 dark:border-blue-600/40 dark:text-white
-          dark:hover:bg-blue-600 dark:hover:border-blue-500
+          dark:bg-blue-700 dark:border-[#007bff]/40 dark:text-white
+          dark:hover:bg-[#007bff] dark:hover:border-blue-500
         "
                             >
                               <Pencil size={16} />
@@ -393,7 +393,7 @@ useEffect(() => {
             className={`w-9 h-9 rounded-lg border text-sm font-medium transition-all 
         ${
           page === 2
-            ? "bg-[#007bff]] border-[#465fff] text-white shadow-md dark:bg-[#374bd1] dark:border-[#374bd1]"
+            ? "  bg-[#007bff] border-[#465fff] text-white shadow-md dark:bg-[#374bd1] dark:border-[#374bd1]"
             : "border-gray-300 text-gray-600 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
         }`}
           >
