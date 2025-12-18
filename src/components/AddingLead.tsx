@@ -1334,12 +1334,12 @@ const handleFinalSubmit = async () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Ticket Type */}
                   <div className="md:col-span-2  bg-gray-50 rounded-lg border border-gray-100">
-                    <label className="block text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
+                    <label className="block text-sm font-medium text-gray-900 mb-3 flex items-center gap-2 p-1">
                       Ticket Type <span className="text-gray-400 text-xs font-normal">(Select all that apply)</span>
                     </label>
 
                     {/* Grid Layout for Multiple Choice */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-2 p-2">
                       
                       {/* Option 1: Pre-printed Paper */}
                       <label className={`flex items-center gap-2 cursor-pointer  rounded transition  ${
@@ -1427,11 +1427,11 @@ const handleFinalSubmit = async () => {
 
                   {/* Valet Fee Type */}
                   <div className="md:col-span-2  bg-gray-50 rounded-lg border border-gray-100">
-                    <label className="block text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
+                    <label className="block text-sm font-medium text-gray-900 mb-3 flex items-center gap-2 p-1">
                       Valet Fee Type <span className="text-gray-400 text-xs font-normal">(Select all that apply)</span>
                     </label>
 
-                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-3 gap-x-6">
+                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-3 gap-x-6 p-2">
 
                       
                       {/* Option 1: Fixed Fee */}
@@ -1495,7 +1495,7 @@ const handleFinalSubmit = async () => {
 
                   {/* Ticket Pricing */}
                   <div className="md:col-span-2 ">
-                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1 p-1">
                       Ticket Prices (AED)
                       <Banknote className="w-4 h-4 text-gray-400" />
                     </label>
@@ -1517,11 +1517,11 @@ const handleFinalSubmit = async () => {
 
                   {/* VAT Handling */}
                   <div className="md:col-span-2 bg-gray-50 rounded-lg border border-gray-100">
-                    <label className="block text-sm font-medium text-gray-900 mb-2 flex items-center gap-2">
+                    <label className="block text-sm font-medium text-gray-900 mb-2 flex items-center gap-2 p-1">
                       Tax Handling
                     </label>
 
-                    <div className="flex flex-wrap gap-4">
+                    <div className="flex flex-wrap gap-4 p-2">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
                           type="radio"
@@ -1983,7 +1983,7 @@ const handleFinalSubmit = async () => {
           </>
         )}
 {isSubmitted && (
-  <div className="flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-300 h-full py-12 px-4 bg-gray-50">
+  <div className="flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-300 h-full py-12 px-4 ">
     {/* Increased max-width to lg for better spacing, added richer shadow */}
     <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl border border-gray-100 overflow-hidden">
       
@@ -1995,7 +1995,7 @@ const handleFinalSubmit = async () => {
             <CheckCircle className="w-12 h-12 text-green-600" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
-            {isEditMode ? "Update Successful!" : "Submission Received!"}
+            {isEditMode ? "Update Successfull!" : "Submission Received!"}
           </h2>
           <p className="text-gray-600 text-base mt-2 leading-relaxed max-w-md mx-auto">
             {isEditMode ? (
@@ -2039,7 +2039,7 @@ const handleFinalSubmit = async () => {
       </div>
 
       {/* --- Bottom Section: Actions (Gray Background) --- */}
-      <div className="bg-gray-50 p-8 border-t border-gray-100">
+      <div className=" p-8 border-t border-gray-100">
         <h3 className="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wider">
           Next Steps
         </h3>
@@ -2048,7 +2048,7 @@ const handleFinalSubmit = async () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           
           {/* ACTION 1: DOWNLOAD PDF */}
-          <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between">
+          <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between">
             <div>
                 <div className="bg-blue-100 w-10 h-10 rounded-lg flex items-center justify-center text-[#007bff] mb-3">
                     <Download size={20} />
