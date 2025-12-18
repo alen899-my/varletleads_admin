@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import ReviewModal from "@/components/ReviewModal"
+import { z } from "zod";
 // --- FORM COMPONENT (Internal Modal with Dark Mode) ---
 const LeadFormModal = ({ onClose, onLeadAdded }: { onClose: () => void, onLeadAdded: () => void }) => {
     const modalRef = useRef<HTMLDivElement>(null);
@@ -40,7 +41,17 @@ const [referenceId, setReferenceId] = useState(null);
         vatCertificate: "",
         tradeLicense: "",
     });
-
+const leadSchema = z.object({
+    locationName: z.string().min(1, "Location name is required."),
+    capacity: z.coerce.number().min(1, "Capacity must be at least 1").max(1500, "Capacity cannot exceed 1500"),
+    adminName: z.string().min(1, "Full name is required."),
+    adminEmail: z.string().email("Enter a valid email address."),
+    adminPhone: z
+        .string()
+        .regex(/^[0-9]+$/, "Only numbers allowed.")
+        .min(8, "Phone number must be at least 8 digits.")
+        .max(14, "Phone number cannot exceed 14 digits."),
+});
     // --- CLICK OUTSIDE & ESCAPE KEY LOGIC ---
     useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -307,37 +318,37 @@ const handleFeeTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         }
     }, [isSubmitted, onClose]);
 
-    const validateStep1 = () => {
-        let newErrors: any = {};
-        if (!formData.locationName.trim()) newErrors.locationName = "Location name is required.";
-        if (!String(formData.capacity).trim()) newErrors.capacity = "Parking capacity is required.";
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
+const validateStep1 = () => {
+    const result = leadSchema.pick({ locationName: true, capacity: true }).safeParse(formData);
+    
+    if (!result.success) {
+        const formattedErrors: any = {};
+        result.error.issues.forEach((issue) => {
+            formattedErrors[issue.path[0]] = issue.message;
+        });
+        setErrors((prev: any) => ({ ...prev, ...formattedErrors }));
+        return false;
+    }
+    setErrors((prev: any) => ({ ...prev, locationName: "", capacity: "" }));
+    return true;
+};
     const validateStep2 = () => true;
     const validateStep3 = () => true;
     const validateStep4 = () => true;
-    const validateStep5 = () => {
-        let newErrors: any = {};
-        if (!formData.adminName.trim()) newErrors.adminName = "Full name is required.";
-
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!formData.adminEmail.trim()) {
-            newErrors.adminEmail = "Email is required.";
-        } else if (!emailRegex.test(formData.adminEmail.trim())) {
-            newErrors.adminEmail = "Enter a valid email address.";
-        }
-
-        const phoneClean = formData.adminPhone.replace(/\D/g, "");
-        if (!formData.adminPhone.trim()) {
-            newErrors.adminPhone = "Phone number is required.";
-        } else if (phoneClean.length < 8 || phoneClean.length > 14) {
-            newErrors.adminPhone = "Phone number must be 8–14 digits.";
-        }
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
+const validateStep5 = () => {
+    const result = leadSchema.pick({ adminName: true, adminEmail: true, adminPhone: true }).safeParse(formData);
+    
+    if (!result.success) {
+        const formattedErrors: any = {};
+        result.error.issues.forEach((issue) => {
+            formattedErrors[issue.path[0]] = issue.message;
+        });
+        setErrors((prev: any) => ({ ...prev, ...formattedErrors }));
+        return false;
+    }
+    setErrors((prev: any) => ({ ...prev, adminName: "", adminEmail: "", adminPhone: "" }));
+    return true;
+};
     // ✅ Step 6 validation
     const validateStep6 = () => {
         const fileKeys = ["logoCompany", "logoClient", "vatCertificate", "tradeLicense"];
