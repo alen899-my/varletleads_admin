@@ -535,7 +535,7 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
   className="w-full max-w-5xl h-[85vh] flex flex-col bg-white dark:bg-gray-900 rounded-xl overflow-hidden shadow-2xl"
 >
         {/* --- HEADER (Fixed) --- */}
-<div className="shrink-0 bg-black border-b border-gray-800 px-6 py-4 flex justify-between items-center z-30">
+<div className="shrink-0 bg-black border-b border-gray-800 px-6 py-1 flex justify-between items-center z-30">
   <div>
     <h2 className="text-xl font-bold text-white flex items-center gap-3">
       <UserCog className="w-6 h-6 text-[#007bff]" />

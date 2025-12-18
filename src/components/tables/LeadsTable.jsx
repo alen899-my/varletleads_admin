@@ -205,7 +205,8 @@ useEffect(() => {
           className="
             max-h-[600px] 
             overflow-y-auto overflow-x-auto 
-            cursor-grab active:cursor-grabbing select-none
+            cursor-default 
+            select-text 
             
             /* SCROLLBAR STYLES START */
             [&::-webkit-scrollbar]:w-2
@@ -218,10 +219,7 @@ useEffect(() => {
             /* SCROLLBAR STYLES END */
           "
           ref={scrollRef}
-          onMouseDown={startDrag}
-          onMouseLeave={stopDrag}
-          onMouseUp={stopDrag}
-          onMouseMove={onDrag}
+         
         >
           <Table className="w-full  -z-99">
             <TableHeader>
@@ -279,10 +277,9 @@ useEffect(() => {
                       <TableCell className="px-5 py-3 border-r border-gray-300 dark:border-gray-700 text-center font-medium text-gray-600 dark:text-gray-400 text-xs">
                         {(page - 1) * limit + index + 1}
                       </TableCell>
-                      <TableCell className="px-5 py-3 border-r border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium">
-                        {lead.locationName}
-                      </TableCell>
-
+                <TableCell className="px-5 py-3 border-r border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium max-w-[200px] whitespace-normal break-words overflow-hidden">
+  {lead.locationName}
+</TableCell>
                       <TableCell className="px-5 py-3 border-r border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 text-sm">
                         {lead.capacity}
                       </TableCell>
@@ -291,7 +288,7 @@ useEffect(() => {
                         {lead.adminName}
                       </TableCell>
 
-                      <TableCell className="px-5 py-3 border-r border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 text-sm">
+                     <TableCell className="px-5 py-3 border-r border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium max-w-[200px] whitespace-normal break-words overflow-hidden">
                         {lead.adminEmail}
                       </TableCell>
 

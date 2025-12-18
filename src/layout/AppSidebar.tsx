@@ -29,7 +29,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
-    name: "Overview",
+    name: "Dashboard",
     path: "/admin",
   },
   {
@@ -248,11 +248,11 @@ const AppSidebar: React.FC = () => {
   >
     {/* LOGO SECTION: Removed horizontal constraints */}
     <div
-      className={` py-2 flex shrink-0 bg-[#000] w-full transition-all duration-300 ${
-        !isExpanded && !isHovered ? "justify-center px-0" : "justify-start px-8"
-      }`}
-    >
-      <Link href="/" className="flex items-center">
+    className={`flex items-center shrink-0 bg-[#000] w-full transition-all duration-300 h-16 lg:h-18 ${
+      !isExpanded && !isHovered ? "justify-center px-0" : "justify-start px-8"
+    }`}
+  >
+    <Link href="/" className="flex items-center">
         {isExpanded || isHovered || isMobileOpen ? (
           <>
             <Image
@@ -274,10 +274,10 @@ const AppSidebar: React.FC = () => {
           </>
         ) : (
           <Image
-            src="/icon.png"
+            src="/images/logo/logo.png"
             alt="Logo"
             width={40}
-            height={32}
+            height={40}
           />
         )}
       </Link>
