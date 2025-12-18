@@ -9,11 +9,10 @@ import React, { useState, useEffect, useRef } from "react";
 const AppHeader = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
-  const [username, setUsername] = useState("User"); // default placeholder
-  const inputRef = useRef<HTMLInputElement | null>(null); // <-- Fix
+  const [username, setUsername] = useState("User");
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    // fetch user from localStorage
     const storedValue = localStorage.getItem("user");
     const storedUser = storedValue ? JSON.parse(storedValue) : null;
     
@@ -34,9 +33,8 @@ const AppHeader = () => {
 
   const toggleApplicationMenu = () => setApplicationMenuOpen(!isApplicationMenuOpen);
 
-  // Ctrl+K search shortcut
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => { // <-- Fix
+    const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key === "k") {
         event.preventDefault();
         inputRef.current?.focus();
@@ -48,56 +46,65 @@ const AppHeader = () => {
   }, []);
 
   return (
-    <header className="sticky top-0 flex w-full bg-[#000] border-gray-200  dark:border-gray-800 dark:bg-gray-900 lg:border-b">
-    <div className="flex items-center justify-between grow h-16 lg:h-[72px] lg:px-6">
-
-        {/* LEFT AREA: Sidebar Toggle + Placeholder Branding */}
-        <div className="flex items-center justify-between w-full gap-2 px-3 py-3 border-b border-gray-200 dark:border-gray-800 sm:gap-4 lg:border-b-0 lg:px-0 lg:py-4">
-          {/* Sidebar Toggle Button */}
+    <header className="sticky top-0 z-40 flex w-full bg-[#000] border-b border-gray-800 dark:bg-gray-900 lg:h-[72px]">
+      <div className="relative flex items-center justify-between w-full px-4 py-2 lg:px-6">
+        
+        {/* LEFT AREA: Sidebar Toggle + Brand */}
+        <div className="flex items-center gap-3">
           <button
-            className="items-center justify-center w-10 h-10 text-white border-gray-200 rounded-lg dark:border-gray-800 lg:flex dark:text-gray-400 lg:h-11 lg:w-11 lg:border"
+            className="flex items-center justify-center w-10 h-10 text-white rounded-lg hover:bg-gray-800 lg:h-11 lg:w-11 lg:border lg:border-gray-700 dark:text-gray-400"
             onClick={handleToggleSidebar}
             aria-label="Toggle Sidebar"
           >
-            {isMobileOpen ? "✖" : "☰"}
+            {isMobileOpen ? (
+              <span className="text-xl">✕</span>
+            ) : (
+              <span className="text-2xl">☰</span>
+            )}
           </button>
 
-          {/* Placeholder Logo */}
-          <Link href="/" className="lg:hidden">
-            <div className="font-semibold text-lg text-white dark:text-white">
+          <Link href="/" className="flex lg:hidden">
+            <div className="text-base font-bold tracking-tight text-white sm:text-lg">
               Varlet Parking
             </div>
           </Link>
+        </div>
 
-          {/* Mobile Menu Button */}
+        {/* RIGHT AREA: Mobile Toggle & Desktop Items */}
+        <div className="flex items-center gap-2">
+          {/* Mobile "More" Menu Button */}
           <button
             onClick={toggleApplicationMenu}
-            className="flex items-center justify-center w-10 h-10 text-gray-700 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 lg:hidden"
+            className="flex items-center justify-center w-10 h-10 text-gray-400 rounded-lg hover:bg-gray-800 lg:hidden"
           >
-            ⋮
+            <span className="text-xl">⋮</span>
           </button>
 
-          {/* Search Input Desktop */}
-       
-        </div>
-
-        {/* RIGHT AREA */}
-        <div
-          className={`${isApplicationMenuOpen ? "flex" : "hidden"} items-center justify-between w-full gap-4 px-5 py-4 lg:flex lg:justify-end lg:px-0`}
-        >
-          <div className="flex items-center gap-2">
+          {/* Desktop Right Nav */}
+          <div className="hidden items-center gap-4 lg:flex">
             <ThemeToggleButton />
+            <div className="flex items-center gap-3 border-l border-gray-800 pl-4">
+              <span className="text-gray-400 text-sm font-medium">
+                Welcome, <span className="text-white">{username}</span>
+              </span>
+              <UserDropdown />
+            </div>
           </div>
-
-          {/* USER BADGE */}
-          <div className="flex items-center gap-3">
-            <span className="text-white dark:text-gray-300 text-sm font-medium">
-              👋 Welcome
-            </span>
-            <UserDropdown />
-          </div>
-
         </div>
+
+        {/* MOBILE MENU DROPDOWN (Absolute Positioned) */}
+        {isApplicationMenuOpen && (
+          <div className="absolute left-0 top-full flex w-full flex-col border-b border-gray-800 bg-black p-4 shadow-xl animate-in slide-in-from-top-2 lg:hidden">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-white text-sm font-medium">👋 Welcome, {username}</span>
+              <ThemeToggleButton />
+            </div>
+            <div className="flex items-center justify-center border-t border-gray-800 pt-4">
+              <UserDropdown />
+              <span className="ml-3 text-white">Profile Settings</span>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );

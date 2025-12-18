@@ -1254,7 +1254,7 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
         <button 
           onClick={() => setCurrentStep(prev => prev - 1)} 
           disabled={isSaving}
-          className="h-9 sm:h-10 flex items-center gap-2 px-2 sm:px-3 text-xs sm:text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-[#007bff] dark:hover:text-blue-400 transition-all group disabled:opacity-50"
+          className="h-12 sm:h-12 flex items-center gap-2 px-2 sm:px-3 text-xs sm:text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-[#007bff] dark:hover:text-blue-400 transition-all group disabled:opacity-50"
         >
           <div className="p-1 sm:p-1.5 rounded-full bg-gray-100 dark:bg-gray-800 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 transition-colors">
             <ArrowRight className="rotate-180 w-3.5 h-3.5 sm:w-4 sm:h-4" /> 
@@ -1272,7 +1272,7 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
         <button
           onClick={handleUpdateSubmit}
           disabled={isSaving}
-          className="min-w-[70px] sm:min-w-[110px] h-9 sm:h-10 flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-5 border-2 border-[#007bff] text-[#007bff] dark:border-blue-500 dark:text-blue-400 rounded-lg text-[11px] sm:text-sm font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all active:scale-95 disabled:opacity-50"
+          className="min-w-[70px] sm:min-w-[110px] h-10 sm:h-12 flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-5 border-2 border-[#007bff] text-[#007bff] dark:border-blue-500 dark:text-blue-400 rounded-lg text-[11px] sm:text-sm font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all active:scale-95 disabled:opacity-50"
         >
           {isSaving ? (
             <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -1286,7 +1286,7 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
       {currentStep < 6 ? (
         <button 
           onClick={handleNext} 
-          className="min-w-[70px] sm:min-w-[110px] h-9 sm:h-10 flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 bg-[#007bff] hover:bg-blue-700 text-white rounded-lg text-[11px] sm:text-sm font-bold shadow-md transition-all active:scale-95"
+          className="min-w-[70px] sm:min-w-[110px] h-10 sm:h-12 flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 bg-[#007bff] hover:bg-blue-700 text-white rounded-lg text-[11px] sm:text-sm font-bold shadow-md transition-all active:scale-95"
         >
           Next 
           <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -1294,7 +1294,7 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
       ) : (
         <button 
           onClick={handleReviewClick} 
-          className="min-w-[130px] sm:min-w-[180px] h-9 sm:h-10 flex items-center justify-center gap-1 sm:gap-2 px-4 sm:px-6 bg-green-600 hover:bg-green-700 text-white rounded-lg text-[11px] sm:text-sm font-bold shadow-lg transition-all active:scale-95 animate-in fade-in zoom-in-95 duration-300"
+          className="min-w-[130px] sm:min-w-[180px] h-10 sm:h-12 flex items-center justify-center gap-1 sm:gap-2 px-4 sm:px-6 bg-green-600 hover:bg-green-700 text-white rounded-lg text-[11px] sm:text-sm font-bold shadow-lg transition-all active:scale-95 animate-in fade-in zoom-in-95 duration-300"
         >
           Review <span className="hidden sm:inline">& Finalize</span>
           <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
