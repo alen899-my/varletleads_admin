@@ -111,7 +111,7 @@ export default function LeadDetailsModal({ open, onClose, data }) {
         <div ref={modalRef} className="w-full max-w-4xl max-h-[85vh] shadow-2xl bg-white dark:bg-gray-900 flex flex-col rounded-2xl overflow-hidden ">
           
           {/* Header - Fixed Black Background */}
-          <div className="shrink-0 bg-black border-b border-gray-800 px-5 py-3 flex justify-between items-center z-10 rounded-t-2xl overflow-hidden">
+          <div className="shrink-0 bg-black border-b border-gray-800 px-5 py-1 flex justify-between items-center z-10 rounded-t-2xl overflow-hidden">
             <div>
               <h2 className="text-lg font-black text-white flex items-center gap-3">
                 Registration Details
