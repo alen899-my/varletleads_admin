@@ -566,7 +566,7 @@ const handleFinalSubmit = async () => {
       capacitySchema.parse(Number(formData.capacity));
     } catch (err: any) {
       newErrors.capacity =
-        err.errors?.[0]?.message || "Invalid capacity number";
+        err.errors?.[0]?.message || "Minimum 1 Slot Required";
     }
 
     setErrors(newErrors);
@@ -948,6 +948,7 @@ const handleFinalSubmit = async () => {
                   isReadOnly ? "pointer-events-none opacity-80" : ""
                 }`}
               >
+                
                 {/* Section Heading */}
                 <div>
                   <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
@@ -1123,863 +1124,695 @@ const handleFinalSubmit = async () => {
                 </div>
               </div>
             )}
-            {currentStep === 2 && (
-              <div
-                className={`space-y-3 animate-in fade-in slide-in-from-right-8 duration-500 ${
-                  isReadOnly ? "pointer-events-none opacity-80" : ""
-                }`}
-              >
-                {/* Header */}
-                <div className="space-y-0">
-                  <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
-                    On-Site User Setup
-                  </h2>
-                  <p className="text-xs sm:text-sm text-gray-500">
-                    Internal users + operational setup details.
-                  </p>
-                </div>
+          {/* STEP 2: ON-SITE USER SETUP */}
+{currentStep === 2 && (
+  <div
+    className={`flex flex-col h-full min-h-[600px] animate-in fade-in slide-in-from-right-8 duration-500 ${
+      isReadOnly ? "pointer-events-none opacity-80" : ""
+    }`}
+  >
+    {/* Scrollable Content Area */}
+    <div className="flex-1 space-y-4">
+      <div className="space-y-0">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+          On-Site User Setup
+        </h2>
+        <p className="text-xs sm:text-sm text-gray-500">
+          Internal users + operational setup details.
+        </p>
+      </div>
 
-                {/* Form Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {/* Inputs */}
-                  <div>
-                    <label className="text-sm font-medium text-gray-900">
-                      Number of lobbies / entrances
-                    </label>
-                    <input
-                      type="number"
-                      name="lobbies"
-                      disabled={isReadOnly}
-                      placeholder="e.g., 2"
-                      value={formData.lobbies}
-                      onChange={handleChange}
-                      className="input"
-                    />
-                  </div>
+      {/* Form Fields Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Number of lobbies */}
+        <div>
+          <label className="text-sm font-medium text-gray-900">
+            Number of lobbies / entrances
+          </label>
+          <input
+            type="number"
+            name="lobbies"
+            disabled={isReadOnly}
+            placeholder="e.g., 2"
+            value={formData.lobbies}
+            onChange={handleChange}
+            className="input w-full"
+          />
+        </div>
 
-                  <div>
-                    <label className="text-sm font-medium text-gray-900">
-                      Number of key control rooms
-                    </label>
-                    <input
-                      type="number"
-                      name="keyRooms"
-                      disabled={isReadOnly}
-                      placeholder="e.g., 1"
-                      value={formData.keyRooms}
-                      onChange={handleChange}
-                      className="input"
-                    />
-                  </div>
+        {/* Number of key rooms */}
+        <div>
+          <label className="text-sm font-medium text-gray-900">
+            Number of key control rooms
+          </label>
+          <input
+            type="number"
+            name="keyRooms"
+            disabled={isReadOnly}
+            placeholder="e.g., 1"
+            value={formData.keyRooms}
+            onChange={handleChange}
+            className="input w-full"
+          />
+        </div>
 
-                  <div>
-                    <label className="text-sm font-medium text-gray-900">
-                      Distance between lobby & key room
-                    </label>
-                    <input
-                      type="text"
-                      name="distance"
-                      disabled={isReadOnly}
-                      placeholder="e.g., 50 meters"
-                      value={formData.distance}
-                      onChange={handleChange}
-                      className="input"
-                    />
-                  </div>
+        {/* Distance */}
+        <div className="md:col-span-2">
+          <label className="text-sm font-medium text-gray-900">
+            Distance between lobby & key room
+          </label>
+          <input
+            type="text"
+            name="distance"
+            disabled={isReadOnly}
+            placeholder="e.g., 50 meters"
+            value={formData.distance}
+            onChange={handleChange}
+            className="input w-full"
+          />
+        </div>
 
-                  {/* Radios */}
-                  <div className="border rounded-lg p-3 bg-gray-50">
-                    <p className="text-sm font-medium text-gray-900 mb-1">
-                      Supervisor user required?
-                    </p>
-                    <div className="flex items-center gap-6">
-                      <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
-                        <input
-                          type="radio"
-                          name="supervisorUser"
-                          value="yes"
-                          disabled={isReadOnly}
-                          checked={formData.supervisorUser === "yes"}
-                          onChange={handleChange}
-                          className="w-4 h-4 "
-                        />
-                        Yes
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
-                        <input
-                          type="radio"
-                          name="supervisorUser"
-                          value="no"
-                          disabled={isReadOnly}
-                          checked={formData.supervisorUser === "no"}
-                          onChange={handleChange}
-                          className="w-4 h-4"
-                        />
-                        No
-                      </label>
-                    </div>
-                  </div>
+        {/* Radio Option: Supervisor */}
+        <div className="border rounded-lg p-3 bg-gray-50">
+          <p className="text-sm font-medium text-gray-900 mb-2">
+            Supervisor user required?
+          </p>
+          <div className="flex items-center gap-6">
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+              <input
+                type="radio"
+                name="supervisorUser"
+                value="yes"
+                disabled={isReadOnly}
+                checked={formData.supervisorUser === "yes"}
+                onChange={handleChange}
+                className="w-4 h-4 accent-[#ae5c83]"
+              />
+              Yes
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+              <input
+                type="radio"
+                name="supervisorUser"
+                value="no"
+                disabled={isReadOnly}
+                checked={formData.supervisorUser === "no"}
+                onChange={handleChange}
+                className="w-4 h-4 accent-[#ae5c83]"
+              />
+              No
+            </label>
+          </div>
+        </div>
 
-                  <div className="border rounded-lg p-3 bg-gray-50">
-                    <p className="text-sm font-medium text-gray-900 mb-1">
-                      Ticket validation user?
-                    </p>
-                    <div className="flex items-center gap-6">
-                      <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
-                        <input
-                          type="radio"
-                          name="validationUser"
-                          value="yes"
-                          disabled={isReadOnly}
-                          checked={formData.validationUser === "yes"}
-                          onChange={handleChange}
-                          className="w-4 h-4"
-                        />
-                        Yes
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
-                        <input
-                          type="radio"
-                          name="validationUser"
-                          value="no"
-                          disabled={isReadOnly}
-                          checked={formData.validationUser === "no"}
-                          onChange={handleChange}
-                          className="w-4 h-4"
-                        />
-                        No
-                      </label>
-                    </div>
-                  </div>
+        {/* Radio Option: Validation */}
+        <div className="border rounded-lg p-3 bg-gray-50">
+          <p className="text-sm font-medium text-gray-900 mb-2">
+            Ticket validation user?
+          </p>
+          <div className="flex items-center gap-6">
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+              <input
+                type="radio"
+                name="validationUser"
+                value="yes"
+                disabled={isReadOnly}
+                checked={formData.validationUser === "yes"}
+                onChange={handleChange}
+                className="w-4 h-4 accent-[#ae5c83]"
+              />
+              Yes
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+              <input
+                type="radio"
+                name="validationUser"
+                value="no"
+                disabled={isReadOnly}
+                checked={formData.validationUser === "no"}
+                onChange={handleChange}
+                className="w-4 h-4 accent-[#ae5c83]"
+              />
+              No
+            </label>
+          </div>
+        </div>
 
-                  <div className="border rounded-lg p-3 bg-gray-50">
-                    <p className="text-sm font-medium text-gray-900 mb-1">
-                      Finance report access?
-                    </p>
-                    <div className="flex items-center gap-6">
-                      <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
-                        <input
-                          type="radio"
-                          name="reportUser"
-                          value="yes"
-                          disabled={isReadOnly}
-                          checked={formData.reportUser === "yes"}
-                          onChange={handleChange}
-                          className="w-4 h-4"
-                        />
-                        Yes
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
-                        <input
-                          type="radio"
-                          name="reportUser"
-                          value="no"
-                          disabled={isReadOnly}
-                          checked={formData.reportUser === "no"}
-                          onChange={handleChange}
-                          className="w-4 h-4"
-                        />
-                        No
-                      </label>
-                    </div>
-                  </div>
-                </div>
+        {/* Radio Option: Finance Report */}
+        <div className="border rounded-lg p-3 bg-gray-50 md:col-span-2">
+          <p className="text-sm font-medium text-gray-900 mb-2">
+            Finance report access?
+          </p>
+          <div className="flex items-center gap-6">
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+              <input
+                type="radio"
+                name="reportUser"
+                value="yes"
+                disabled={isReadOnly}
+                checked={formData.reportUser === "yes"}
+                onChange={handleChange}
+                className="w-4 h-4 accent-[#ae5c83]"
+              />
+              Yes
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+              <input
+                type="radio"
+                name="reportUser"
+                value="no"
+                disabled={isReadOnly}
+                checked={formData.reportUser === "no"}
+                onChange={handleChange}
+                className="w-4 h-4 accent-[#ae5c83]"
+              />
+              No
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
 
-                {/* Buttons */}
-                <div className="pt-2 flex justify-between items-center">
-                  <button
- onClick={() => setCurrentStep((prev) => prev - 1)}
- className="
-   flex items-center gap-2 
-   px-4 py-2 rounded-lg 
-   text-sm font-medium
-   border border-gray-400 
-   active:scale-[0.97]
-   transition-all duration-200
-   shadow-sm
- "
->
- ← Back
-</button>
+    {/* Fixed Navigation Buttons at Bottom */}
+    <div className="pt-6 mt-auto  flex justify-between items-center">
+      <button
+        onClick={() => setCurrentStep((prev) => prev - 1)}
+        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-gray-400 active:scale-[0.97] transition-all duration-200 shadow-sm bg-white hover:bg-gray-50"
+      >
+        ← Back
+      </button>
 
-                  <button
-                    onClick={handleNext}
-                    className="btn-primary flex gap-2 pointer-events-auto"
-                  >
-                    Next Step
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            )}
-
+      <button
+        onClick={handleNext}
+        className="btn-primary flex items-center gap-2 pointer-events-auto"
+      >
+        Next Step
+        <ArrowRight className="w-4 h-4" />
+      </button>
+    </div>
+  </div>
+)}
             {/* STEP 3: VALET TICKET & PRICING */}
-            {currentStep === 3 && (
-              <div
-                className={`space-y-4 animate-in fade-in slide-in-from-right-8 duration-500 ${
-                  isReadOnly ? "pointer-events-none opacity-80" : ""
-                }`}
-              >
-                {/* Section Heading */}
-                <div className="space-y-0">
-                  <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                    Valet Ticket & Pricing
-                  </h2>
-                  <p className="text-xs text-gray-500">
-                    Tell us how tickets are generated and how you charge guests.
-                  </p>
-                </div>
+{currentStep === 3 && (
+  <div
+    className={`flex flex-col h-full min-h-[600px] animate-in fade-in slide-in-from-right-8 duration-500 ${
+      isReadOnly ? "pointer-events-none opacity-80" : ""
+    }`}
+  >
+    {/* Scrollable Content Area */}
+    <div className="flex-1 space-y-4">
+      {/* Section Heading */}
+      <div className="space-y-0">
+        <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+          Valet Ticket & Pricing
+        </h2>
+        <p className="text-xs text-gray-500">
+          Tell us how tickets are generated and how you charge guests.
+        </p>
+      </div>
 
-                {/* Form Fields Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Ticket Type */}
-                  <div className="md:col-span-2  bg-gray-50 rounded-lg border border-gray-100">
-                    <label className="block text-sm font-medium text-gray-900 mb-3 flex items-center gap-2 p-1">
-                      Ticket Type <span className="text-gray-400 text-xs font-normal">(Select all that apply)</span>
-                    </label>
+      {/* Form Fields Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Ticket Type */}
+        <div className="md:col-span-2 bg-gray-50 rounded-lg border border-gray-100">
+          <label className="block text-sm font-medium text-gray-900 mb-3 flex items-center gap-2 p-2">
+            Ticket Type <span className="text-gray-400 text-xs font-normal">(Select all that apply)</span>
+          </label>
 
-                    {/* Grid Layout for Multiple Choice */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-2 p-2">
-                      
-                      {/* Option 1: Pre-printed Paper */}
-                      <label className={`flex items-center gap-2 cursor-pointer  rounded transition  ${
-                        formData.ticketType?.includes("pre-printed-paper") 
-                          ? "" 
-                          : ""
-                      }`}>
-                        <input
-                          type="checkbox"
-                          name="ticketType"
-                          value="pre-printed-paper"
-                          disabled={isReadOnly}
-                          checked={formData.ticketType?.includes("pre-printed-paper")}
-                          onChange={handleTicketTypeChange}
-                        
-                          className="w-4 h-4 text-[#ae5c83] rounded focus:ring-[#ae5c83] accent-[#ae5c83]"
-                        />
-                        <span className="text-sm text-gray-700">
-                          Pre-printed ticket paper
-                        </span>
-                      </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-2 p-2">
+            {[
+              { id: "pre-printed-paper", label: "Pre-printed ticket paper" },
+              { id: "pre-printed-plastic", label: "Pre-printed reusable plastic ticket" },
+              { id: "system-generated", label: "System generated ticket" },
+              { id: "e-ticket", label: "E-ticket" },
+            ].map((type) => (
+              <label key={type.id} className="flex items-center gap-2 cursor-pointer rounded transition">
+                <input
+                  type="checkbox"
+                  name="ticketType"
+                  value={type.id}
+                  disabled={isReadOnly}
+                  checked={formData.ticketType?.includes(type.id)}
+                  onChange={handleTicketTypeChange}
+                  className="w-4 h-4 text-[#ae5c83] rounded focus:ring-[#ae5c83] accent-[#ae5c83]"
+                />
+                <span className="text-sm text-gray-700">{type.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
 
-                      {/* Option 2: Pre-printed Plastic */}
-                      <label className={`flex items-center gap-2 cursor-pointer  rounded transition  ${
-                        formData.ticketType?.includes("pre-printed-plastic") 
-                          ? "" 
-                          : ""
-                      }`}>
-                        <input
-                          type="checkbox"
-                          name="ticketType"
-                          value="pre-printed-plastic"
-                          disabled={isReadOnly}
-                          checked={formData.ticketType?.includes("pre-printed-plastic")}
-                          onChange={handleTicketTypeChange}
-                          className="w-4 h-4 text-[#ae5c83] rounded focus:ring-[#ae5c83] accent-[#ae5c83]"
-                        />
-                        <span className="text-sm text-gray-700">
-                          Pre-printed reusable plastic ticket
-                        </span>
-                      </label>
+        {/* Valet Fee Type */}
+        <div className="md:col-span-2 bg-gray-50 rounded-lg border border-gray-100">
+          <label className="block text-sm font-medium text-gray-900 mb-3 flex items-center gap-2 p-2">
+            Valet Fee Type <span className="text-gray-400 text-xs font-normal">(Select all that apply)</span>
+          </label>
 
-                      {/* Option 3: System Generated */}
-                      <label className={`flex items-center gap-2 cursor-pointer  rounded transition  ${
-                        formData.ticketType?.includes("system-generated") 
-                          ? "" 
-                          : ""
-                      }`}>
-                        <input
-                          type="checkbox"
-                          name="ticketType"
-                          value="system-generated"
-                          disabled={isReadOnly}
-                          checked={formData.ticketType?.includes("system-generated")}
-                          onChange={handleTicketTypeChange}
-                          className="w-4 h-4 text-[#ae5c83] rounded focus:ring-[#ae5c83] accent-[#ae5c83]"
-                        />
-                        <span className="text-sm text-gray-700">
-                          System generated ticket
-                        </span>
-                      </label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-3 gap-x-6 p-2">
+            {[
+              { id: "fixed", label: "Fixed fee" },
+              { id: "hourly", label: "Hourly" },
+              { id: "free", label: "Free (complimentary)" },
+            ].map((fee) => (
+              <label key={fee.id} className="flex items-center gap-2 cursor-pointer rounded transition">
+                <input
+                  type="checkbox"
+                  name="feeType"
+                  value={fee.id}
+                  disabled={isReadOnly}
+                  checked={formData.feeType?.includes(fee.id)}
+                  onChange={handleFeeTypeChange}
+                  className="w-4 h-4 text-[#ae5c83] rounded focus:ring-[#ae5c83] accent-[#ae5c83]"
+                />
+                <span className="text-sm text-gray-700">{fee.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
 
-                      {/* Option 4: E-Ticket */}
-                      <label className={`flex items-center gap-2 cursor-pointer  rounded transition  ${
-                        formData.ticketType?.includes("e-ticket") 
-                          ? "" 
-                          : ""
-                      }`}>
-                        <input
-                          type="checkbox"
-                          name="ticketType"
-                          value="e-ticket"
-                          disabled={isReadOnly}
-                          checked={formData.ticketType?.includes("e-ticket")}
-                          onChange={handleTicketTypeChange}
-                          className="w-4 h-4 text-[#ae5c83] rounded focus:ring-[#ae5c83] accent-[#ae5c83]"
-                        />
-                        <span className="text-sm text-gray-700">
-                          E-ticket
-                        </span>
-                      </label>
+        {/* Ticket Pricing */}
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1 p-1">
+            Ticket Prices (AED)
+            <Banknote className="w-4 h-4 text-gray-400" />
+          </label>
+          <textarea
+            rows={2}
+            name="ticketPricing"
+            disabled={isReadOnly}
+            placeholder="e.g. Standard: 50 AED, VIP: 100 AED..."
+            value={formData.ticketPricing}
+            onChange={handleChange}
+            className="input w-full"
+          />
+          <p className="text-xs text-gray-400 mt-1">
+            Mention separate pricing if applicable.
+          </p>
+        </div>
 
-                    </div>
-                  </div>
+        {/* VAT Handling */}
+        <div className="md:col-span-2 bg-gray-50 rounded-lg border border-gray-100">
+          <label className="block text-sm font-medium text-gray-900 mb-2 flex items-center gap-2 p-2">
+            Tax Handling
+          </label>
+          <div className="flex flex-wrap gap-4 p-2">
+            {['inclusive', 'exclusive'].map((type) => (
+              <label key={type} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="vatType"
+                  value={type}
+                  disabled={isReadOnly}
+                  checked={formData.vatType === type}
+                  onChange={handleChange}
+                  className="w-4 h-4 accent-[#ae5c83]"
+                />
+                <span className="text-sm text-gray-700 capitalize">{type}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
 
-                  {/* Valet Fee Type */}
-                  <div className="md:col-span-2  bg-gray-50 rounded-lg border border-gray-100">
-                    <label className="block text-sm font-medium text-gray-900 mb-3 flex items-center gap-2 p-1">
-                      Valet Fee Type <span className="text-gray-400 text-xs font-normal">(Select all that apply)</span>
-                    </label>
+    {/* Fixed Action Buttons at Bottom */}
+    <div className="pt-6 mt-auto  flex justify-between">
+      <button
+        onClick={() => setCurrentStep((prev) => prev - 1)}
+        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-gray-400 active:scale-[0.97] transition-all duration-200 shadow-sm bg-white hover:bg-gray-50"
+      >
+        ← Back
+      </button>
 
-                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-3 gap-x-6 p-2">
-
-                      
-                      {/* Option 1: Fixed Fee */}
-                      <label className={`flex items-center gap-2 cursor-pointer  rounded transition  ${
-                        formData.feeType?.includes("fixed") 
-                          ? "" 
-                          : ""
-                      }`}>
-                        <input
-                          type="checkbox"
-                          name="feeType"
-                          value="fixed"
-                          disabled={isReadOnly}
-                          checked={formData.feeType?.includes("fixed")}
-                          onChange={handleFeeTypeChange}
-                          className="w-4 h-4 text-[#ae5c83] rounded focus:ring-[#ae5c83] accent-[#ae5c83]"
-                        />
-                        <span className="text-sm text-gray-700">Fixed fee</span>
-                      </label>
-
-                      {/* Option 2: Hourly */}
-                      <label className={`flex items-center gap-2 cursor-pointer  rounded transition  ${
-                        formData.feeType?.includes("hourly") 
-                          ? "" 
-                          : ""
-                      }`}>
-                        <input
-                          type="checkbox"
-                          name="feeType"
-                          value="hourly"
-                          disabled={isReadOnly}
-                          checked={formData.feeType?.includes("hourly")}
-                          onChange={handleFeeTypeChange}
-                          className="w-4 h-4 text-[#ae5c83] rounded focus:ring-[#ae5c83] accent-[#ae5c83]"
-                        />
-                        <span className="text-sm text-gray-700">Hourly</span>
-                      </label>
-
-                      {/* Option 3: Free */}
-                      <label className={`flex items-center gap-2 cursor-pointer rounded transition  ${
-                        formData.feeType?.includes("free") 
-                          ? "" 
-                          : ""
-                      }`}>
-                        <input
-                          type="checkbox"
-                          name="feeType"
-                          value="free"
-                          disabled={isReadOnly}
-                          checked={formData.feeType?.includes("free")}
-                          onChange={handleFeeTypeChange}
-                          className="w-4 h-4 text-[#ae5c83] rounded focus:ring-[#ae5c83] accent-[#ae5c83]"
-                        />
-                        <span className="text-sm text-gray-700">
-                          Free (complimentary)
-                        </span>
-                      </label>
-
-                    </div>
-                  </div>
-
-                  {/* Ticket Pricing */}
-                  <div className="md:col-span-2 ">
-                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1 p-1">
-                      Ticket Prices (AED)
-                      <Banknote className="w-4 h-4 text-gray-400" />
-                    </label>
-
-                    <textarea
-                      rows={2}
-                      name="ticketPricing"
-                      disabled={isReadOnly}
-                      placeholder="e.g. Standard: 50 AED, VIP: 100 AED..."
-                      value={formData.ticketPricing}
-                      onChange={handleChange}
-                      className="input"
-                    />
-
-                    <p className="text-xs text-gray-400 mt-1">
-                      Mention separate pricing if applicable.
-                    </p>
-                  </div>
-
-                  {/* VAT Handling */}
-                  <div className="md:col-span-2 bg-gray-50 rounded-lg border border-gray-100">
-                    <label className="block text-sm font-medium text-gray-900 mb-2 flex items-center gap-2 p-1">
-                      Tax Handling
-                    </label>
-
-                    <div className="flex flex-wrap gap-4 p-2">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="vatType"
-                          value="inclusive"
-                          disabled={isReadOnly}
-                          checked={formData.vatType === "inclusive"}
-                          onChange={handleChange}
-                          className="w-4 h-4"
-                        />
-                        <span className="text-sm text-gray-700">Inclusive</span>
-                      </label>
-
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="vatType"
-                          value="exclusive"
-                          disabled={isReadOnly}
-                          checked={formData.vatType === "exclusive"}
-                          onChange={handleChange}
-                          className="w-4 h-4"
-                        />
-                        <span className="text-sm text-gray-700">Exclusive</span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Buttons */}
-                <div className="pt-2 flex justify-between">
-                  <button
- onClick={() => setCurrentStep((prev) => prev - 1)}
- className="
-   flex items-center gap-2 
-   px-4 py-2 rounded-lg 
-   text-sm font-medium
-   border border-gray-400 
-   active:scale-[0.97]
-   transition-all duration-200
-   shadow-sm
- "
->
- ← Back
-</button>
-
-                  <button
-                    onClick={handleNext}
-                    className="btn-primary pointer-events-auto"
-                  >
-                    Next Step
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            )}
+      <button
+        onClick={handleNext}
+        className="btn-primary flex items-center gap-2 pointer-events-auto"
+      >
+        Next Step
+        <ArrowRight className="w-4 h-4" />
+      </button>
+    </div>
+  </div>
+)}
 
             {/* STEP 4: DRIVERS / CVA TEAM */}
-            {currentStep === 4 && (
-              <div
-                className={`space-y-3 animate-in fade-in slide-in-from-right-8 duration-500 ${
-                  isReadOnly ? "pointer-events-none opacity-80" : ""
-                }`}
-              >
-                {/* Section Heading */}
-                <div className="space-y-1">
-                  <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                    <UserCog className="w-5 h-5 text-[#ae5c83]" />
-                    Drivers / CVA Team
-                  </h2>
-                  <p className="text-sm text-gray-500">
-                    Details of drivers who will be mapped to this location.
-                  </p>
-                </div>
+{currentStep === 4 && (
+  <div
+    className={`flex flex-col h-full min-h-[600px] animate-in fade-in slide-in-from-right-8 duration-500 ${
+      isReadOnly ? "pointer-events-none opacity-80" : ""
+    }`}
+  >
+    {/* Scrollable Content Area */}
+    <div className="flex-1 space-y-3">
+      {/* Section Heading */}
+      <div className="space-y-1">
+        <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+          <UserCog className="w-5 h-5 text-[#ae5c83]" />
+          Drivers / CVA Team
+        </h2>
+        <p className="text-sm text-gray-500">
+          Details of drivers who will be mapped to this location.
+        </p>
+      </div>
 
-                {/* Form Fields Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Number of Drivers */}
-                  <div className="col-span-1 md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
-                      Number of drivers
-                      <Users className="w-4 h-4 text-gray-400" />
-                    </label>
+      {/* Form Fields Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Number of Drivers */}
+        <div className="col-span-1 md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+            Number of drivers
+            <Users className="w-4 h-4 text-gray-400" />
+          </label>
 
-                    <input
-                      type="number"
-                      name="driverCount"
-                      disabled={isReadOnly}
-                      placeholder="e.g. 15"
-                      value={formData.driverCount}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-[#ae5c83] focus:border-[#ae5c83] outline-none transition-all"
-                    />
-                  </div>
+          <input
+            type="number"
+            name="driverCount"
+            disabled={isReadOnly}
+            placeholder="e.g. 15"
+            value={formData.driverCount}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-[#ae5c83] focus:border-[#ae5c83] outline-none transition-all"
+          />
+        </div>
 
-                  {/* Drivers List */}
-                  <div className="col-span-1 md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
-                      Drivers list (Employee ID & full name)
-                      <FileText className="w-4 h-4 text-gray-400" />
-                    </label>
+        {/* Drivers List */}
+        <div className="col-span-1 md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+            Drivers list (Employee ID & full name)
+            <FileText className="w-4 h-4 text-gray-400" />
+          </label>
 
-                    <textarea
-                      rows={6}
-                      name="driverList"
-                      disabled={isReadOnly}
-                      placeholder={`e.g.\n1001 - John Doe\n1002 - Jane Smith\n1003 - Ahmed Ali`}
-                      value={formData.driverList}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-[#ae5c83] focus:border-[#ae5c83] outline-none transition-all resize-none font-mono text-sm"
-                    />
+          <textarea
+            rows={6}
+            name="driverList"
+            disabled={isReadOnly}
+            placeholder={`e.g.\n1001 - John Doe\n1002 - Jane Smith\n1003 - Ahmed Ali`}
+            value={formData.driverList}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-[#ae5c83] focus:border-[#ae5c83] outline-none transition-all resize-none font-mono text-sm"
+          />
 
-                    {/* Helper Note */}
-                    <div className="mt-2 flex gap-2 items-start p-3 bg-blue-50 text-red-700 text-sm rounded-md">
-                      <span className="mt-0.5">ℹ️</span>
-                      <p>
-                        If the list is too long, you may also share this as an
-                        attachment by email referencing this form.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+          {/* Helper Note */}
+          <div className="mt-2 flex gap-2 items-start p-3 bg-blue-50 text-red-700 text-sm rounded-md">
+            <span className="mt-0.5">ℹ️</span>
+            <p>
+              If the list is too long, you may also share this as an
+              attachment by email referencing this form.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
 
-                {/* Step Action Buttons */}
-                <div className="pt-2 flex justify-between">
-                  <button
- onClick={() => setCurrentStep((prev) => prev - 1)}
- className="
-   flex items-center gap-2 
-   px-4 py-2 rounded-lg 
-   text-sm font-medium
-   border border-gray-400 
-   active:scale-[0.97]
-   transition-all duration-200
-   shadow-sm
- "
->
- ← Back
-</button>
+    {/* Fixed Action Buttons at Bottom */}
+    <div className="pt-6 mt-auto flex justify-between">
+      <button
+        onClick={() => setCurrentStep((prev) => prev - 1)}
+        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-gray-400 active:scale-[0.97] transition-all duration-200 shadow-sm bg-white hover:bg-gray-50"
+      >
+        ← Back
+      </button>
 
-                  <button
-                    onClick={handleNext}
-                    className="flex items-center gap-2 bg-[#ae5c83] hover:bg-[#964a6d] text-white px-6 py-2.5 rounded-lg font-medium transition-colors pointer-events-auto"
-                  >
-                    Next Step
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            )}
+      <button
+        onClick={handleNext}
+        className="flex items-center gap-2 bg-[#ae5c83] hover:bg-[#964a6d] text-white px-6 py-2.5 rounded-lg font-medium transition-colors pointer-events-auto"
+      >
+        Next Step
+        <ArrowRight className="w-4 h-4" />
+      </button>
+    </div>
+  </div>
+)}
 
             {/* STEP 5: SUPER ADMIN CONTACT */}
-            {currentStep === 5 && (
-              <div
-                className={`space-y-3 animate-in fade-in slide-in-from-right-8 duration-500 ${
-                  isReadOnly ? "pointer-events-none opacity-80" : ""
-                }`}
-              >
-                {/* Section Heading */}
-                <div className="space-y-1">
-                  <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                    <ShieldUser className="w-5 h-5 text-[#ae5c83]" />
-                    Super Admin Contact
-                  </h2>
-                  <p className="text-sm text-gray-500">
-                    Main person responsible for valet operations & application
-                    access.
-                  </p>
-                </div>
+{currentStep === 5 && (
+  <div
+    className={`flex flex-col h-full min-h-[600px] animate-in fade-in slide-in-from-right-8 duration-500 ${
+      isReadOnly ? "pointer-events-none opacity-80" : ""
+    }`}
+  >
+    {/* Scrollable Content Area */}
+    <div className="flex-1 space-y-3">
+      {/* Section Heading */}
+      <div className="space-y-1">
+        <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+          <ShieldUser className="w-5 h-5 text-[#ae5c83]" />
+          Super Admin Contact
+        </h2>
+        <p className="text-sm text-gray-500">
+          Main person responsible for valet operations & application access.
+        </p>
+      </div>
 
-                {/* ---- NEW GRID WRAPPER ---- */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Full Name */}
-                  <div className="col-span-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1 flex gap-1">
-                      Full Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="adminName"
-                      disabled={isReadOnly}
-                      placeholder="e.g., Ayush Aggarwal"
-                      value={formData.adminName}
-                      onChange={(e: any) => {
-                        setFormData({ ...formData, adminName: e.target.value });
-                        setErrors((prev: any) => ({ ...prev, adminName: "" }));
-                      }}
-                      className={`input ${
-                        errors.adminName ? "border-red-500" : ""
-                      }`}
-                    />
-                    {errors.adminName && (
-                      <p className="text-xs text-red-500">{errors.adminName}</p>
-                    )}
-                  </div>
+      {/* ---- GRID WRAPPER ---- */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Full Name */}
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1 flex gap-1">
+            Full Name <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            name="adminName"
+            disabled={isReadOnly}
+            placeholder="e.g., Ayush Aggarwal"
+            value={formData.adminName}
+            onChange={(e: any) => {
+              setFormData({ ...formData, adminName: e.target.value });
+              setErrors((prev: any) => ({ ...prev, adminName: "" }));
+            }}
+            className={`input ${errors.adminName ? "border-red-500" : ""}`}
+          />
+          {errors.adminName && (
+            <p className="text-xs text-red-500">{errors.adminName}</p>
+          )}
+        </div>
 
-                  {/* Email */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Email Address <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="email"
-                      name="adminEmail"
-                      disabled={isReadOnly}
-                      placeholder="e.g., ayush@example.com"
-                      value={formData.adminEmail}
-                      onChange={(e: any) => {
-                        setFormData({ ...formData, adminEmail: e.target.value });
-                        setErrors((prev: any) => ({ ...prev, adminEmail: "" }));
-                      }}
-                      className={`input ${
-                        errors.adminEmail ? "border-red-500" : ""
-                      }`}
-                    />
-                    {errors.adminEmail && (
-                      <p className="text-xs text-red-500">
-                        {errors.adminEmail}
-                      </p>
-                    )}
-                  </div>
+        {/* Email */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Email Address <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="email"
+            name="adminEmail"
+            disabled={isReadOnly}
+            placeholder="e.g., ayush@example.com"
+            value={formData.adminEmail}
+            onChange={(e: any) => {
+              setFormData({ ...formData, adminEmail: e.target.value });
+              setErrors((prev: any) => ({ ...prev, adminEmail: "" }));
+            }}
+            className={`input ${errors.adminEmail ? "border-red-500" : ""}`}
+          />
+          {errors.adminEmail && (
+            <p className="text-xs text-red-500">{errors.adminEmail}</p>
+          )}
+        </div>
 
-                  {/* Phone */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Mobile / WhatsApp Number <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      name="adminPhone"
-                      disabled={isReadOnly}
-                      placeholder="e.g., 971521234567"
-                      value={formData.adminPhone}
-                      onChange={(e) => {
-                        // Remove anything that isn't a number
-                        const cleaned = e.target.value.replace(/\D/g, "");
-                        setFormData({ ...formData, adminPhone: cleaned });
-                        setErrors((prev: any) => ({
-                          ...prev,
-                          adminPhone: "",
-                        }));
-                      }}
-                      onKeyDown={(e) => {
-                        // Allow: digits, Backspace, Delete, Tab, Arrow keys
-                        if (
-                          !/[0-9]/.test(e.key) &&
-                          !["Backspace", "Delete", "Tab", "ArrowLeft", "ArrowRight"].includes(
-                            e.key
-                          )
-                        ) {
-                          e.preventDefault();
-                        }
-                      }}
-                      className={`input ${
-                        errors.adminPhone ? "border-red-500" : ""
-                      }`}
-                    />
+        {/* Phone */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Mobile / WhatsApp Number <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="tel"
+            name="adminPhone"
+            disabled={isReadOnly}
+            placeholder="e.g., 971521234567"
+            value={formData.adminPhone}
+            onChange={(e) => {
+              const cleaned = e.target.value.replace(/\D/g, "");
+              setFormData({ ...formData, adminPhone: cleaned });
+              setErrors((prev: any) => ({ ...prev, adminPhone: "" }));
+            }}
+            onKeyDown={(e) => {
+              if (
+                !/[0-9]/.test(e.key) &&
+                !["Backspace", "Delete", "Tab", "ArrowLeft", "ArrowRight"].includes(e.key)
+              ) {
+                e.preventDefault();
+              }
+            }}
+            className={`input ${errors.adminPhone ? "border-red-500" : ""}`}
+          />
+          {errors.adminPhone && (
+            <p className="text-xs text-red-500">{errors.adminPhone}</p>
+          )}
+        </div>
 
-                    {errors.adminPhone && (
-                      <p className="text-xs text-red-500">
-                        {errors.adminPhone}
-                      </p>
-                    )}
-                  </div>
+        {/* Training Radio (full width row) */}
+        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 md:col-span-1">
+          <label className="block font-medium text-gray-700 mb-3 flex items-center gap-2">
+            Super admin will receive full application training
+          </label>
+          <div className="flex flex-col sm:flex-row gap-6">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="trainingRequired"
+                value="yes"
+                disabled={isReadOnly}
+                checked={formData.trainingRequired === "yes"}
+                onChange={handleChange}
+                className="text-[#ae5c83] focus:ring-[#ae5c83] accent-[#ae5c83]"
+              />
+              <span className="text-sm text-black">Yes, they will be trained</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="trainingRequired"
+                value="no"
+                disabled={isReadOnly}
+                checked={formData.trainingRequired === "no"}
+                onChange={handleChange}
+                className="text-[#ae5c83] focus:ring-[#ae5c83] accent-[#ae5c83]"
+              />
+              <span className="text-sm text-black">No / different plan</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
 
-                  {/* Training Radio (full width row) */}
-                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 md:col-span-1">
-                    <label className="block font-medium text-gray-700 mb-3 flex items-center gap-2">
-                      Super admin will receive full application training
-                    </label>
+    {/* Fixed Navigation Buttons at Bottom */}
+    <div className="pt-6 mt-auto  flex justify-between">
+      <button
+        onClick={() => setCurrentStep((prev) => prev - 1)}
+        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-gray-400 active:scale-[0.97] transition-all duration-200 shadow-sm bg-white hover:bg-gray-50"
+      >
+        ← Back
+      </button>
 
-                    <div className="flex flex-col sm:flex-row gap-6">
-                      {/* Yes Option */}
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="trainingRequired"
-                          value="yes"
-                          disabled={isReadOnly}
-                          checked={formData.trainingRequired === "yes"}
-                          onChange={handleChange}
-                          className="text-[#ae5c83] focus:ring-[#ae5c83]"
-                        />
-                        <span className="text-sm text-black">
-                          Yes, they will be trained
-                        </span>
-                      </label>
+      <button
+        onClick={handleNext}
+        className="flex items-center gap-2 bg-[#ae5c83] hover:bg-[#964a6d] text-white px-6 py-2.5 rounded-lg font-medium transition-colors pointer-events-auto"
+      >
+        Next Step
+        <ArrowRight className="w-4 h-4" />
+      </button>
+    </div>
+  </div>
+)}
 
-                      {/* No Option */}
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="trainingRequired"
-                          value="no"
-                          disabled={isReadOnly}
-                          checked={formData.trainingRequired === "no"}
-                          onChange={handleChange}
-                          className="text-[#ae5c83] focus:ring-[#ae5c83]"
-                        />
-                        <span className="text-sm text-black">
-                          No / different plan
-                        </span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
+         {/* STEP 6: REQUIRED DOCUMENTS */}
+{currentStep === 6 && (
+  <div
+    className={`flex flex-col h-full min-h-[600px] animate-in fade-in slide-in-from-right-8 duration-500`}
+  >
+    {/* Scrollable Content Area */}
+    <div className="flex-1 space-y-3">
+      {/* Section Title */}
+      <div>
+        <h2 className="text-xl font-semibold text-gray-900">
+          📎 Required Documents
+        </h2>
+        <p className="text-xs text-gray-500">
+          Upload now or submit later via email/WhatsApp.
+        </p>
+      </div>
 
-                {/* Buttons */}
-                <div className="pt-2 flex justify-between">
-                   <button
- onClick={() => setCurrentStep((prev) => prev - 1)}
- className="
-   flex items-center gap-2 
-   px-4 py-2 rounded-lg 
-   text-sm font-medium
-   border border-gray-400 
-   active:scale-[0.97]
-   transition-all duration-200
-   shadow-sm
- "
->
- ← Back
-</button>
+      {/* File Grid */}
+      <div
+        className={`grid grid-cols-1 md:grid-cols-2 gap-2 ${
+          isReadOnly ? "pointer-events-none opacity-80" : ""
+        }`}
+      >
+        {/* COMPANY LOGO - WITH PREVIEW */}
+        <FileUploadBlock
+          label="Company Logo (JPG/PNG)"
+          name="logoCompany"
+          file={formData.logoCompany}
+          accept="image/png, image/jpeg"
+          setFormData={setFormData}
+          existingFileName={existingFiles.logoCompany?.filename}
+          showPreview={true}
+          previewUrl={companyLogoPreview} 
+          error={errors.logoCompany}
+          setErrors={setErrors}
+        />
 
-                  <button
-                    onClick={handleNext}
-                    className="flex items-center gap-2 bg-[#ae5c83] hover:bg-[#964a6d] text-white px-6 py-2.5 rounded-lg font-medium transition-colors pointer-events-auto"
-                  >
-                    Next Step
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            )}
+        {/* CLIENT LOGO - WITH PREVIEW */}
+        <FileUploadBlock
+          label="Client Logo (JPG/PNG)"
+          name="logoClient"
+          file={formData.logoClient}
+          accept="image/png, image/jpeg"
+          setFormData={setFormData}
+          existingFileName={existingFiles.logoClient?.filename}
+          showPreview={true}
+          previewUrl={clientLogoPreview}
+          error={errors.logoClient} 
+          setErrors={setErrors}
+        />
 
-            {/* STEP 6: REQUIRED DOCUMENTS */}
-            {currentStep === 6 && (
-              <div className="space-y-3 animate-in fade-in slide-in-from-right-8 duration-500">
+        {/* VAT CERTIFICATE */}
+        <FileUploadBlock
+          label="VAT Certificate (PDF)"
+          name="vatCertificate"
+          file={formData.vatCertificate}
+          accept="application/pdf"
+          setFormData={setFormData}
+          existingFileName={existingFiles.vatCertificate?.filename}
+          error={errors.vatCertificate}
+          setErrors={setErrors}
+        />
 
-                {/* Section Title */}
-                <div>
-                  <h2 className="text-xl font-semibold text-gray-900">
-                    📎 Required Documents
-                  </h2>
-                  <p className="text-xs text-gray-500">
-                    Upload now or submit later via email/WhatsApp.
-                  </p>
-                </div>
+        {/* TRADE LICENSE */}
+        <FileUploadBlock
+          label="Trade License (PDF)"
+          name="tradeLicense"
+          file={formData.tradeLicense}
+          accept="application/pdf"
+          setFormData={setFormData}
+          existingFileName={existingFiles.tradeLicense?.filename}
+          error={errors.tradeLicense}
+          setErrors={setErrors}
+        />
+      </div>
 
-                {/* File Grid */}
-                <div
-                  className={`grid grid-cols-1 md:grid-cols-2 gap-2 ${
-                    isReadOnly ? "pointer-events-none opacity-80" : ""
-                  }`}
-                >
-                  {/* COMPANY LOGO - WITH PREVIEW */}
-                  <FileUploadBlock
-                    label="Company Logo (JPG/PNG)"
-                    name="logoCompany"
-                    file={formData.logoCompany}
-                    accept="image/png, image/jpeg"
-                    setFormData={setFormData}
-                    existingFileName={existingFiles.logoCompany?.filename}
-                    showPreview={true}
-                    previewUrl={companyLogoPreview} 
-                    error={errors.logoCompany}
-                    setErrors={setErrors} // ✅ Passed setErrors
-                  />
+      {/* Notes Textarea */}
+      <div className={isReadOnly ? "pointer-events-none opacity-80" : ""}>
+        <label className="text-sm font-medium text-gray-900">
+          How will you send documents?
+        </label>
 
-                  {/* CLIENT LOGO - WITH PREVIEW */}
-                  <FileUploadBlock
-                    label="Client Logo (JPG/PNG)"
-                    name="logoClient"
-                    file={formData.logoClient}
-                    accept="image/png, image/jpeg"
-                    setFormData={setFormData}
-                    existingFileName={existingFiles.logoClient?.filename}
-                    showPreview={true}
-                    previewUrl={clientLogoPreview}
-                    error={errors.logoClient} 
-                    setErrors={setErrors} // ✅ Passed setErrors
-                  />
+        <textarea
+          rows={3}
+          name="documentSubmitMethod"
+          disabled={isReadOnly}
+          placeholder="Example: We will email files within 24 hours."
+          value={formData.documentSubmitMethod}
+          onChange={handleChange}
+          className="textarea w-full"
+        />
+      </div>
+    </div>
 
-                  {/* VAT CERTIFICATE */}
-                  <FileUploadBlock
-                    label="VAT Certificate (PDF)"
-                    name="vatCertificate"
-                    file={formData.vatCertificate}
-                    accept="application/pdf"
-                    setFormData={setFormData}
-                    existingFileName={existingFiles.vatCertificate?.filename}
-                    error={errors.vatCertificate}
-                    setErrors={setErrors} // ✅ Passed setErrors
-                  />
+    {/* Fixed Action Buttons at Bottom */}
+    <div className="pt-6 mt-auto  flex justify-between">
+      <button
+        onClick={() => setCurrentStep((prev) => prev - 1)}
+        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-gray-400 active:scale-[0.97] transition-all duration-200 shadow-sm bg-white hover:bg-gray-50"
+      >
+        ← Back
+      </button>
 
-                  {/* TRADE LICENSE */}
-                  <FileUploadBlock
-                    label="Trade License (PDF)"
-                    name="tradeLicense"
-                    file={formData.tradeLicense}
-                    accept="application/pdf"
-                    setFormData={setFormData}
-                    existingFileName={existingFiles.tradeLicense?.filename}
-                    error={errors.tradeLicense}
-                    setErrors={setErrors} // ✅ Passed setErrors
-                  />
-                </div>
-
-                {/* Notes Textarea */}
-                <div className={isReadOnly ? "pointer-events-none opacity-80" : ""}>
-                  <label className="text-sm font-medium text-gray-900">
-                    How will you send documents?
-                  </label>
-
-                  <textarea
-                    rows={3}
-                    name="documentSubmitMethod"
-                    disabled={isReadOnly}
-                    placeholder="Example: We will email files within 24 hours."
-                    value={formData.documentSubmitMethod}
-                    onChange={handleChange}
-                    className="textarea"
-                  />
-                </div>
-
-                {/* Buttons */}
-                <div className="flex justify-between pt-4">
-                  <button
- onClick={() => setCurrentStep((prev) => prev - 1)}
- className="
-   flex items-center gap-2 
-   px-4 py-2 rounded-lg 
-   text-sm font-medium
-   border border-gray-400 
-   active:scale-[0.97]
-   transition-all duration-200
-   shadow-sm
- "
->
- ← Back
-</button>
-
-                 <button
-  onClick={handleReviewClick} // <--- NEW: Opens modal instead of submitting directly
-  disabled={isReadOnly} 
-  className={`px-6 py-3 rounded-lg text-sm shadow-sm transition-all
-    ${isReadOnly
-       ? "bg-gray-400 cursor-not-allowed text-gray-100"
-       : "bg-[#ae5c83] hover:bg-[#ae5c83] text-white"
-     }`}
->
-  {isReadOnly
-    ? "Locked (Completed)"
-    : "Review & Submit"} {/* Changed text to be clearer */}
-</button>
-                </div>
-              </div>
-            )}
+      <button
+        onClick={handleReviewClick}
+        disabled={isReadOnly} 
+        className={`px-6 py-2.5 rounded-lg text-sm font-medium shadow-sm transition-all
+          ${isReadOnly
+             ? "bg-gray-400 cursor-not-allowed text-gray-100"
+             : "bg-[#ae5c83] hover:bg-[#964a6d] text-white"
+           }`}
+      >
+        {isReadOnly ? "Locked (Completed)" : "Review & Submit"}
+      </button>
+    </div>
+  </div>
+)}
           </>
         )}
 {isSubmitted && (
