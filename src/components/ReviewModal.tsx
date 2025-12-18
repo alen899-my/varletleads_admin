@@ -171,7 +171,7 @@ export default function ReviewModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
       
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
         
@@ -296,7 +296,10 @@ export default function ReviewModal({
         {/* --- Footer --- */}
         <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 shrink-0">
           <button
-            onClick={onClose}
+            onClick={(e) => {
+    e.stopPropagation(); // 👈 ADD THIS: Prevents the click from reaching the parent modal
+    onClose();
+  }}
             disabled={isSubmitting}
             className="px-4 py-2 rounded-lg text-sm font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition shadow-sm disabled:opacity-50"
           >

@@ -15,7 +15,7 @@ export default function AdminLayout({
 
   // Dynamic class for main content margin based on sidebar state
   const mainContentMargin = isMobileOpen
-    ? "ml-0"
+    ? ""
     : isExpanded || isHovered
     ? "lg:ml-[290px]"
     : "lg:ml-[90px]";

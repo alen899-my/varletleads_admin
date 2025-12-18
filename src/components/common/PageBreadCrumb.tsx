@@ -805,7 +805,7 @@ const PageBreadcrumb: React.FC<BreadcrumbProps> = ({ pageTitle, onLeadAdded }) =
                     className="
                         inline-flex items-center justify-center gap-2 
                         w-fit sm:w-auto px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors
-                        bg-blue-600 hover:bg-blue-700 text-white
+                        bg-[#007bff] hover:bg-[#007bff] text-white
                         dark:bg-blue-600 dark:hover:bg-blue-500
                     "
                 >

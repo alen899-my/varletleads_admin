@@ -192,7 +192,7 @@ useEffect(() => {
         {/* Search Button */}
         <button
           onClick={handleFilterSearch}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition  dark:bg-gradient-to-r dark:from-[#252745] dark:to-[#252745] 
+          className="px-4 py-2 bg-[#007bff] hover:bg-[#0578f4] text-white rounded-lg text-sm transition  dark:bg-gradient-to-r dark:from-[#252745] dark:to-[#252745] 
      "
         >
           Search
@@ -228,7 +228,7 @@ useEffect(() => {
               <TableRow
                 className="
       sticky top-0 z-1
-      bg-[#465fff] 
+      bg-[#000] 
       text-white
 
       dark:bg-gradient-to-r dark:from-[#252745] dark:to-[#252745] 
@@ -332,8 +332,8 @@ useEffect(() => {
                               onClick={() => handleEditClick(lead)}
                               className="
           flex items-center justify-center w-8 h-8 rounded-md
-          bg-blue-500 text-white border border-blue-500/50
-          hover:bg-blue-600 hover:border-blue-600 transition-all
+          bg-[#007bff] text-white border border-blue-500/50
+          hover:bg-[#007bff] hover:border-blue-600 transition-all
 
           dark:bg-blue-700 dark:border-blue-600/40 dark:text-white
           dark:hover:bg-blue-600 dark:hover:border-blue-500
@@ -379,7 +379,7 @@ useEffect(() => {
           className={`w-9 h-9 rounded-lg border text-sm font-medium transition-all 
       ${
         page === 1
-          ? "bg-[#465fff] border-[#465fff] text-white shadow-md dark:bg-[#374bd1] dark:border-[#374bd1]"
+          ? "bg-[#007bff] border-[#465fff] text-white shadow-md dark:bg-[#374bd1] dark:border-[#374bd1]"
           : "border-gray-300 text-gray-600 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
       }`}
         >
@@ -393,7 +393,7 @@ useEffect(() => {
             className={`w-9 h-9 rounded-lg border text-sm font-medium transition-all 
         ${
           page === 2
-            ? "bg-[#465fff] border-[#465fff] text-white shadow-md dark:bg-[#374bd1] dark:border-[#374bd1]"
+            ? "bg-[#007bff]] border-[#465fff] text-white shadow-md dark:bg-[#374bd1] dark:border-[#374bd1]"
             : "border-gray-300 text-gray-600 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
         }`}
           >
@@ -430,7 +430,7 @@ useEffect(() => {
             className={`w-9 h-9 rounded-lg border text-sm font-medium transition-all 
         ${
           page === totalPages
-            ? "bg-[#465fff] border-[#465fff] text-white shadow-md dark:bg-[#374bd1] dark:border-[#374bd1]"
+            ? "bg-[#007bff] border-[#465fff] text-white shadow-md dark:bg-[#374bd1] dark:border-[#374bd1]"
             : "border-gray-300 text-gray-600 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
         }`}
           >
