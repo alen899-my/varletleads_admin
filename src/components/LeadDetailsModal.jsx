@@ -110,16 +110,23 @@ export default function LeadDetailsModal({ open, onClose, data }) {
       <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex justify-center items-center p-4 z-[9999]">
         <div ref={modalRef} className="w-full max-w-4xl max-h-[85vh] shadow-2xl bg-white dark:bg-gray-900 flex flex-col rounded-2xl overflow-hidden ">
           
-          {/* Header - Ultra Compact Fixed Black Background */}
-<div className="shrink-0 bg-black border-b border-gray-800 px-4 py-2.5 sm:px-6 flex justify-between items-center z-10 rounded-t-2xl overflow-hidden">
+{/* --- HEADER (Fixed & Resized) --- */}
+<div className="shrink-0 bg-black border-b border-gray-800 px-4 py-2.5 sm:px-6 flex justify-between items-center z-30 rounded-t-2xl">
   
   {/* Left Side: Title & Info */}
-  <div className="flex flex-col gap-0.5">
+  <div className="flex flex-col justify-center">
+    
+    {/* Title Row */}
     <div className="flex items-center gap-2">
-      <h2 className="text-sm sm:text-base font-bold text-white leading-none tracking-tight">
+      {/* Icon added to match the reference layout's spacing */}
+      <FileText className="w-5 h-5 text-[#007bff]" />
+      
+      <h2 className="text-base sm:text-lg font-bold text-white leading-none">
         Registration Details
       </h2>
-      <span className={`text-[9px] font-bold uppercase px-1.5 py-px rounded-full border tracking-wide ${
+
+      {/* Status Badge */}
+      <span className={`ml-2 text-[9px] font-bold uppercase px-1.5 py-px rounded-full border tracking-wide ${
         data.status === 'completed' 
           ? 'bg-green-500/10 text-green-400 border-green-500/30' 
           : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
@@ -127,7 +134,9 @@ export default function LeadDetailsModal({ open, onClose, data }) {
         {data.status}
       </span>
     </div>
-    <p className="text-[10px] text-gray-500 font-mono tracking-wide leading-none">
+
+    {/* Subtitle Row (ml-7 aligns it under the text, skipping the icon) */}
+    <p className="text-[10px] sm:text-xs text-gray-400 mt-1 ml-7 font-medium tracking-wide uppercase opacity-90 leading-none font-mono">
       REF: <span className="text-gray-300">{data.referenceId || "N/A"}</span>
     </p>
   </div>
@@ -135,7 +144,7 @@ export default function LeadDetailsModal({ open, onClose, data }) {
   {/* Right Side: Close Button */}
   <button 
     onClick={() => onClose(false)} 
-    className="p-1.5 -mr-2 rounded-full text-gray-400 hover:text-white hover:bg-gray-800/80 transition-all active:scale-95 flex items-center justify-center"
+    className="p-1.5 -mr-2 rounded-full text-gray-400 hover:text-white hover:bg-gray-800 transition-all duration-200 flex items-center justify-center"
     aria-label="Close modal"
   >
     <X size={18} />
