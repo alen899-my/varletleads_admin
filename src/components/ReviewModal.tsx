@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useMemo } from "react";
+import { usePathname } from "next/navigation"; // 👈 Import usePathname
 import {
   MapPin,
   Building2,
@@ -11,7 +12,7 @@ import {
   FileText,
   CheckCircle,
   X,
-  File as FileIcon, // Renamed to avoid conflict
+  File as FileIcon,
   Image as ImageIcon,
   ExternalLink,
 } from "lucide-react";
@@ -23,7 +24,7 @@ interface ReviewModalProps {
   formData: any;
   existingFiles: any;
   isSubmitting: boolean;
-  themeColor?: string; // 👈 Add this prop
+  themeColor?: string;
 }
 
 export default function ReviewModal({
@@ -33,23 +34,25 @@ export default function ReviewModal({
   formData,
   existingFiles,
   isSubmitting,
-  themeColor = "#ae5c83", // 👈 Default pink color
+  themeColor = "#ae5c83",
 }: ReviewModalProps) {
-  
-  // Create versions of the color with transparency for backgrounds and borders
-  const lightBg = useMemo(() => `${themeColor}1A`, [themeColor]); // 10% opacity
-  const lightBorder = useMemo(() => `${themeColor}33`, [themeColor]); // 20% opacity
+  const pathname = usePathname(); // 👈 Get current path
+  // 👈 Check if route includes 'location-registration'
+  const isLocationRegistrationRoute = pathname?.includes("location-registration");
+
+  const lightBg = useMemo(() => `${themeColor}1A`, [themeColor]);
 
   if (!isOpen) return null;
 
   // --- 1. Data Row Component ---
   const ReviewRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
-    <div className="grid grid-cols-1 sm:grid-cols-12 gap-y-1 gap-x-6 py-4 border-b border-slate-100 dark:border-slate-800 last:border-0 items-start">
-      <dt className="sm:col-span-4 text-sm font-medium text-slate-500 dark:text-slate-400 leading-6">
+    // 👈 Conditional dark mode classes
+    <div className={`grid grid-cols-1 sm:grid-cols-12 gap-y-1 gap-x-6 py-4 border-b border-slate-100 last:border-0 items-start ${!isLocationRegistrationRoute ? "dark:border-slate-800" : ""}`}>
+      <dt className={`sm:col-span-4 text-sm font-medium text-slate-500 leading-6 ${!isLocationRegistrationRoute ? "dark:text-slate-400" : ""}`}>
         {label}
       </dt>
-      <dd className="sm:col-span-8 text-base font-medium text-slate-900 dark:text-slate-100 leading-6 break-words whitespace-pre-wrap">
-        {value ? value : <span className="text-slate-400 dark:text-slate-500 italic font-normal">Not provided</span>}
+      <dd className={`sm:col-span-8 text-base font-medium text-slate-900 leading-6 break-words whitespace-pre-wrap ${!isLocationRegistrationRoute ? "dark:text-slate-100" : ""}`}>
+        {value ? value : <span className={`text-slate-400 italic font-normal ${!isLocationRegistrationRoute ? "dark:text-slate-500" : ""}`}>Not provided</span>}
       </dd>
     </div>
   );
@@ -60,9 +63,10 @@ export default function ReviewModal({
       return arr.length > 0 ? (
         <div className="flex flex-wrap gap-2 mt-1">
           {arr.map((item) => (
+            // 👈 Conditional dark mode classes
             <span
               key={item}
-              className="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-gray-200 border border-slate-200 dark:border-slate-700 capitalize"
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-slate-100 text-slate-800 border border-slate-200 capitalize ${!isLocationRegistrationRoute ? "dark:bg-slate-800 dark:text-gray-200 dark:border-slate-700" : ""}`}
             >
               {item.replace(/-/g, " ")}
             </span>
@@ -104,50 +108,58 @@ export default function ReviewModal({
         }
       }
       
-      badge = <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">New Upload</span>;
+      // 👈 Conditional dark mode classes
+      badge = <span className={`bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${!isLocationRegistrationRoute ? "dark:bg-blue-900/30 dark:text-blue-400" : ""}`}>New Upload</span>;
       
       content = (
         <div className="flex items-start gap-4">
           {isImage && previewUrl ? (
-            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800">
+            // 👈 Conditional dark mode classes
+            <div className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-slate-200 shadow-sm bg-white ${!isLocationRegistrationRoute ? "dark:border-slate-700 dark:bg-slate-800" : ""}`}>
               <img src={previewUrl} alt={label} className="h-full w-full object-cover" />
             </div>
           ) : (
-            <div className="h-12 w-12 shrink-0 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400">
+            // 👈 Conditional dark mode classes
+            <div className={`h-12 w-12 shrink-0 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 ${!isLocationRegistrationRoute ? "dark:bg-slate-800 dark:text-slate-400" : ""}`}>
                {newFile.type === 'application/pdf' ? <FileText size={24} /> : <FileIcon size={24}/>}
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{newFile.name}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{(newFile.size / 1024).toFixed(1)} KB</p>
+            {/* 👈 Conditional dark mode classes */}
+            <p className={`text-sm font-semibold text-slate-900 truncate ${!isLocationRegistrationRoute ? "dark:text-slate-100" : ""}`}>{newFile.name}</p>
+            <p className={`text-xs text-slate-500 mt-0.5 ${!isLocationRegistrationRoute ? "dark:text-slate-400" : ""}`}>{(newFile.size / 1024).toFixed(1)} KB</p>
           </div>
         </div>
       );
     } 
     else if (existingFile && existingFile.filename) {
       const isImage = /\.(jpg|jpeg|png|webp)$/i.test(existingFile.filename);
-      badge = <span className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">Existing File</span>;
+      // 👈 Conditional dark mode classes
+      badge = <span className={`bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${!isLocationRegistrationRoute ? "dark:bg-emerald-900/30 dark:text-emerald-400" : ""}`}>Existing File</span>;
 
       content = (
         <div className="flex items-start gap-4">
           {isImage ? (
-            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800">
+            // 👈 Conditional dark mode classes
+            <div className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-slate-200 shadow-sm bg-white ${!isLocationRegistrationRoute ? "dark:border-slate-700 dark:bg-slate-800" : ""}`}>
                <img src={existingFile.path} alt={label} className="h-full w-full object-cover" />
             </div>
           ) : (
-             <div className="h-12 w-12 shrink-0 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400">
+             // 👈 Conditional dark mode classes
+             <div className={`h-12 w-12 shrink-0 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 ${!isLocationRegistrationRoute ? "dark:bg-slate-800 dark:text-slate-400" : ""}`}>
                {existingFile.filename.endsWith('.pdf') ? <FileText size={24} /> : <FileIcon size={24}/>}
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{existingFile.filename}</p>
+            {/* 👈 Conditional dark mode classes */}
+            <p className={`text-sm font-semibold text-slate-900 truncate ${!isLocationRegistrationRoute ? "dark:text-slate-100" : ""}`}>{existingFile.filename}</p>
             {existingFile.path && (
               <a 
                 href={existingFile.path} 
                 target="_blank" 
                 rel="noreferrer" 
                 className="flex items-center gap-1 text-xs hover:underline mt-1 font-medium"
-                style={{ color: themeColor }} // 👈 Use dynamic color
+                style={{ color: themeColor }}
               >
                 View Document <ExternalLink size={10} />
               </a>
@@ -158,35 +170,40 @@ export default function ReviewModal({
     } 
     else {
        return (
-         <div className="p-4 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-800/50 flex flex-col justify-center items-center text-center h-full min-h-[100px]">
-            <span className="text-slate-400 dark:text-slate-500 mb-1"><FileIcon size={20}/></span>
-            <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">{label}</span>
-            <span className="text-[10px] text-slate-400 dark:text-slate-600 mt-1">Not attached</span>
+         // 👈 Conditional dark mode classes
+         <div className={`p-4 border border-dashed border-slate-200 rounded-xl bg-slate-50/50 flex flex-col justify-center items-center text-center h-full min-h-[100px] ${!isLocationRegistrationRoute ? "dark:border-slate-700 dark:bg-slate-800/50" : ""}`}>
+            <span className={`text-slate-400 mb-1 ${!isLocationRegistrationRoute ? "dark:text-slate-500" : ""}`}><FileIcon size={20}/></span>
+            <span className={`text-xs text-slate-400 font-medium ${!isLocationRegistrationRoute ? "dark:text-slate-500" : ""}`}>{label}</span>
+            <span className={`text-[10px] text-slate-400 mt-1 ${!isLocationRegistrationRoute ? "dark:text-slate-600" : ""}`}>Not attached</span>
          </div>
        )
     }
 
     return (
-      <div className="group relative rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 shadow-sm hover:shadow-md transition-all duration-200">
+      // 👈 Conditional dark mode classes
+      <div className={`group relative rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition-all duration-200 ${!isLocationRegistrationRoute ? "dark:border-slate-700 dark:bg-slate-900" : ""}`}>
         <div className="absolute top-3 right-3">{badge}</div>
-        <div className="mb-2 text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider">{label}</div>
+        <div className={`mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider ${!isLocationRegistrationRoute ? "dark:text-gray-400" : ""}`}>{label}</div>
         {content}
       </div>
     );
   };
 
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-300">
+    // 👈 Conditional dark mode classes for overlay
+    <div className={`fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300 ${!isLocationRegistrationRoute ? "dark:bg-slate-950/80" : ""}`}>
       
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+      {/* 👈 Conditional dark mode classes for modal container */}
+      <div className={`bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 ${!isLocationRegistrationRoute ? "dark:bg-slate-900" : ""}`}>
         
         {/* --- Header --- */}
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-black flex justify-between items-center shrink-0">
+        {/* 👈 Conditional dark mode classes for header border */}
+        <div className={`px-6 py-4 border-b border-slate-100 bg-black flex justify-between items-center shrink-0 ${!isLocationRegistrationRoute ? "dark:border-slate-800" : ""}`}>
           <div>
             <h2 className="text-2xl font-bold text-white flex items-center gap-2">
               <span 
                 className="p-1.5 rounded-lg"
-                style={{ backgroundColor: lightBg, color: themeColor }} // 👈 Use dynamic color
+                style={{ backgroundColor: lightBg, color: themeColor }}
               >
                 <CheckCircle size={24} />
               </span>
@@ -205,18 +222,21 @@ export default function ReviewModal({
         </div>
 
         {/* --- Scrollable Body --- */}
-        <div className="flex-1 overflow-y-auto bg-white dark:bg-slate-900 p-8 transition-all duration-300 ease-in-out
+        {/* 👈 Conditional dark mode classes for body container & scrollbar */}
+        <div className={`flex-1 overflow-y-auto bg-white p-8 transition-all duration-300 ease-in-out
     [&::-webkit-scrollbar]:w-2
-    [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-gray-950
-    [&::-webkit-scrollbar-thumb]:bg-gray-400 dark:[&::-webkit-scrollbar-thumb]:bg-gray-700
+    [&::-webkit-scrollbar-track]:bg-gray-100
+    [&::-webkit-scrollbar-thumb]:bg-gray-400
     [&::-webkit-scrollbar-thumb]:rounded-full
-    hover:[&::-webkit-scrollbar-thumb]:bg-gray-500">
+    hover:[&::-webkit-scrollbar-thumb]:bg-gray-500
+    ${!isLocationRegistrationRoute ? "dark:bg-slate-900 dark:[&::-webkit-scrollbar-track]:bg-gray-950 dark:[&::-webkit-scrollbar-thumb]:bg-gray-700" : ""}`}>
           
           <div className="space-y-10">
             {/* Section 1 */}
             <section>
               <h3 
-                className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider mb-6 pb-2 border-b border-slate-200 dark:border-slate-800 text-black dark:text-white"
+                // 👈 Conditional dark mode classes for section headers
+                className={`flex items-center gap-2 text-sm font-bold uppercase tracking-wider mb-6 pb-2 border-b border-slate-200 text-black ${!isLocationRegistrationRoute ? "dark:border-slate-800 dark:text-white" : ""}`}
               >
                 <MapPin size={18} style={{ color: themeColor }} /> Location Information
               </h3>
@@ -226,9 +246,9 @@ export default function ReviewModal({
                 <ReviewRow label="Average Waiting Time" value={formData.waitTime} />
                 <ReviewRow 
                   label="Google Maps Location URL" 
-                  value={formData.mapsUrl ? <a href={formData.mapsUrl} target="_blank" rel="noreferrer" className="text-[#007bff] dark:text-blue-400 hover:underline break-all flex items-center gap-1">{formData.mapsUrl} <ExternalLink size={12}/></a> : null} 
+                  value={formData.mapsUrl ? <a href={formData.mapsUrl} target="_blank" rel="noreferrer" className={`text-[#007bff] hover:underline break-all flex items-center gap-1 ${!isLocationRegistrationRoute ? "dark:text-blue-400" : ""}`}>{formData.mapsUrl} <ExternalLink size={12}/></a> : null} 
                 />
-                <ReviewRow label="Coordinates" value={(formData.latitude && formData.longitude) ? <span className="font-mono text-sm bg-slate-100 dark:bg-gray-800 px-2 py-1 rounded border border-slate-200 dark:border-slate-700">{formData.latitude}, {formData.longitude}</span> : null} />
+                <ReviewRow label="Coordinates" value={(formData.latitude && formData.longitude) ? <span className={`font-mono text-sm bg-slate-100 px-2 py-1 rounded border border-slate-200 ${!isLocationRegistrationRoute ? "dark:bg-gray-800 dark:border-slate-700" : ""}`}>{formData.latitude}, {formData.longitude}</span> : null} />
                 <ReviewRow label="Operation Timing" value={formData.timing} />
                 <ReviewRow label="Location TRN / Registered Address" value={formData.address} />
               </div>
@@ -237,7 +257,7 @@ export default function ReviewModal({
             {/* Section 2 */}
             <section>
               <h3 
-                className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider mb-6 pb-2 border-b border-slate-200 dark:border-slate-800 text-black dark:text-white"
+                className={`flex items-center gap-2 text-sm font-bold uppercase tracking-wider mb-6 pb-2 border-b border-slate-200 text-black ${!isLocationRegistrationRoute ? "dark:border-slate-800 dark:text-white" : ""}`}
               >
                 <Building2 size={18} style={{ color: themeColor }} /> On-Site User Setup
               </h3>
@@ -254,7 +274,7 @@ export default function ReviewModal({
             {/* Section 3 */}
             <section>
               <h3 
-                className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider mb-6 pb-2 border-b border-slate-200 dark:border-slate-800 text-black dark:text-white"
+                className={`flex items-center gap-2 text-sm font-bold uppercase tracking-wider mb-6 pb-2 border-b border-slate-200 text-black ${!isLocationRegistrationRoute ? "dark:border-slate-800 dark:text-white" : ""}`}
               >
                 <Coins size={18} style={{ color: themeColor }} /> Valet Ticket & Pricing
               </h3>
@@ -269,7 +289,7 @@ export default function ReviewModal({
             {/* Section 4 */}
             <section>
               <h3 
-                className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider mb-6 pb-2 border-b border-slate-200 dark:border-slate-800 text-black dark:text-white"
+                className={`flex items-center gap-2 text-sm font-bold uppercase tracking-wider mb-6 pb-2 border-b border-slate-200 text-black ${!isLocationRegistrationRoute ? "dark:border-slate-800 dark:text-white" : ""}`}
               >
                 <CarFront size={18} style={{ color: themeColor }} /> Drivers / CVA Team
               </h3>
@@ -277,7 +297,7 @@ export default function ReviewModal({
                 <ReviewRow label="Number of drivers" value={formData.driverCount} />
                 <ReviewRow 
                   label="Drivers list" 
-                  value={<div className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700 rounded-lg p-3 text-sm font-mono max-h-40 overflow-y-auto dark:text-slate-300">{formData.driverList}</div>} 
+                  value={<div className={`bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-mono max-h-40 overflow-y-auto ${!isLocationRegistrationRoute ? "dark:bg-gray-800/50 dark:border-gray-700 dark:text-slate-300" : ""}`}>{formData.driverList}</div>} 
                 />
               </div>
             </section>
@@ -285,7 +305,7 @@ export default function ReviewModal({
             {/* Section 5 */}
             <section>
               <h3 
-                className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider mb-6 pb-2 border-b border-slate-200 dark:border-slate-800 text-black dark:text-white"
+                className={`flex items-center gap-2 text-sm font-bold uppercase tracking-wider mb-6 pb-2 border-b border-slate-200 text-black ${!isLocationRegistrationRoute ? "dark:border-slate-800 dark:text-white" : ""}`}
               >
                 <ShieldUser size={18} style={{ color: themeColor }} /> Super Admin Contact
               </h3>
@@ -300,7 +320,7 @@ export default function ReviewModal({
             {/* Section 6 */}
             <section>
               <h3 
-                className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider mb-6 pb-2 border-b border-slate-200 dark:border-slate-800 text-black dark:text-white"
+                className={`flex items-center gap-2 text-sm font-bold uppercase tracking-wider mb-6 pb-2 border-b border-slate-200 text-black ${!isLocationRegistrationRoute ? "dark:border-slate-800 dark:text-white" : ""}`}
               >
                 <ImageIcon size={18} style={{ color: themeColor }} /> Required Documents
               </h3>
@@ -319,14 +339,16 @@ export default function ReviewModal({
         </div>
 
         {/* --- Footer --- */}
-        <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-gray-900 flex justify-end gap-3 shrink-0">
+        {/* 👈 Conditional dark mode classes for footer container */}
+        <div className={`p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-5 shrink-0 ${!isLocationRegistrationRoute ? "dark:border-slate-800 dark:bg-gray-900" : ""}`}>
           <button
             onClick={(e) => {
                 e.stopPropagation();
                 onClose();
             }}
             disabled={isSubmitting}
-            className="px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-700 transition shadow-sm disabled:opacity-50"
+            // 👈 Conditional dark mode classes for "Go Back" button
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-all duration-200 shadow-sm disabled:opacity-50 active:scale-[0.97] ${!isLocationRegistrationRoute ? "dark:text-gray-300 dark:bg-gray-800 dark:border-slate-700 dark:hover:bg-gray-700" : ""}`}
           >
             Go Back & Edit
           </button>
@@ -334,11 +356,12 @@ export default function ReviewModal({
           <button
             onClick={onSubmit}
             disabled={isSubmitting}
+            // 👈 Conditional dark mode classes for Submit button (only need disabled state adjustment)
             className={`
-              px-5 py-2 rounded-lg text-sm font-bold text-white shadow-md hover:shadow-lg transition-all flex items-center gap-2
-              ${isSubmitting ? "bg-slate-400 dark:bg-gray-600 cursor-not-allowed" : "hover:scale-[1.02] active:scale-[0.98]"}
+              flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-white shadow-sm transition-all duration-200 active:scale-[0.97] disabled:opacity-70 disabled:cursor-not-allowed
+              ${isSubmitting ? `bg-slate-400 ${!isLocationRegistrationRoute ? "dark:bg-gray-600" : ""}` : ""}
             `}
-            style={{ backgroundColor: isSubmitting ? undefined : themeColor }} // 👈 Use dynamic color
+            style={{ backgroundColor: isSubmitting ? undefined : themeColor }}
           >
             {isSubmitting ? (
               <>
@@ -351,7 +374,7 @@ export default function ReviewModal({
             ) : (
               <>
                 Confirm & Submit
-                <CheckCircle size={16} />
+                <CheckCircle className="w-4 h-4" />
               </>
             )}
           </button>
