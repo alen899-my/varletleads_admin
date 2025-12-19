@@ -1270,7 +1270,7 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
           onClick={handleUpdateSubmit}
           disabled={isSaving}
           // Using standard padding (px-6 py-2.5) but with an Outline style for secondary action
-          className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium border border-[#007bff] text-[#007bff] hover:bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-900/20 transition-all active:scale-[0.97] disabled:opacity-50"
+          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-[#007bff] text-[#007bff] hover:bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-900/20 transition-all active:scale-[0.97] disabled:opacity-50"
         >
           {isSaving ? (
             <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -1284,7 +1284,7 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
       {currentStep < 6 ? (
         <button 
           onClick={handleNext} 
-          className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#007bff] hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-sm transition-all active:scale-[0.97]"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-[#007bff] hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-sm transition-all active:scale-[0.97]"
         >
           Next Step
           <ArrowRight className="w-4 h-4" />
@@ -1292,7 +1292,7 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
       ) : (
         <button 
           onClick={handleReviewClick} 
-          className="flex items-center justify-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium shadow-sm transition-all active:scale-[0.97]"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium shadow-sm transition-all active:scale-[0.97]"
         >
           Review & Finalize
           <CheckCircle className="w-4 h-4" />
