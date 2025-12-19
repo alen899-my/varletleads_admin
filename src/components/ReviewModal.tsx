@@ -196,30 +196,30 @@ export default function ReviewModal({
       {/* 👈 Conditional dark mode classes for modal container */}
       <div className={`bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 ${!isLocationRegistrationRoute ? "dark:bg-slate-900" : ""}`}>
         
-        {/* --- Header --- */}
-        {/* 👈 Conditional dark mode classes for header border */}
-        <div className={`px-6 py-4 border-b border-slate-100 bg-black flex justify-between items-center shrink-0 ${!isLocationRegistrationRoute ? "dark:border-slate-800" : ""}`}>
-          <div>
-            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-              <span 
-                className="p-1.5 rounded-lg"
-                style={{ backgroundColor: lightBg, color: themeColor }}
-              >
-                <CheckCircle size={24} />
-              </span>
-              Final Review
-            </h2>
-            <p className="text-sm text-white/80 mt-1 ml-11">
-              Please ensure all details below are accurate before submission.
-            </p>
-          </div>
-          <button 
-            onClick={onClose} 
-            className="p-2 rounded-full hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
-          >
-            <X size={24} />
-          </button>
-        </div>
+      {/* --- Header --- */}
+{/* 👈 Conditional dark mode classes for header border */}
+<div className={`px-4 py-2.5 sm:px-6 border-b border-slate-100 bg-black flex justify-between items-center shrink-0 ${!isLocationRegistrationRoute ? "dark:border-slate-800" : ""}`}>
+  <div className="flex flex-col justify-center">
+    <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2 leading-none">
+      <span 
+        className="p-1 rounded-md flex items-center justify-center"
+        style={{ backgroundColor: lightBg, color: themeColor }}
+      >
+        <CheckCircle size={16} />
+      </span>
+      Final Review
+    </h2>
+    <p className="text-[10px] sm:text-xs text-white/70 mt-1 ml-7 leading-none">
+      Please ensure all details below are accurate before submission.
+    </p>
+  </div>
+  <button 
+    onClick={onClose} 
+    className="p-1.5 -mr-2 rounded-full hover:bg-white/10 text-slate-400 hover:text-white transition-colors flex items-center justify-center"
+  >
+    <X size={18} />
+  </button>
+</div>
 
         {/* --- Scrollable Body --- */}
         {/* 👈 Conditional dark mode classes for body container & scrollbar */}

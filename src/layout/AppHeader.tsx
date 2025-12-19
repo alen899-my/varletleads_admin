@@ -1,6 +1,5 @@
 "use client";
 import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
-import NotificationDropdown from "@/components/header/NotificationDropdown";
 import UserDropdown from "@/components/header/UserDropdown";
 import { useSidebar } from "@/context/SidebarContext";
 import Link from "next/link";
@@ -12,6 +11,9 @@ const AppHeader = () => {
   const [username, setUsername] = useState("User");
   const inputRef = useRef<HTMLInputElement | null>(null);
 
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const mobileToggleRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
     const storedValue = localStorage.getItem("user");
     const storedUser = storedValue ? JSON.parse(storedValue) : null;
@@ -22,6 +24,29 @@ const AppHeader = () => {
       setUsername(storedUser.name);
     }
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (
+        isApplicationMenuOpen &&
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(event.target as Node) &&
+        mobileToggleRef.current &&
+        !mobileToggleRef.current.contains(event.target as Node)
+      ) {
+        setApplicationMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [isApplicationMenuOpen]);
+
 
   const handleToggleSidebar = () => {
     if (window.innerWidth >= 1024) {
@@ -46,7 +71,7 @@ const AppHeader = () => {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 flex w-full bg-[#000] border-b border-gray-800 dark:bg-gray-900 lg:h-[72px]">
+    <header className="sticky top-0 z-1000 flex w-full bg-[#000] border-b border-gray-800 dark:bg-gray-900 lg:h-[72px]">
       <div className="relative flex items-center justify-between w-full px-4 py-2 lg:px-6">
         
         {/* LEFT AREA: Sidebar Toggle + Brand */}
@@ -74,8 +99,10 @@ const AppHeader = () => {
         <div className="flex items-center gap-2">
           {/* Mobile "More" Menu Button */}
           <button
+            ref={mobileToggleRef}
             onClick={toggleApplicationMenu}
             className="flex items-center justify-center w-10 h-10 text-gray-400 rounded-lg hover:bg-gray-800 lg:hidden"
+            aria-label="Toggle Mobile options menu"
           >
             <span className="text-xl">⋮</span>
           </button>
@@ -85,8 +112,8 @@ const AppHeader = () => {
             <ThemeToggleButton />
             <div className="flex items-center gap-3 border-l border-gray-800 pl-4">
               <span className="text-gray-400 text-sm font-medium">
-                Welcome, <span className="text-white">{username}</span>
-              </span>
+                Welcome</span>
+             
               <UserDropdown />
             </div>
           </div>
@@ -94,14 +121,23 @@ const AppHeader = () => {
 
         {/* MOBILE MENU DROPDOWN (Absolute Positioned) */}
         {isApplicationMenuOpen && (
-          <div className="absolute left-0 top-full flex w-full flex-col border-b border-gray-800 bg-black p-4 shadow-xl animate-in slide-in-from-top-2 lg:hidden">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-white text-sm font-medium">👋 Welcome, {username}</span>
+          <div 
+            ref={mobileMenuRef}
+            // ✅ FIX APPLIED HERE:
+            // 1. Removed `max-h-[85vh]`, `overflow-y-auto`, and the large `pb-32`.
+            // 2. Used simple `p-4` for standard padding.
+            // 3. Kept the clean light/dark mode colors.
+            className="absolute left-0 top-full z-50 flex w-full flex-col border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-xl animate-in slide-in-from-top-2 lg:hidden p-4"
+          >
+            <div className="flex items-center justify-end gap-4 mb-4 shrink-0">
+              <span className="text-gray-900 dark:text-white text-sm font-medium">👋 Welcome</span>
               <ThemeToggleButton />
             </div>
-            <div className="flex items-center justify-center border-t border-gray-800 pt-4">
+            
+            {/* Removed mt-auto and relative as they are no longer needed without fixed height */}
+            <div className="flex items-center text-gray-900 justify-end border-t border-gray-200 dark:border-gray-800 pt-4">
               <UserDropdown />
-              <span className="ml-3 text-white">Profile Settings</span>
+           
             </div>
           </div>
         )}

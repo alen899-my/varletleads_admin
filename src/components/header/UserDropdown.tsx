@@ -56,13 +56,19 @@ export default function UserDropdown() {
       {/* Trigger Button */}
       <button
         onClick={toggleDropdown}
-        className="flex items-center text-white dark:text-gray-400 dropdown-toggle"
+        // ✅ FIXED CLASSES BELOW:
+        // text-gray-900: Dark text for mobile (white menu background)
+        // lg:text-white: White text for desktop (black header background)
+        // dark:text-gray-100: Light text for dark mode everywhere
+        className="flex items-center text-gray-900 lg:text-white dark:text-gray-100 dropdown-toggle"
       >
         <span className="block mr-1 font-medium text-theme-sm">{user.name}</span>
 
         {/* Arrow Icon */}
         <svg
-          className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
+          // ✅ FIXED CLASS BELOW:
+          // stroke-current: Makes the icon automatically match the text color above
+          className={`stroke-current transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
           }`}
           width="18"
@@ -72,7 +78,7 @@ export default function UserDropdown() {
         >
           <path
             d="M4.3125 8.65625L9 13.3437L13.6875 8.65625"
-            stroke="currentColor"
+            stroke="currentColor" // This already uses current color
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth="1.5"
@@ -84,7 +90,8 @@ export default function UserDropdown() {
       <Dropdown
         isOpen={isOpen}
         onClose={closeDropdown}
-        className="absolute right-0 mt-[17px] w-[260px] rounded-2xl border border-gray-400 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
+        // Added border-gray-200 for better definition in light mode
+        className="absolute right-0 mt-[17px] w-[260px] rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
       >
         {/* User Info */}
         <div>

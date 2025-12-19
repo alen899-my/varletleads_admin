@@ -534,24 +534,24 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
   ref={modalRef} 
   className="w-full max-w-5xl h-[85vh] flex flex-col bg-white dark:bg-gray-900 rounded-xl overflow-hidden shadow-2xl"
 >
-        {/* --- HEADER (Fixed) --- */}
-<div className="shrink-0 bg-black border-b border-gray-800 px-6 py-1 flex justify-between items-center z-30">
-  <div>
-    <h2 className="text-xl font-bold text-white flex items-center gap-3">
-      <UserCog className="w-6 h-6 text-[#007bff]" />
+{/* --- HEADER (Fixed) --- */}
+<div className="shrink-0 bg-black border-b border-gray-800 px-4 py-2.5 sm:px-6 flex justify-between items-center z-30">
+  <div className="flex flex-col justify-center">
+    <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2 leading-none">
+      <UserCog className="w-5 h-5 text-[#007bff]" />
       Edit Lead Details
     </h2>
-    <p className="text-[12px] text-gray-400 mt-1 font-medium tracking-wide uppercase opacity-90">
+    <p className="text-[10px] sm:text-xs text-gray-400 mt-1 ml-7 font-medium tracking-wide uppercase opacity-90 leading-none">
       Update client information & registration data
     </p>
   </div>
   
   <button
     onClick={onClose}
-    className="p-2.5 rounded-full text-gray-400 hover:text-white hover:bg-gray-800 transition-all duration-200"
+    className="p-1.5 -mr-2 rounded-full text-gray-400 hover:text-white hover:bg-gray-800 transition-all duration-200 flex items-center justify-center"
     aria-label="Close modal"
   >
-    <X size={24} />
+    <X size={18} />
   </button>
 </div>
   
@@ -1245,7 +1245,7 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
         {/* --- FOOTER ACTIONS (Fixed) --- */}
 
 {/* --- FOOTER ACTIONS (Frozen & Stable) --- */}
-<div className="shrink-0 bg-white dark:bg-gray-900 border-t border-gray-300 dark:border-gray-700 px-3 py-3 sm:px-6 sm:py-4 z-30">
+<div className="shrink-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 px-4 py-4 sm:px-6 sm:py-5 z-30">
   <div className="flex items-center justify-between w-full">
     
     {/* LEFT SIDE: Back Button Slot */}
@@ -1254,28 +1254,26 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
         <button 
           onClick={() => setCurrentStep(prev => prev - 1)} 
           disabled={isSaving}
-          className="h-12 sm:h-12 flex items-center gap-2 px-2 sm:px-3 text-xs sm:text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-[#007bff] dark:hover:text-blue-400 transition-all group disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-gray-400 active:scale-[0.97] transition-all duration-200 shadow-sm bg-white hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 dark:text-gray-300 disabled:opacity-50"
         >
-          <div className="p-1 sm:p-1.5 rounded-full bg-gray-100 dark:bg-gray-800 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 transition-colors">
-            <ArrowRight className="rotate-180 w-3.5 h-3.5 sm:w-4 sm:h-4" /> 
-          </div>
-          <span>Back</span>
+          ← Back
         </button>
       )}
     </div>
 
     {/* RIGHT SIDE: Save & Next Group */}
-    <div className="flex items-center gap-2 sm:gap-3">
+    <div className="flex items-center gap-3 justify-end">
       
       {/* SAVE BUTTON: Hidden ONLY on step 6 */}
       {currentStep < 6 && (
         <button
           onClick={handleUpdateSubmit}
           disabled={isSaving}
-          className="min-w-[70px] sm:min-w-[110px] h-10 sm:h-12 flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-5 border-2 border-[#007bff] text-[#007bff] dark:border-blue-500 dark:text-blue-400 rounded-lg text-[11px] sm:text-sm font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all active:scale-95 disabled:opacity-50"
+          // Using standard padding (px-6 py-2.5) but with an Outline style for secondary action
+          className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium border border-[#007bff] text-[#007bff] hover:bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-900/20 transition-all active:scale-[0.97] disabled:opacity-50"
         >
           {isSaving ? (
-            <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
           ) : (
             "Save"
           )}
@@ -1286,18 +1284,18 @@ const FileUploadBlock = ({ label, name, accept, file, currentFileName }) => {
       {currentStep < 6 ? (
         <button 
           onClick={handleNext} 
-          className="min-w-[70px] sm:min-w-[110px] h-10 sm:h-12 flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 bg-[#007bff] hover:bg-blue-700 text-white rounded-lg text-[11px] sm:text-sm font-bold shadow-md transition-all active:scale-95"
+          className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#007bff] hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-sm transition-all active:scale-[0.97]"
         >
-          Next 
-          <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          Next Step
+          <ArrowRight className="w-4 h-4" />
         </button>
       ) : (
         <button 
           onClick={handleReviewClick} 
-          className="min-w-[130px] sm:min-w-[180px] h-10 sm:h-12 flex items-center justify-center gap-1 sm:gap-2 px-4 sm:px-6 bg-green-600 hover:bg-green-700 text-white rounded-lg text-[11px] sm:text-sm font-bold shadow-lg transition-all active:scale-95 animate-in fade-in zoom-in-95 duration-300"
+          className="flex items-center justify-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium shadow-sm transition-all active:scale-[0.97]"
         >
-          Review <span className="hidden sm:inline">& Finalize</span>
-          <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          Review & Finalize
+          <CheckCircle className="w-4 h-4" />
         </button>
       )}
     </div>

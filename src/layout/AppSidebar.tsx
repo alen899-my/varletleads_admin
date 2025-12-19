@@ -233,7 +233,7 @@ const AppSidebar: React.FC = () => {
 
  return (
   <aside
-    className={`fixed mt-16 flex flex-col lg:mt-0 top-0 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 
+    className={`fixed mt-14 flex flex-col lg:mt-0 top-0 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 
       ${
         isExpanded || isMobileOpen
           ? "w-[290px]"
@@ -248,7 +248,8 @@ const AppSidebar: React.FC = () => {
   >
     {/* LOGO SECTION: Removed horizontal constraints */}
     <div
-    className={`flex items-center shrink-0 bg-[#000] w-full transition-all duration-300 h-16 lg:h-18 ${
+    // ✅ CHANGED: Added `dark:bg-gray-900` so it's dark gray, not black, in dark mode.
+    className={`flex items-center shrink-0 bg-[#000] dark:bg-gray-900 w-full transition-all duration-300 h-16 lg:h-18 ${
       !isExpanded && !isHovered ? "justify-center px-0" : "justify-start px-8"
     }`}
   >

@@ -110,21 +110,37 @@ export default function LeadDetailsModal({ open, onClose, data }) {
       <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex justify-center items-center p-4 z-[9999]">
         <div ref={modalRef} className="w-full max-w-4xl max-h-[85vh] shadow-2xl bg-white dark:bg-gray-900 flex flex-col rounded-2xl overflow-hidden ">
           
-          {/* Header - Fixed Black Background */}
-          <div className="shrink-0 bg-black border-b border-gray-800 px-5 py-1 flex justify-between items-center z-10 rounded-t-2xl overflow-hidden">
-            <div>
-              <h2 className="text-lg font-black text-white flex items-center gap-3">
-                Registration Details
-                <span className={`text-[9px] tracking-widest uppercase px-2 py-1 rounded-full border ${data.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/30' : 'bg-amber-500/10 text-amber-400 border-amber-500/30'}`}>
-                  {data.status}
-                </span>
-              </h2>
-              <p className="text-[10px] text-gray-400 mt-0.5 font-mono tracking-wider opacity-80 uppercase">REF: {data.referenceId || "N/A"}</p>
-            </div>
-            <button onClick={() => onClose(false)} className="p-1.5 rounded-full text-gray-400 hover:text-white hover:bg-gray-800 transition-all">
-              <X size={20} />
-            </button>
-          </div>
+          {/* Header - Ultra Compact Fixed Black Background */}
+<div className="shrink-0 bg-black border-b border-gray-800 px-4 py-2.5 sm:px-6 flex justify-between items-center z-10 rounded-t-2xl overflow-hidden">
+  
+  {/* Left Side: Title & Info */}
+  <div className="flex flex-col gap-0.5">
+    <div className="flex items-center gap-2">
+      <h2 className="text-sm sm:text-base font-bold text-white leading-none tracking-tight">
+        Registration Details
+      </h2>
+      <span className={`text-[9px] font-bold uppercase px-1.5 py-px rounded-full border tracking-wide ${
+        data.status === 'completed' 
+          ? 'bg-green-500/10 text-green-400 border-green-500/30' 
+          : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+      }`}>
+        {data.status}
+      </span>
+    </div>
+    <p className="text-[10px] text-gray-500 font-mono tracking-wide leading-none">
+      REF: <span className="text-gray-300">{data.referenceId || "N/A"}</span>
+    </p>
+  </div>
+
+  {/* Right Side: Close Button */}
+  <button 
+    onClick={() => onClose(false)} 
+    className="p-1.5 -mr-2 rounded-full text-gray-400 hover:text-white hover:bg-gray-800/80 transition-all active:scale-95 flex items-center justify-center"
+    aria-label="Close modal"
+  >
+    <X size={18} />
+  </button>
+</div>
 
           <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 transition-all duration-300 ease-in-out
     [&::-webkit-scrollbar]:w-1.5

@@ -482,24 +482,24 @@ const validateStep5 = () => {
                 `}>
 
 
-               {/* --- HEADER (Fixed) --- */}
-<div className="shrink-0 bg-black border-b border-gray-800 px-6 py-1 flex justify-between items-center z-30">
-  <div>
-    <h2 className="text-xl font-bold text-white flex items-center gap-3">
-      <UserCog className="w-6 h-6 text-[#007bff]" />
+{/* --- HEADER (Fixed) --- */}
+<div className="shrink-0 bg-black border-b border-gray-800 px-4 py-2.5 sm:px-6 flex justify-between items-center z-30">
+  <div className="flex flex-col justify-center">
+    <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2 leading-none">
+      <UserCog className="w-5 h-5 text-[#007bff]" />
       Add Lead Details
     </h2>
-    <p className="text-[12px] text-gray-400 mt-1 font-medium tracking-wide uppercase opacity-90">
+    <p className="text-[10px] sm:text-xs text-gray-400 mt-1 ml-7 font-medium tracking-wide uppercase opacity-90 leading-none">
       Enter new client information & registration data
     </p>
   </div>
   
   <button
     onClick={onClose}
-    className="p-2.5 rounded-full text-gray-400 hover:text-white hover:bg-gray-800 transition-all duration-200"
+    className="p-1.5 -mr-2 rounded-full text-gray-400 hover:text-white hover:bg-gray-800 transition-all duration-200 flex items-center justify-center"
     aria-label="Close modal"
   >
-    <X size={24} />
+    <X size={18} />
   </button>
 </div>
 
@@ -940,47 +940,47 @@ const validateStep5 = () => {
                         </div>
                     )}
                 </div>
-               {/* --- FOOTER ACTIONS (Compact & Responsive) --- */}
-<div className="shrink-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 px-4 py-3 sm:px-6 sm:py-3 z-30">
-  <div className="flex flex-row items-center justify-between w-full gap-3">
-    
+<div className="shrink-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 px-4 py-4 sm:px-6 sm:py-5 z-30">
+  <div className="flex flex-row items-center justify-between w-full gap-4 sm:gap-6">
+
     {/* LEFT SIDE: Back Button */}
-    <div className="flex-1 flex justify-start"> 
+    {/* ✅ FIX: Added min-w-0 to prevent potential flex issues, though usually okay here */}
+    <div className="flex-1 flex justify-start min-w-0">
       {currentStep > 1 && (
-        <button 
-          onClick={() => setCurrentStep(prev => prev - 1)} 
+        <button
+          onClick={() => setCurrentStep(prev => prev - 1)}
           disabled={isSaving}
-          className="h-9 sm:h-10 flex items-center gap-2 px-2 sm:px-4 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-[#007bff] dark:hover:text-blue-400 transition-all group disabled:opacity-50 active:scale-95"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-gray-400 active:scale-[0.97] transition-all duration-200 shadow-sm bg-white hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 dark:text-gray-300 disabled:opacity-50 truncate"
         >
-          <div className="p-1 rounded-full bg-gray-100 dark:bg-gray-800 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 transition-colors">
-            <ArrowRight className="rotate-180 w-3.5 h-3.5" /> 
-          </div>
-          <span className="hidden sm:inline">Back</span>
+          ← Back
         </button>
       )}
     </div>
 
     {/* RIGHT SIDE: Next / Review Group */}
-    <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end">
+    {/* ✅ FIX: Removed `w-full sm:w-auto`. `justify-end` is enough to position it right without forcing width. */}
+    <div className="flex items-center gap-3 justify-end">
       {currentStep < 6 ? (
-        <button 
-          onClick={handleNext} 
-          className="flex-1 sm:flex-none min-w-[90px] sm:min-w-[120px] h-9 sm:h-10 flex items-center justify-center gap-2 px-5 bg-[#007bff] hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow-sm transition-all active:scale-95"
+        <button
+          onClick={handleNext}
+       
+          className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#007bff] hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-sm transition-all active:scale-[0.97]"
         >
-          Next 
-          <ArrowRight size={16} />
+          Next Step
+          <ArrowRight className="w-4 h-4" />
         </button>
       ) : (
-        <button 
-          onClick={handleReviewClick} 
-          className="flex-1 sm:flex-none min-w-[150px] sm:min-w-[180px] h-9 sm:h-10 flex items-center justify-center gap-2 px-5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold shadow-md transition-all active:scale-95 animate-in fade-in zoom-in-95"
+        <button
+          onClick={handleReviewClick}
+     
+          className="flex items-center justify-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium shadow-sm transition-all active:scale-[0.97]"
         >
           Review & Finalize
-          <CheckCircle size={16} />
+          <CheckCircle className="w-4 h-4" />
         </button>
       )}
     </div>
-    
+
   </div>
 </div>
 
